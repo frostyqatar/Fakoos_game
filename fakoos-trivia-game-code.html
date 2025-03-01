@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fakoos Trivia!</title>
+    <style>
+        :root {
+            --primary-color: #4a148c;
+            --secondary-color: #7b1fa2;
+            --accent-color: #e91e63;
+            --light-color: #f3e5f5;
+            --dark-color: #1a1a1a;
+            --correct-color: #4caf50;
+            --incorrect-color: #f44336;
+            --primary-gradient: linear-gradient(135deg, #6520a0, #8b44da);
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            --hover-transform: translateY(-2px);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-color);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        /* Setup Screen */
+        .setup-screen {
+            display: none;
+            min-height: 80vh;
+            padding: 2rem;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .setup-screen.active {
+            display: block;
+        }
+
+        .setup-section {
+            background-color: var(--secondary-color);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .setup-section h2 {
+            margin-bottom: 1rem;
+            color: var(--light-color);
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .category-item {
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 0.5rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-item:hover {
+            transform: var(--hover-transform);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-item.selected {
+            background: var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .teams-setup {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .team-setup-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .team-setup-container h3 {
+            margin-bottom: 1rem;
+            color: var(--light-color);
+        }
+        
+        .team-avatar {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-emoji {
+            font-size: 3rem;
+            line-height: 1;
+        }
+
+        .avatar-refresh {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .avatar-refresh:hover {
+            transform: rotate(180deg);
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .team-name-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        .player-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .button:hover {
+            background: #c2185b;
+            transform: var(--hover-transform);
+        }
+
+        .submit-btn {
+            display: block;
+            margin: 0 auto;
+            font-size: 1.2rem;
+            padding: 1rem 2rem;
+        }
+
+        /* Game Screen */
+        .game-screen {
+            display: none;
+            padding: 2rem;
+            min-height: 80vh;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .game-layout {
+            display: grid;
+            grid-template-columns: 200px 1fr 200px;
+            gap: 2rem;
+        }
+
+        /* Updated team sidebar with players list */
+        .team-sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        /* Add styles for special abilities */
+        .special-abilities {
+            width: 100%;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ability-header {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .ability-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            width: 100%;
+        }
+        
+        .ability-btn {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ability-btn:hover:not(:disabled) {
+            transform: var(--hover-transform);
+            background-color: var(--accent-color);
+        }
+        
+        .ability-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #555;
+        }
+        
+        .ability-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .players-header {
+            margin-top: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 0.5rem;
+            width: 100%;
+        }
+
+        .players-list {
+            width: 100%;
+            margin-top: 0.5rem;
+            text-align: center;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            padding: 0.5rem;
+            margin: 0.3rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        /* Make team name more prominent */
+        .team-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0.5rem 0;
+            background: var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .team-avatar {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .team-score {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        /* Fix game board display */
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .category-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .category-header {
+            background-color: var(--secondary-color);
+            padding: 1rem;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .value-card {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .value-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .value-card.answered {
+            background-color: #333;
+            cursor: not-allowed;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .turn-indicator {
+            background: var(--primary-color);
+            padding: 1rem;
+            text-align: center;
+            border-radius: 10px;
+            font-size: 1.2rem;
+        }
+
+        .game-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .question-card {
+            background: var(--primary-gradient);
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .question-card:hover {
+            transform: var(--hover-transform);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .question-card.answered {
+            background: rgba(0, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+        }
+        
+        /* Question Screen */
+        .question-screen {
+            background-color: var(--primary-color);
+            padding: 2rem;
+            border-radius: 10px;
+            margin: 2rem auto;
+            max-width: 800px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .question-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .value-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .question-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            min-height: 150px;
+        }
+
+        .question-actions {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .question-category, .question-value {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .question-text {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .question-answer {
+            font-size: 1.8rem;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            color: var(--correct-color);
+            font-weight: bold;
+        }
+
+        .reveal-btn {
+            margin-bottom: 2rem;
+        }
+
+        .dealer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .award-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .award-btn:hover {
+            background: var(--secondary-color);
+            transform: var(--hover-transform);
+        }
+
+        .correct {
+            color: var(--correct-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .incorrect {
+            color: var(--incorrect-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .team-scoreboard {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        /* Timer styles */
+        .timer {
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: pulse 1s infinite;
+        }
+
+        .timer-team {
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Return to tiles button */
+        #return-to-tiles-btn {
+            background-color: var(--secondary-color);
+        }
+
+        /* Exit game button */
+        #exit-game-btn {
+            background-color: #d32f2f;
+            color: white;
+            margin-left: 1rem;
+        }
+
+        /* Make the game more interactive */
+        .category-item:hover, .value-card:hover {
+            transform: var(--hover-transform) scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Add animations */
+        @keyframes cardFlip {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(90deg); }
+            100% { transform: rotateY(180deg); }
+        }
+
+        .value-card.answered {
+            animation: cardFlip 0.6s forwards;
+            background-color: #333;
+        }
+
+        /* Enhance team scores display */
+        .team-score {
+            transition: all 0.3s ease;
+        }
+
+        .team-score.updated {
+            animation: scoreUpdate 1s;
+        }
+
+        @keyframes scoreUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Add to your existing CSS styles */
+        .timer {
+            background-color: var(--accent-color);
+            color: white;
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            display: none;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: pulse 1s infinite;
+        }
+
+        .timer-team {
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #question-screen {
+            background-color: var(--primary-color);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .question-meta {
+            display: flex;
+            align-items: center;
+        }
+
+        .question-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            min-height: 200px;
+        }
+
+        #question-text {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #answer-display {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .question-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .action-button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-button.correct {
+            background-color: var(--correct-color);
+        }
+
+        .action-button.incorrect {
+            background-color: var(--incorrect-color);
+        }
+
+        .action-button:hover {
+            transform: var(--hover-transform);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #exit-game-btn {
+            background-color: #d32f2f;
+            margin-top: 1rem;
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+
+        /* Animation for score updates */
+        .team-score.updated {
+            animation: scoreUpdate 1s;
+        }
+
+        @keyframes scoreUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Animation for answered cards */
+        .value-card.answered {
+            animation: cardFlip 0.6s forwards;
+            background-color: #333;
+            pointer-events: none;
+        }
+
+        @keyframes cardFlip {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(90deg); }
+            100% { transform: rotateY(180deg); }
+        }
+
+        /* Add to your CSS for feedback and enhanced visuals */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            z-index: 10;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .feedback.correct {
+            background-color: var(--correct-color);
+            color: white;
+        }
+
+        .feedback.incorrect {
+            background-color: var(--incorrect-color);
+            color: white;
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-item.selected .category-icon {
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        .team-avatar {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .team-avatar:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .value-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+        }
+            
+        /* Confetti animation for correct answers */
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            animation: confetti 1s ease forwards;
+        }
+
+        #category-counter {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            color: var(--light-color);
+        }
+
+        /* Hide exit game button by default */
+        #exit-game-btn {
+            display: none;
+        }
+
+        /* Fix the null error in initializeSetup function */
+        .team-score-container {
+            max-height: 300px;
+            overflow-y: auto;
+            flex-grow: 0;
+        }
+
+        .players-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Enhance award buttons */
+        .award-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .action-button.team1-award, 
+        .action-button.team2-award {
+            background-color: var(--primary-color);
+            transition: all 0.3s ease;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+        }
+
+        .action-button.team1-award:hover, 
+        .action-button.team2-award:hover {
+            background-color: var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .action-button.no-award {
+            background-color: #777;
+        }
+
+        .action-button.no-award:hover {
+            background-color: var(--incorrect-color);
+        }
+
+        .award-team-container h3 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            color: var(--light-color);
+        }
+
+        .score-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .score-adjust {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: var(--card-shadow);
+        }
+
+        .score-adjust.minus {
+            background-color: var(--incorrect-color);
+            color: white;
+            margin-right: 10px;
+        }
+
+        .score-adjust.plus {
+            background-color: var(--correct-color);
+            color: white;
+            margin-left: 10px;
+        }
+
+        .score-adjust:hover {
+            transform: scale(1.1);
+        }
+
+        .team-score {
+            font-size: 2.5rem;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            padding: 0 0.5rem;
+        }
+
+        /* Music Control */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .music-toggle {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .music-toggle:hover {
+            transform: scale(1.1);
+            background-color: var(--secondary-color);
+        }
+        
+        .music-toggle.muted .music-icon {
+            position: relative;
+        }
+        
+        .music-toggle.muted .music-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: white;
+            transform: rotate(-45deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Music Button -->
+    <div class="music-control">
+        <button id="music-toggle" class="music-toggle">
+            <span class="music-icon">🔊</span>
+        </button>
+    </div>
+    
+    <!-- Background Music Player -->
+    <audio id="background-music" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2025/02/27/audio_9c5363b7af.mp3?filename=funny-cartoon-comedy-background-music-306997.mp3" type="audio/mp3">
+    </audio>
+    
+    <header>
+        <h1 onclick="goHome()">Fakoos Trivia!</h1>
+    </header>
+    
+    <div class="container">
+        <!-- Setup Screen -->
+        <div class="setup-screen active">
+            <div class="setup-section">
+                <h2>📚 اختر الفئات (٣-٦)</h2>
+                <div id="category-counter">اختر الفئات: <span id="selected-count">0</span>/6</div>
+                <div id="categories-grid" class="categories-grid">
+                    <!-- Categories will be inserted here -->
+                </div>
+            </div>
+
+            <div class="setup-section">
+                <h2>أضف الفرق (٢-٨ لاعبين لكل فريق)</h2>
+                <div class="teams-setup">
+                    <!-- Team 1 Setup -->
+                    <div class="team-setup-container">
+                        <h3>الفريق ١</h3>
+                        <div class="team-avatar">
+                            <div id="team1-avatar" class="avatar-emoji">😎</div>
+                            <button onclick="refreshTeamAvatar(1)" class="avatar-refresh">🔄</button>
+                        </div>
+                        <input type="text" class="team-name-input" id="team1-name" placeholder="اسم الفريق">
+                        <div id="team1-players">
+                            <input type="text" class="player-input" placeholder="اسم اللاعب">
+                            <input type="text" class="player-input" placeholder="اسم اللاعب">
+                        </div>
+                        <button class="button" onclick="addPlayer(1)">+ إضافة لاعب</button>
+                    </div>
+
+                    <!-- Team 2 Setup -->
+                    <div class="team-setup-container">
+                        <h3>الفريق ٢</h3>
+                        <div class="team-avatar">
+                            <div id="team2-avatar" class="avatar-emoji">🤖</div>
+                            <button onclick="refreshTeamAvatar(2)" class="avatar-refresh">🔄</button>
+                        </div>
+                        <input type="text" class="team-name-input" id="team2-name" placeholder="اسم الفريق">
+                        <div id="team2-players">
+                            <input type="text" class="player-input" placeholder="اسم اللاعب">
+                            <input type="text" class="player-input" placeholder="اسم اللاعب">
+                        </div>
+                        <button class="button" onclick="addPlayer(2)">+ إضافة لاعب</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="button submit-btn" onclick="startGame()">ابدأ اللعبة</button>
+        </div>
+                
+        <!-- Game Screen -->
+        <div class="game-screen">
+            <div class="game-layout">
+                <!-- Team 1 Sidebar -->
+                <div class="team-sidebar">
+                    <div class="team-avatar" id="team1-avatar">😎</div>
+                    <div class="team-name" id="team1-name">الفريق ١</div>
+                    <div class="score-container">
+                        <button class="score-adjust minus" onclick="adjustScore(0, -10)">-</button>
+                        <div class="team-score" id="team1-score">0</div>
+                        <button class="score-adjust plus" onclick="adjustScore(0, 10)">+</button>
+                    </div>
+                    
+                    <!-- Add special abilities section -->
+                    <div class="special-abilities">
+                        <div class="ability-header">القدرات الخاصة:</div>
+                        <div class="ability-buttons">
+                            <button class="ability-btn" id="team1-chatgpt" onclick="useAbility(0, 'chatgpt')">
+                                <span class="ability-icon">🤖</span>
+                                ChatGPT
+                            </button>
+                            <button class="ability-btn" id="team1-double" onclick="useAbility(0, 'double')">
+                                <span class="ability-icon">2️⃣</span>
+                                نقاط مضاعفة
+                            </button>
+                            <button class="ability-btn" id="team1-google" onclick="useAbility(0, 'google')">
+                                <span class="ability-icon">🔍</span>
+                                بحث جوجل
+                            </button>
+                            <button class="ability-btn" id="team1-dismiss" onclick="useAbility(0, 'dismiss')">
+                                <span class="ability-icon">👋</span>
+                                استبعاد لاعب
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Players list -->
+                    <div class="players-header">اللاعبون:</div>
+                    <div class="players-list" id="team1-players-list">
+                        <!-- Players will be added dynamically -->
+                    </div>
+                </div>
+                
+                <!-- Game Content -->
+                <div class="game-content">
+                    <!-- Game Board -->
+                    <div id="game-board" class="game-board">
+                        <!-- Category columns will be added here -->
+                    </div>
+                    
+                    <!-- Question Screen -->
+                    <div id="question-screen" class="question-screen" style="display: none;">
+                        <div class="question-header">
+                            <div class="question-meta">
+                                <h2 id="question-category"></h2>
+                                <div id="question-value" class="value-badge"></div>
+                            </div>
+                            <div id="question-timer" class="timer"></div>
+                        </div>
+                        <div class="question-container">
+                            <p id="question-text"></p>
+                            <div id="answer-display" style="display: none;">
+                                <h3>الإجابة:</h3>
+                                <p id="answer-text"></p>
+                            </div>
+                        </div>
+                        <div class="question-actions">
+                            <button id="return-to-tiles-btn" class="action-button" onclick="returnToTiles()">
+                                <i class="fas fa-arrow-left"></i> العودة إلى اللوحة
+                            </button>
+                            <button class="action-button" onclick="revealAnswer()">
+                                <i class="fas fa-eye"></i> إظهار الإجابة
+                            </button>
+                        </div>
+                        <div class="team-award-buttons" style="display: none" id="award-buttons">
+                            <div class="award-team-container">
+                                <h3>منح النقاط للفريق:</h3>
+                                <div class="award-buttons">
+                                    <button class="action-button team1-award" onclick="awardPointsToTeam(0)">
+                                        <span id="award-team1-name">الفريق ١</span> 🏆
+                                    </button>
+                                    <button class="action-button team2-award" onclick="awardPointsToTeam(1)">
+                                        <span id="award-team2-name">الفريق ٢</span> 🏆
+                                    </button>
+                                    <button class="action-button no-award" onclick="noPointsAwarded()">
+                                        لا أحد ❌
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Team 2 Sidebar -->
+                <div class="team-sidebar">
+                    <div class="team-avatar" id="team2-avatar">🤖</div>
+                    <div class="team-name" id="team2-name">الفريق ٢</div>
+                    <div class="score-container">
+                        <button class="score-adjust minus" onclick="adjustScore(1, -10)">-</button>
+                        <div class="team-score" id="team2-score">0</div>
+                        <button class="score-adjust plus" onclick="adjustScore(1, 10)">+</button>
+                    </div>
+                    
+                    <!-- Add special abilities section -->
+                    <div class="special-abilities">
+                        <div class="ability-header">القدرات الخاصة:</div>
+                        <div class="ability-buttons">
+                            <button class="ability-btn" id="team2-chatgpt" onclick="useAbility(1, 'chatgpt')">
+                                <span class="ability-icon">🤖</span>
+                                ChatGPT
+                            </button>
+                            <button class="ability-btn" id="team2-double" onclick="useAbility(1, 'double')">
+                                <span class="ability-icon">2️⃣</span>
+                                نقاط مضاعفة
+                            </button>
+                            <button class="ability-btn" id="team2-google" onclick="useAbility(1, 'google')">
+                                <span class="ability-icon">🔍</span>
+                                بحث جوجل
+                            </button>
+                            <button class="ability-btn" id="team2-dismiss" onclick="useAbility(1, 'dismiss')">
+                                <span class="ability-icon">👋</span>
+                                استبعاد لاعب
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Players list -->
+                    <div class="players-header">اللاعبون:</div>
+                    <div class="players-list" id="team2-players-list">
+                        <!-- Players will be added dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <button id="exit-game-btn" class="action-button" onclick="exitGame()">
+                    <i class="fas fa-sign-out-alt"></i> إنهاء اللعبة
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Game state
+        let gameState = JSON.parse(localStorage.getItem('gameState')) || {
+            teams: [
+                { name: 'الفريق ١', players: [], score: 0, avatar: '😎', 
+                  abilities: { chatgpt: false, double: false, google: false, dismiss: false } },
+                { name: 'الفريق ٢', players: [], score: 0, avatar: '🤖', 
+                  abilities: { chatgpt: false, double: false, google: false, dismiss: false } }
+            ],
+            selectedCategories: [],
+            currentTeam: 0,
+            answeredQuestions: 0,
+            answeredCards: [],
+            usedQuestions: {},
+            currentQuestion: null,
+            gameActive: false
+        };
+
+        // Questions database
+              const questions = {
+  "التاريخ العالمي": [
+    { value: 100, question: "ما اسم المعاهدة التي أنهت حرب المائة عام بين إنجلترا وفرنسا؟", answer: "معاهدة أراس" },
+    { value: 100, question: "أي إمبراطور روماني بنى الجدار الشهير في بريطانيا؟", answer: "هادريان" },
+    { value: 100, question: "ما هي أقدم حضارة معروفة في بلاد ما بين النهرين؟", answer: "الحضارة السومرية" },
+    { value: 100, question: "في أي عام بدأت الثورة الأمريكية؟", answer: "1775" },
+    { value: 100, question: "من كان أول رئيس للولايات المتحدة الأمريكية؟", answer: "جورج واشنطن" },
+    { value: 100, question: "ما هي عاصمة الإمبراطورية البيزنطية؟", answer: "القسطنطينية" },
+    { value: 100, question: "في أي عام سقطت الإمبراطورية الرومانية الغربية؟", answer: "476 م" },
+    { value: 100, question: "من كان زعيم الثورة الفرنسية؟", answer: "ماكسيميليان روبسبير (من بين آخرين)" },
+    { value: 100, question: "ما هي المعركة التي هُزم فيها نابليون بونابرت نهائيًا؟", answer: "معركة واترلو" },
+    { value: 100, question: "في أي عام بدأت الحرب العالمية الأولى؟", answer: "1914" },
+    { value: 200, question: "من هو الفيلسوف الذي يُعتبر مؤسس الفلسفة الغربية؟", answer: "سقراط" },
+    { value: 200, question: "ما اسم الإمبراطورية التي حكمها جنكيز خان؟", answer: "الإمبراطورية المغولية" },
+    { value: 200, question: "في أي عام تم اكتشاف أمريكا بواسطة كريستوفر كولومبوس؟", answer: "1492" },
+    { value: 200, question: "من كان أول إمبراطور للصين الموحدة؟", answer: "تشين شي هوانغ" },
+    { value: 200, question: "ما هي الثورة التي أدت إلى قيام الجمهورية في فرنسا؟", answer: "الثورة الفرنسية" },
+    { value: 200, question: "في أي عام انتهت الحرب العالمية الثانية؟", answer: "1945" },
+    { value: 200, question: "من كان رئيس وزراء بريطانيا خلال الحرب العالمية الثانية؟", answer: "ونستون تشرشل" },
+    { value: 200, question: "ما اسم المعاهدة التي أنهت الحرب العالمية الأولى؟", answer: "معاهدة فرساي" },
+    { value: 200, question: "في أي عام تم توحيد ألمانيا؟", answer: "1871 (التوحيد الأول)، 1990 (إعادة التوحيد)" },
+    { value: 200, question: "من كان أول رائد فضاء يهبط على سطح القمر؟", answer: "نيل أرمسترونغ" },
+    { value: 300, question: "ما اسم الحضارة التي ازدهرت في وادي السند؟", answer: "حضارة وادي السند" },
+    { value: 300, question: "من هو الفيلسوف الذي كتب كتاب 'الجمهورية'؟", answer: "أفلاطون" },
+    { value: 300, question: "ما هي الحرب التي دارت بين أثينا وإسبرطة؟", answer: "الحرب البيلوبونيزية" },
+    { value: 300, question: "في أي عام تم بناء سور الصين العظيم؟", answer: "بدأ في القرن السابع قبل الميلاد واستمر بناؤه وتوسيعه لعدة قرون" },
+    { value: 300, question: "من كان مؤسس الإمبراطورية العثمانية؟", answer: "عثمان الأول" },
+    { value: 300, question: "ما هي الثورة التي أدت إلى قيام الاتحاد السوفيتي؟", answer: "الثورة الروسية" },
+    { value: 300, question: "في أي عام تم إسقاط جدار برلين؟", answer: "1989" },
+    { value: 300, question: "من كان زعيم حركة الحقوق المدنية في الولايات المتحدة؟", answer: "مارتن لوثر كينغ جونيور" },
+    { value: 300, question: "ما اسم الحرب التي دارت بين الولايات المتحدة والاتحاد السوفيتي بشكل غير مباشر؟", answer: "الحرب الباردة" },
+    { value: 300, question: "في أي عام تم تأسيس الأمم المتحدة؟", answer: "1945" },
+    { value: 400, question: "من هو الفيلسوف الذي يُعتبر رائد الوجودية؟", answer: "سورين كيركغور (يعتبره البعض رائدًا للوجودية)" },
+    { value: 400, question: "ما اسم الإمبراطورية التي حكمها الإسكندر الأكبر؟", answer: "الإمبراطورية المقدونية" },
+    { value: 400, question: "في أي عام تم توقيع إعلان الاستقلال الأمريكي؟", answer: "1776" },
+    { value: 400, question: "من كان أول إمبراطور لروما؟", answer: "أغسطس" },
+    { value: 400, question: "ما هي الثورة التي أدت إلى قيام الجمهورية في الصين؟", answer: "ثورة شينهاي" },
+    { value: 400, question: "في أي عام تم اغتيال الرئيس الأمريكي جون كينيدي؟", answer: "1963" },
+    { value: 400, question: "من كان رئيس جنوب أفريقيا الذي أنهى نظام الفصل العنصري؟", answer: "نيلسون مانديلا" },
+    { value: 400, question: "ما اسم الحرب التي دارت بين كوريا الشمالية وكوريا الجنوبية؟", answer: "الحرب الكورية" },
+    { value: 400, question: "في أي عام تم تفكيك الاتحاد السوفيتي؟", answer: "1991" },
+    { value: 400, question: "من كان أول رئيس لروسيا بعد انهيار الاتحاد السوفيتي؟", answer: "بوريس يلتسن" },
+    { value: 500, question: "ما اسم المفكر الذي صاغ مصطلح 'صراع الحضارات' عام 1993؟", answer: "صموئيل هنتنغتون" },
+    { value: 500, question: "من هو الفيلسوف الذي كتب كتاب 'نقد العقل المحض'؟", answer: "إيمانويل كانط" },
+    { value: 500, question: "ما اسم الإمبراطورية التي حكمها شارلمان؟", answer: "الإمبراطورية الكارولنجية" },
+    { value: 500, question: "في أي عام تم توقيع الميثاق الأعظم (ماغنا كارتا)؟", answer: "1215" },
+    { value: 500, question: "من كان أول خليفة للمسلمين بعد وفاة النبي محمد؟", answer: "أبو بكر الصديق" },
+    { value: 500, question: "ما هي الثورة التي أدت إلى قيام الجمهورية الإسلامية في إيران؟", answer: "الثورة الإسلامية الإيرانية" },
+    { value: 500, question: "في أي عام تم تأسيس الاتحاد الأوروبي؟", answer: "1993 (بموجب معاهدة ماستريخت، لكن جذوره تعود إلى 1957)" },
+    { value: 500, question: "من كان رئيس الوزراء الهندي الذي قاد حركة الاستقلال؟", answer: "جواهر لال نهرو" },
+    { value: 500, question: "ما اسم الحرب التي دارت بين بريطانيا والأرجنتين حول جزر فوكلاند؟", answer: "حرب الفوكلاند" },
+    { value: 500, question: "في أي عام تم انتخاب أول رئيس أسود للولايات المتحدة؟", answer: "2008" }
+  ],
+
+  "العلوم والطبيعة": [
+    { value: 100, question: "ما العنصر الكيميائي الوحيد السائل في درجة حرارة الغرفة؟", answer: "الزئبق" },
+    { value: 100, question: "ما اسم النظرية التي تربط الكتلة بانزياح الضوء الأحمر؟", answer: "تأثير ساكس-وولف" },
+    { value: 100, question: "ما هو أكبر عضو في جسم الإنسان؟", answer: "الجلد" },
+    { value: 100, question: "كم عدد الكواكب في المجموعة الشمسية؟", answer: "ثمانية" },
+    { value: 100, question: "ما هو العنصر الأكثر وفرة في القشرة الأرضية؟", answer: "الأكسجين" },
+    { value: 100, question: "ما هو أسرع حيوان بري؟", answer: "الفهد" },
+    { value: 100, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز H؟", answer: "الهيدروجين" },
+    { value: 100, question: "ما هي العملية التي تحول الماء السائل إلى بخار؟", answer: "التبخر" },
+    { value: 100, question: "ما هو اسم الغاز الذي يمثل النسبة الأكبر في الغلاف الجوي؟", answer: "النيتروجين" },
+    { value: 100, question: "ما هو اسم الوحدة الأساسية للحياة؟", answer: "الخلية" },
+    { value: 200, question: "ما اسم العالم الذي وضع قوانين الحركة؟", answer: "إسحاق نيوتن" },
+    { value: 200, question: "ما هي العملية التي تستخدمها النباتات لصنع غذائها؟", answer: "التمثيل الضوئي" },
+    { value: 200, question: "ما هو اسم الحمض النووي الذي يحمل المعلومات الوراثية؟", answer: "DNA" },
+    { value: 200, question: "ما هو اسم أكبر كوكب في المجموعة الشمسية؟", answer: "المشتري" },
+    { value: 200, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز O؟", answer: "الأكسجين" },
+    { value: 200, question: "ما هي العملية التي يتحول فيها الماء الصلب (الثلج) إلى بخار مباشرة؟", answer: "التسامي" },
+    { value: 200, question: "ما هو اسم الغاز الذي يسبب الاحتباس الحراري؟", answer: "ثاني أكسيد الكربون (وغازات أخرى)" },
+    { value: 200, question: "ما هو اسم الجزء من الدماغ المسؤول عن التوازن؟", answer: "المخيخ" },
+    { value: 200, question: "ما هو اسم أبعد كوكب عن الشمس في المجموعة الشمسية؟", answer: "نبتون" },
+    { value: 200, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Fe؟", answer: "الحديد" },
+    { value: 300, question: "ما اسم العالم الذي اكتشف البنسلين؟", answer: "ألكسندر فليمنغ" },
+    { value: 300, question: "ما هي العملية التي يتم فيها انقسام الخلية إلى خليتين متماثلتين؟", answer: "الانقسام المتساوي" },
+    { value: 300, question: "ما هو اسم الحمض النووي الذي يحمل التعليمات الوراثية للبروتينات؟", answer: "RNA" },
+    { value: 300, question: "ما هو اسم أقرب نجم إلى الأرض؟", answer: "الشمس" },
+    { value: 300, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Au؟", answer: "الذهب" },
+    { value: 300, question: "ما هي العملية التي يتحول فيها الماء السائل إلى جليد؟", answer: "التجمد" },
+    { value: 300, question: "ما هو اسم الغاز الذي يسبب تآكل طبقة الأوزون؟", answer: "الكلوروفلوروكربونات (CFCs)" },
+    { value: 300, question: "ما هو اسم الجزء من الدماغ المسؤول عن الذاكرة؟", answer: "الحُصين" },
+    { value: 300, question: "ما هو اسم أقرب مجرة إلى مجرتنا درب التبانة؟", answer: "أندروميدا" },
+    { value: 300, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Ag؟", answer: "الفضة" },
+    { value: 400, question: "ما اسم العالم الذي وضع نظرية التطور؟", answer: "تشارلز داروين" },
+    { value: 400, question: "ما هي العملية التي يتم فيها انقسام الخلية إلى أربع خلايا غير متماثلة؟", answer: "الانقسام الاختزالي" },
+    { value: 400, question: "ما هو اسم الجزيء الذي يحمل الطاقة في الخلية؟", answer: "ATP" },
+    { value: 400, question: "ما هو اسم أبعد نجم يمكن رؤيته بالعين المجردة؟", answer: "V762 Cas (متغير، لكنه يعتبر عمومًا الأبعد)" },
+    { value: 400, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز U؟", answer: "اليورانيوم" },
+    { value: 400, question: "ما هي العملية التي يتحول فيها الغاز إلى سائل؟", answer: "التكاثف" },
+    { value: 400, question: "ما هو اسم الغاز الذي يسبب ظاهرة البيوت الزجاجية؟", answer: "الميثان (وغازات أخرى)" },
+    { value: 400, question: "ما هو اسم الجزء من الدماغ المسؤول عن العواطف؟", answer: "اللوزة الدماغية" },
+    { value: 400, question: "ما هو اسم أبعد مجرة تم اكتشافها حتى الآن؟", answer: "GN-z11 (اعتبارًا من 2016، قد يكون هناك اكتشافات أحدث)" },
+    { value: 400, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Hg؟", answer: "الزئبق" },
+    { value: 500, question: "ما اسم الظاهرة الكمومية التي تسمح للجسيمات بالتأثير على بعضها عن بعد؟", answer: "التشابك الكمي" },
+    { value: 500, question: "ما اسم العالم الذي وضع نظرية النسبية؟", answer: "ألبرت أينشتاين" },
+    { value: 500, question: "ما هي العملية التي يتم فيها اتحاد نواتين ذريتين لتكوين نواة أثقل؟", answer: "الاندماج النووي" },
+    { value: 500, question: "ما هو اسم الجسيم دون الذري الذي يحمل شحنة سالبة؟", answer: "الإلكترون" },
+    { value: 500, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Pu؟", answer: "البلوتونيوم" },
+    { value: 500, question: "ما هي العملية التي يتحول فيها السائل إلى صلب؟", answer: "التصلب" },
+    { value: 500, question: "ما هو اسم الغاز الذي يسبب ظاهرة الشفق القطبي؟", answer: "الأكسجين والنيتروجين المتأين" },
+    { value: 500, question: "ما هو اسم الجزء من الدماغ المسؤول عن الوظائف العليا مثل التفكير؟", answer: "القشرة المخية" },
+    { value: 500, question: "ما هو اسم أصغر جسيم معروف في الكون؟", answer: "الكوارك (حاليًا، لكن قد يتغير مع الاكتشافات)" },
+    { value: 500, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Rn؟", answer: "الرادون" }
+  ],
+
+  "الثقافة الشعبية (قطر)": [
+    { value: 100, question: "ما اسم العملة الذهبية التي سُكت في عهد الشيخ جاسم بن محمد آل ثاني؟", answer: "المحبوب الذهبي" },
+    { value: 100, question: "في أي عام تم اكتشاف حقل الشمال للغاز الطبيعي؟", answer: "1971" },
+    { value: 100, question: "ما اسم القارب التقليدي المستخدم في الغوص على اللؤلؤ في قطر؟", answer: "البتيل" },
+    { value: 100, question: "ما اسم السوق التقليدي في الدوحة الذي أعيد بناؤه ليحاكي الأسواق القديمة؟", answer: "سوق واقف" },
+    { value: 100, question: "ما اسم الحيوان الوطني لدولة قطر؟", answer: "المها العربي" },
+        { value: 100, question: "ما اسم المهرجان السنوي الذي يقام في كتارا ويحتفي بالتراث البحري؟", answer: "مهرجان المحامل التقليدية" },
+    { value: 100, question: "ما اسم الرقصة الشعبية القطرية التي تؤدى بالسيوف؟", answer: "العرضة" },
+    { value: 100, question: "ما اسم الطبق القطري التقليدي المكون من الأرز واللحم أو الدجاج؟", answer: "المجبوس" },
+    { value: 100, question: "ما اسم القلعة التاريخية التي تقع في منطقة الزبارة؟", answer: "قلعة الزبارة" },
+    { value: 100, question: "ما اسم الجزيرة الاصطناعية في الدوحة التي تشبه اللؤلؤة؟", answer: "اللؤلؤة-قطر" },
+    { value: 200, question: "من هو المهندس المعماري الذي صمم متحف الفن الإسلامي في الدوحة؟", answer: "آي.إم. باي" },
+    { value: 200, question: "ما اسم المعاهدة التي أنهت النزاع الحدودي مع البحرين عام 2001؟", answer: "اتفاقية لاهاي" },
+    { value: 200, question: "ما اسم الشاعر القطري الذي يُلقب بـ 'شاعر الوطن'؟", answer: "مبارك بن سيف آل ثاني" },
+    { value: 200, question: "ما اسم الفيلم القطري الذي رُشح لجائزة الأوسكار عام 2021؟", answer: "الرجل الذي باع ظهره" },
+    { value: 200, question: "ما اسم المؤسسة الإعلامية القطرية التي تبث عالميًا؟", answer: "شبكة الجزيرة الإعلامية" },
+        { value: 200, question: "ما اسم المتحف الذي يقع في مبنى مطار الدوحة القديم؟", answer: "متحف قطر الوطني" },
+    { value: 200, question: "ما اسم السباق التقليدي الذي يقام في قطر باستخدام الإبل؟", answer: "سباق الهجن" },
+    { value: 200, question: "ما اسم المنطقة التي تشتهر بوجود التكوينات الصخرية الفريدة في قطر؟", answer: "زكريت" },
+    { value: 200, question: "ما اسم القناة المائية التي تفصل بين قطر والسعودية؟", answer: "خور العديد" },
+    { value: 200, question: "ما اسم المنطقة التي كانت مركزًا لصيد اللؤلؤ في قطر قديمًا؟", answer: "الخور" },
+    { value: 300, question: "ما اسم النظام التقليدي لإدارة المياه في واحة الشيحانية؟", answer: "نظام الأحواض المائية" },
+    { value: 300, question: "من هي أول قاضية قطريه في المحكمة العليا؟", answer: "الشيخة المحفوظة بنت عبد العزيز آل ثاني" },
+    { value: 300, question: "ما اسم الفنان التشكيلي القطري الذي يُعرف بأعماله المستوحاة من الخط العربي؟", answer: "يوسف أحمد" },
+    { value: 300, question: "ما اسم المسلسل القطري الذي حقق نجاحًا كبيرًا في التسعينيات؟", answer: "حكم البشر" },
+    { value: 300, question: "ما اسم الجائزة التي تمنحها قطر للإنجازات في مجال الثقافة والفنون؟", answer: "جائزة كتارا للرواية العربية" },
+        { value: 300, question: "ما اسم المهرجان السينمائي الذي يقام في الدوحة سنويًا؟", answer: "مهرجان أجيال السينمائي" },
+    { value: 300, question: "ما اسم الفرقة الموسيقية القطرية التي تمزج بين الموسيقى التقليدية والمعاصرة؟", answer: "فرقة قطر للموسيقى" },
+    { value: 300, question: "ما اسم المنطقة التي تشتهر بوجود أشجار القرم (المانغروف) في قطر؟", answer: "الذخيرة" },
+    { value: 300, question: "ما اسم أعلى قمة في قطر؟", answer: "قرين أبو البول" },
+    { value: 300, question: "ما اسم المنطقة التي توجد بها نقوش صخرية قديمة في قطر؟", answer: "الجساسية" },
+    { value: 400, question: "ما اسم المخطوطة القطرية من القرن 18 المحفوظة في برلين حول تاريخ الخليج؟", answer: "مخطوطة ابن غنام" },
+    { value: 400, question: "في أي عام أصدرت قطر أول عملة ورقية مستقلة؟", answer: "1973" },
+    { value: 400, question: "ما اسم الشاعرة القطرية التي تُعرف بـ 'شاعرة الخليج'؟", answer: "خلود المعلا" },
+    { value: 400, question: "ما اسم الفيلم الوثائقي القطري الذي يتناول تاريخ الغوص على اللؤلؤ؟", answer: "بنات النوخذة" },
+    { value: 400, question: "ما اسم المؤسسة التي تُعنى بتطوير التعليم في قطر؟", answer: "مؤسسة قطر للتربية والعلوم وتنمية المجتمع" },
+        { value: 400, question: "ما اسم المتحف الذي يضم مجموعة كبيرة من السيارات الكلاسيكية في قطر؟", answer: "متحف الشيخ فيصل بن قاسم آل ثاني" },
+    { value: 400, question: "ما اسم السباق التقليدي الذي يقام في قطر باستخدام الخيول العربية الأصيلة؟", answer: "سباق سيف سمو الأمير" },
+    { value: 400, question: "ما اسم المنطقة التي تشتهر بوجود الكثبان الرملية العالية في قطر؟", answer: "سيلين" },
+    { value: 400, question: "ما اسم المحمية الطبيعية التي تقع في شمال غرب قطر؟", answer: "محمية الريم" },
+    { value: 400, question: "ما اسم المنطقة التي توجد بها آثار لمستوطنة قديمة في قطر؟", answer: "مروب" },
+    { value: 500, question: "ما اسم الرمز السري الذي استخدمه تجار اللؤلؤ القطريون للتواصل؟", answer: "الرمزة" },
+    { value: 500, question: "من هو المؤرخ القطري الذي كتب 'تحفة النظار في غرائب الأمصار'؟", answer: "أحمد بن ماجد" },
+    { value: 500, question: "ما اسم الديوان الشعري الذي جمع قصائد الشيخ جاسم بن محمد آل ثاني؟", answer: "ديوان المؤسس" },
+    { value: 500, question: "ما اسم الفنان القطري الذي صمم شعار 'رؤية قطر الوطنية 2030'؟", answer: "سلمان المالك" },
+    { value: 500, question: "ما اسم المعركة التاريخية التي وقعت بين قطر والبحرين عام 1867؟", answer: "معركة الزبارة" },
+        { value: 500, question: "ما اسم أول صحيفة صدرت في قطر؟", answer: "جريدة العهد" },
+    { value: 500, question: "ما اسم أول بنك تأسس في قطر؟", answer: "البنك البريطاني للشرق الأوسط" },
+    { value: 500, question: "ما اسم أول مدرسة نظامية افتتحت في قطر؟", answer: "المدرسة الأثرية" },
+    { value: 500, question: "ما اسم أول مستشفى تم بناؤه في قطر؟", answer: "مستشفى الرميلة" },
+    { value: 500, question: "ما اسم أول شركة طيران وطنية في قطر؟", answer: "طيران الخليج (كانت مشتركة)" }
+  ],
+
+  "الجغرافيا": [
+    { value: 100, question: "ما هي أطول سلسلة جبال في العالم؟", answer: "جبال الأنديز" },
+    { value: 100, question: "ما هي أعمق نقطة في المحيطات؟", answer: "خندق ماريانا" },
+    { value: 100, question: "ما هي أكبر صحراء حارة في العالم؟", answer: "الصحراء الكبرى" },
+    { value: 100, question: "ما هي أعلى قمة جبلية في العالم؟", answer: "جبل إيفرست" },
+    { value: 100, question: "ما هو أطول نهر في العالم؟", answer: "نهر النيل (وإن كان هناك جدل حول هذا الأمر مع نهر الأمازون)" },
+    { value: 100, question: "ما هي أكبر بحيرة في العالم من حيث المساحة؟", answer: "بحر قزوين" },
+    { value: 100, question: "ما هي أصغر دولة في العالم من حيث المساحة؟", answer: "الفاتيكان" },
+    { value: 100, question: "ما هي أكبر دولة في العالم من حيث المساحة؟", answer: "روسيا" },
+    { value: 100, question: "ما هي القارة التي تقع فيها مصر؟", answer: "أفريقيا" },
+    { value: 100, question: "ما هي عاصمة أستراليا؟", answer: "كانبرا" },
+    { value: 200, question: "ما هو المضيق الذي يفصل بين قارتي آسيا وأمريكا الشمالية؟", answer: "مضيق بيرينغ" },
+    { value: 200, question: "ما هي الدولة التي تقع فيها مدينة مكة المكرمة؟", answer: "المملكة العربية السعودية" },
+    { value: 200, question: "ما هي أكبر جزيرة في العالم؟", answer: "جرينلاند" },
+    { value: 200, question: "ما هو النهر الذي يمر عبر مدينة باريس؟", answer: "نهر السين" },
+    { value: 200, question: "ما هي الدولة التي تقع فيها جبال الألب؟", answer: "عدة دول، منها سويسرا، فرنسا، إيطاليا، النمسا" },
+    { value: 200, question: "ما هو المحيط الذي يقع غرب الأمريكتين؟", answer: "المحيط الهادئ" },
+    { value: 200, question: "ما هي الدولة التي تقع فيها مدينة إسطنبول؟", answer: "تركيا" },
+    { value: 200, question: "ما هي أكبر دولة في أمريكا الجنوبية؟", answer: "البرازيل" },
+    { value: 200, question: "ما هي القارة التي تقع فيها جبال الهيمالايا؟", answer: "آسيا" },
+    { value: 200, question: "ما هي عاصمة اليابان؟", answer: "طوكيو" },
+    { value: 300, question: "ما هو البحر الذي يفصل بين قارتي أوروبا وأفريقيا؟", answer: "البحر الأبيض المتوسط" },
+    { value: 300, question: "ما هي الدولة التي تقع فيها مدينة القدس؟", answer: "محل نزاع، لكنها تقع تحت السيطرة الفعلية لإسرائيل" },
+    { value: 300, question: "ما هي ثاني أكبر جزيرة في العالم؟", answer: "غينيا الجديدة" },
+    { value: 300, question: "ما هو النهر الذي يمر عبر مدينة لندن؟", answer: "نهر التايمز" },
+    { value: 300, question: "ما هي الدولة التي تقع فيها جبال الروكي؟", answer: "الولايات المتحدة وكندا" },
+    { value: 300, question: "ما هو المحيط الذي يقع شرق أفريقيا؟", answer: "المحيط الهندي" },
+    { value: 300, question: "ما هي الدولة التي تقع فيها مدينة روما؟", answer: "إيطاليا" },
+    { value: 300, question: "ما هي ثاني أكبر دولة في أفريقيا؟", answer: "جمهورية الكونغو الديمقراطية" },
+    { value: 300, question: "ما هي القارة التي تقع فيها صحراء أتاكاما؟", answer: "أمريكا الجنوبية" },
+    { value: 300, question: "ما هي عاصمة الصين؟", answer: "بكين" },
+    { value: 400, question: "ما هو المضيق الذي يفصل بين قارتي أفريقيا وأوروبا؟", answer: "مضيق جبل طارق" },
+    { value: 400, question: "ما هي الدولة التي تقع فيها مدينة البتراء؟", answer: "الأردن" },
+    { value: 400, question: "ما هي ثالث أكبر جزيرة في العالم؟", answer: "بورنيو" },
+    { value: 400, question: "ما هو النهر الذي يمر عبر مدينة بغداد؟", answer: "نهر دجلة" },
+    { value: 400, question: "ما هي الدولة التي تقع فيها جبال الأنديز؟", answer: "عدة دول في أمريكا الجنوبية، منها تشيلي، الأرجنتين، بيرو، بوليفيا" },
+    { value: 400, question: "ما هو المحيط الذي يقع شمال روسيا؟", answer: "المحيط المتجمد الشمالي" },
+    { value: 400, question: "ما هي الدولة التي تقع فيها مدينة سيدني؟", answer: "أستراليا" },
+    { value: 400, question: "ما هي ثالث أكبر دولة في أمريكا الشمالية؟", answer: "المكسيك" },
+    { value: 400, question: "ما هي القارة التي تقع فيها بحيرة فيكتوريا؟", answer: "أفريقيا" },
+    { value: 400, question: "ما هي عاصمة الهند؟", answer: "نيودلهي" },
+    { value: 500, question: "ما هو البحر الذي يقع بين شبه الجزيرة العربية وإيران؟", answer: "الخليج العربي (أو الخليج الفارسي)" },
+    { value: 500, question: "ما هي الدولة التي تقع فيها مدينة كيب تاون؟", answer: "جنوب أفريقيا" },
+    { value: 500, question: "ما هي رابع أكبر جزيرة في العالم؟", answer: "مدغشقر" },
+    { value: 500, question: "ما هو النهر الذي يمر عبر مدينة القاهرة؟", answer: "نهر النيل" },
+    { value: 500, question: "ما هي الدولة التي تقع فيها جبال زاغروس؟", answer: "إيران والعراق" },
+    { value: 500, question: "ما هو المحيط الذي يقع جنوب آسيا؟", answer: "المحيط الهندي" },
+    { value: 500, question: "ما هي الدولة التي تقع فيها مدينة ريو دي جانيرو؟", answer: "البرازيل" },
+    { value: 500, question: "ما هي رابع أكبر دولة في العالم من حيث المساحة؟", answer: "الولايات المتحدة (أو الصين، حسب طريقة القياس)" },
+    { value: 500, question: "ما هي القارة التي تقع فيها صحراء كالاهاري؟", answer: "أفريقيا" },
+    { value: 500, question: "ما هي عاصمة كندا؟", answer: "أوتاوا" }
+  ],
+    "الرياضة والألعاب": [
+    { value: 100, question: "ما هي الرياضة التي يُطلق عليها 'رياضة الملوك'؟", answer: "سباق الخيل" },
+    { value: 100, question: "كم عدد اللاعبين في فريق كرة القدم؟", answer: "11" },
+    { value: 100, question: "ما هي الدولة التي فازت بأكبر عدد من بطولات كأس العالم لكرة القدم؟", answer: "البرازيل" },
+    { value: 100, question: "في أي رياضة يُستخدم مصطلح 'الضربة القاضية'؟", answer: "الملاكمة" },
+    { value: 100, question: "ما هي الرياضة التي تُلعب على ملعب عشبي وتستخدم كرة ومضرب؟", answer: "البيسبول" },
+    { value: 100, question: "ما هي الرياضة التي تُعرف بـ 'لعبة العمالقة'؟", answer: "كرة السلة" },
+    { value: 100, question: "كم عدد الأشواط في مباراة تنس فردي للرجال في البطولات الكبرى؟", answer: "5 أشواط (الأفضل من 5)" },
+    { value: 100, question: "ما هي الرياضة التي تُلعب على حلبة جليدية وتستخدم عصا وقرص؟", answer: "هوكي الجليد" },
+    { value: 100, question: "ما هي الرياضة التي تُعرف بـ 'أم الألعاب'؟", answer: "ألعاب القوى" },
+    { value: 100, question: "ما هي الدولة التي نشأت فيها رياضة الجودو؟", answer: "اليابان" },
+    { value: 200, question: "من هو اللاعب الذي يُعتبر أفضل لاعب كرة قدم في التاريخ؟", answer: "يعتمد على الرأي، لكن غالبًا ما يُذكر بيليه أو مارادونا أو ميسي أو كريستيانو رونالدو" },
+    { value: 200, question: "ما هي البطولة الكبرى في التنس التي تُلعب على الملاعب الرملية؟", answer: "بطولة فرنسا المفتوحة (رولان غاروس)" },
+    { value: 200, question: "في أي رياضة يُستخدم مصطلح 'الإرسال الساحق'؟", answer: "التنس" },
+    { value: 200, question: "ما هي الرياضة التي تُلعب في حوض سباحة؟", answer: "السباحة" },
+    { value: 200, question: "ما هي الرياضة التي تُعرف بـ 'رياضة النبلاء'؟", answer: "الجولف" },
+    { value: 200, question: "كم عدد اللاعبين في فريق كرة السلة؟", answer: "5" },
+    { value: 200, question: "ما هي الدولة التي فازت بكأس العالم لكرة القدم عام 2018؟", answer: "فرنسا" },
+    { value: 200, question: "في أي رياضة يُستخدم مصطلح 'الرمية الحرة'؟", answer: "كرة السلة" },
+    { value: 200, question: "ما هي الرياضة التي تُلعب على طاولة وتستخدم مضربين وكرة صغيرة؟", answer: "تنس الطاولة" },
+    { value: 200, question: "ما هي الدولة التي نشأت فيها رياضة الكاراتيه؟", answer: "اليابان" },
+    { value: 300, question: "من هو اللاعب الذي يحمل الرقم القياسي لأكبر عدد من الأهداف في تاريخ كرة القدم؟", answer: "يعتمد على المعايير، لكن غالبًا ما يُذكر جوزيف بيكان أو كريستيانو رونالدو" },
+    { value: 300, question: "ما هي البطولة الكبرى في التنس التي تُلعب على الملاعب العشبية؟", answer: "بطولة ويمبلدون" },
+    { value: 300, question: "في أي رياضة يُستخدم مصطلح 'السباعي'؟", answer: "ألعاب القوى" },
+    { value: 300, question: "ما هي الرياضة التي تُلعب في ملعب مغلق وتستخدم كرة ومضرب وشبكة؟", answer: "الاسكواش" },
+    { value: 300, question: "ما هي الرياضة التي تُعرف بـ 'رياضة العقل'؟", answer: "الشطرنج" },
+    { value: 300, question: "كم عدد اللاعبين في فريق الكرة الطائرة؟", answer: "6" },
+    { value: 300, question: "ما هي الدولة التي فازت بكأس العالم لكرة القدم عام 2014؟", answer: "ألمانيا" },
+    { value: 300, question: "في أي رياضة يُستخدم مصطلح 'الدانك'؟", answer: "كرة السلة" },
+    { value: 300, question: "ما هي الرياضة التي تُلعب على حلبة وتستخدم دراجات نارية؟", answer: "سباق الدراجات النارية" },
+    { value: 300, question: "ما هي الدولة التي نشأت فيها رياضة التايكوندو؟", answer: "كوريا" },
+    { value: 400, question: "من هو اللاعب الذي يُعتبر أفضل لاعب كرة سلة في التاريخ؟", answer: "يعتمد على الرأي، لكن غالبًا ما يُذكر مايكل جوردان أو ليبرون جيمس" },
+    { value: 400, question: "ما هي البطولة الكبرى في التنس التي تُلعب على الملاعب الصلبة؟", answer: "بطولة أمريكا المفتوحة وأستراليا المفتوحة" },
+    { value: 400, question: "في أي رياضة يُستخدم مصطلح 'العشاري'؟", answer: "ألعاب القوى" },
+    { value: 400, question: "ما هي الرياضة التي تُلعب في حلبة وتستخدم سيارات سباق؟", answer: "فورمولا 1 وغيرها من سباقات السيارات" },
+    { value: 400, question: "ما هي الرياضة التي تُعرف بـ 'رياضة الملوك' في إنجلترا؟", answer: "البولو" },
+    { value: 400, question: "كم عدد اللاعبين في فريق الهوكي؟", answer: "6 (على الجليد)" },
+    { value: 400, question: "ما هي الدولة التي فازت بكأس العالم لكرة القدم عام 2010؟", answer: "إسبانيا" },
+    { value: 400, question: "في أي رياضة يُستخدم مصطلح 'الهاتريك'؟", answer: "كرة القدم وهوكي الجليد" },
+    { value: 400, question: "ما هي الرياضة التي تُلعب على ملعب رملي وتستخدم كرة وشبكة؟", answer: "الكرة الطائرة الشاطئية" },
+    { value: 400, question: "ما هي الدولة التي نشأت فيها رياضة الكابادي؟", answer: "الهند" },
+    { value: 500, question: "من هو اللاعب الذي يحمل الرقم القياسي لأكبر عدد من الميداليات الذهبية الأولمبية؟", answer: "مايكل فيلبس (سباحة)" },
+    { value: 500, question: "ما هي البطولة الكبرى في الجولف التي تُعتبر الأقدم؟", answer: "البطولة المفتوحة (The Open Championship)" },
+    { value: 500, question: "في أي رياضة يُستخدم مصطلح 'الباركور'؟", answer: "الباركور (رياضة مستقلة)" },
+    { value: 500, question: "ما هي الرياضة التي تُلعب في حلبة وتستخدم زلاجات؟", answer: "التزلج على الجليد (بأنواعه)" },
+    { value: 500, question: "ما هي الرياضة التي تُعرف بـ 'رياضة الأثرياء'؟", answer: "رياضة الفروسية" },
+    { value: 500, question: "كم عدد اللاعبين في فريق الكريكيت؟", answer: "11" },
+    { value: 500, question: "ما هي الدولة التي فازت بأكبر عدد من بطولات كأس العالم للرجبي؟", answer: "نيوزيلندا وجنوب أفريقيا (3 مرات لكل منهما)" },
+    { value: 500, question: "في أي رياضة يُستخدم مصطلح 'الجراند سلام'؟", answer: "التنس والجولف" },
+    { value: 500, question: "ما هي الرياضة التي تُلعب على جبل وتستخدم لوح تزلج؟", answer: "التزلج على الجليد (Snowboarding)" },
+    { value: 500, question: "ما هي الدولة التي نشأت فيها رياضة السومو؟", answer: "اليابان" }
+  ],
+
+  "ليج أوف ليجندز": [
+    { value: 100, question: "ما هو اسم الخريطة الرئيسية في لعبة ليج أوف ليجندز؟", answer: "Summoner's Rift" },
+    { value: 100, question: "كم عدد الممرات (lanes) الموجودة في Summoner's Rift؟", answer: "3" },
+    { value: 100, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله قوة إضافية كبيرة؟", answer: "Baron Nashor" },
+    { value: 100, question: "ما هو اسم العملة المستخدمة لشراء الأبطال (champions) في اللعبة؟", answer: "Blue Essence (BE)" },
+    { value: 100, question: "ما هو الحد الأقصى للمستوى (level) الذي يمكن أن يصل إليه البطل في المباراة؟", answer: "18" },
+    { value: 100, question: "ما هو اسم التنين (dragon) الذي يمنح الفريق الذي يقتله زيادة في سرعة الحركة؟", answer: "Cloud Drake" },
+    { value: 100, question: "ما هو اسم العنصر (item) الذي يزيد من قوة الهجوم (attack damage) بشكل كبير؟", answer: "Infinity Edge" },
+    { value: 100, question: "ما هو اسم البطل (champion) الذي يستخدم القوس والسهم؟", answer: "Ashe" },
+    { value: 100, question: "ما هو اسم البطل الذي يستخدم السيف؟", answer: "Garen" },
+    { value: 100, question: "ما هو اسم البطل الذي يستخدم السحر؟", answer: "Ryze" },
+    { value: 200, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها Baron Nashor؟", answer: "Baron Pit" },
+    { value: 200, question: "كم عدد الأبراج (turrets) الموجودة في كل ممر في بداية المباراة؟", answer: "3" },
+    { value: 200, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله رؤية إضافية في الغابة؟", answer: "Rift Herald" },
+    { value: 200, question: "ما هو اسم العملة المستخدمة لشراء العناصر (items) أثناء المباراة؟", answer: "Gold" },
+    { value: 200, question: "ما هو اسم القدرة النهائية (ultimate ability) للبطل Ashe؟", answer: "Enchanted Crystal Arrow" },
+    { value: 200, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله زيادة في قوة الهجوم وقوة القدرة؟", answer: "Infernal Drake" },
+    { value: 200, question: "ما هو اسم العنصر الذي يزيد من قوة القدرة (ability power) بشكل كبير؟", answer: "Rabadon's Deathcap" },
+    { value: 200, question: "ما هو اسم البطل الذي يمكنه التحول إلى دب؟", answer: "Annie" },
+    { value: 200, question: "ما هو اسم البطل الذي يمكنه الاختفاء؟", answer: "Teemo" },
+    { value: 200, question: "ما هو اسم البطل الذي يمكنه إطلاق الصواريخ؟", answer: "Jinx" },
+    { value: 300, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها التنين (dragon)؟", answer: "Dragon Pit" },
+    { value: 300, question: "كم عدد المثبطات (inhibitors) الموجودة في كل قاعدة في بداية المباراة؟", answer: "3" },
+    { value: 300, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله درعًا إضافيًا ومقاومة سحرية؟", answer: "Mountain Drake" },
+    { value: 300, question: "ما هو اسم العنصر الذي يمنح صاحبه فرصة ثانية للحياة بعد الموت؟", answer: "Guardian Angel" },
+    { value: 300, question: "ما هو اسم القدرة النهائية للبطل Garen؟", answer: "Demacian Justice" },
+    { value: 300, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله زيادة في الصحة القصوى؟", answer: "Ocean Drake" },
+    { value: 300, question: "ما هو اسم العنصر الذي يزيد من سرعة الهجوم (attack speed) بشكل كبير؟", answer: "Phantom Dancer" },
+    { value: 300, question: "ما هو اسم البطل الذي يمكنه التحكم في الظلال؟", answer: "Zed" },
+    { value: 300, question: "ما هو اسم البطل الذي يمكنه إطلاق الليزر؟", answer: "Vel'Koz" },
+    { value: 300, question: "ما هو اسم البطل الذي يمكنه رمي الفؤوس؟", answer: "Draven" },
+    { value: 400, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها المتجر (shop)؟", answer: "Base" },
+    { value: 400, question: "كم عدد الأبراج الداخلية (inner turrets) الموجودة في كل قاعدة؟", answer: "2" },
+    { value: 400, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله زيادة في الضرر ضد الأبراج؟", answer: "Elder Dragon" },
+    { value: 400, question: "ما هو اسم العنصر الذي يقلل من تأثيرات التحكم في الحشود (crowd control)؟", answer: "Mercurial Scimitar" },
+    { value: 400, question: "ما هو اسم القدرة النهائية للبطل Zed؟", answer: "Death Mark" },
+    { value: 400, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله زيادة في الضرر الحقيقي؟", answer: "Elder Dragon" },
+    { value: 400, question: "ما هو اسم العنصر الذي يزيد من الاختراق السحري (magic penetration)؟", answer: "Void Staff" },
+    { value: 400, question: "ما هو اسم البطل الذي يمكنه استدعاء وحوش صغيرة؟", answer: "Malzahar" },
+    { value: 400, question: "ما هو اسم البطل الذي يمكنه القفز لمسافات طويلة؟", answer: "Kha'Zix" },
+    { value: 400, question: "ما هو اسم البطل الذي يمكنه رمي الشباك؟", answer: "Caitlyn" },
+    { value: 500, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها Nexus؟", answer: "Base" },
+    { value: 500, question: "كم عدد أبراج Nexus الموجودة في كل قاعدة؟", answer: "2" },
+    { value: 500, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله تأثيرًا مؤقتًا يزيد من قوة جميع الأتباع (minions) القريبين؟", answer: "Baron Nashor" },
+    { value: 500, question: "ما هو اسم العنصر الذي يمنح صاحبه درعًا وسحرًا إضافيًا بناءً على الضرر الذي يتلقاه؟", answer: "Gargoyle Stoneplate" },
+    { value: 500, question: "ما هو اسم القدرة النهائية للبطل Yasuo؟", answer: "Last Breath" },
+    { value: 500, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله تأثيرًا متزايدًا لكل تنين آخر تم قتله؟", answer: "Elder Dragon" },
+    { value: 500, question: "ما هو اسم العنصر الذي يزيد من الاختراق الدرعي (armor penetration)؟", answer: "Lord Dominik's Regards" },
+    { value: 500, question: "ما هو اسم البطل الذي يمكنه استدعاء جدار من الجليد؟", answer: "Anivia" },
+    { value: 500, question: "ما هو اسم البطل الذي يمكنه التحول إلى حيوانات مختلفة؟", answer: "Nidalee" },
+    { value: 500, question: "ما هو اسم البطل الذي يمكنه رمي القنابل؟", answer: "Ziggs" }
+  ],
+
+  "الفنون والأدب": [
+    { value: 100, question: "من هو الرسام الذي رسم لوحة 'الموناليزا'؟", answer: "ليوناردو دا فينشي" },
+    { value: 100, question: "من هو الكاتب الذي كتب مسرحية 'هاملت'؟", answer: "ويليام شكسبير" },
+    { value: 100, question: "ما هو اسم التمثال الشهير الذي يجسد امرأة بدون ذراعين؟", answer: "فينوس دي ميلو" },
+    { value: 100, question: "من هو المؤلف الذي كتب رواية 'دون كيشوت'؟", answer: "ميغيل دي ثيربانتس" },
+    { value: 100, question: "ما هو اسم القصيدة الملحمية التي كتبها هوميروس عن حرب طروادة؟", answer: "الإلياذة" },
+    { value: 100, question: "من هو النحات الذي نحت تمثال 'المفكر'؟", answer: "أوغست رودان" },
+    { value: 100, question: "من هو المؤلف الذي كتب رواية '1984'؟", answer: "جورج أورويل" },
+    { value: 100, question: "ما هو اسم اللوحة الشهيرة التي تصور ليلة مرصعة بالنجوم؟", answer: "ليلة النجوم (The Starry Night)" },
+    { value: 100, question: "من هو المؤلف الذي كتب رواية 'كبرياء وتحامل'؟", answer: "جين أوستن" },
+    { value: 100, question: "ما هو اسم المسرحية الشهيرة التي كتبها سوفوكليس عن ملك أوديب؟", answer: "أوديب ملكًا" },
+    { value: 200, question: "من هو الرسام الذي رسم لوحة 'إصرار الذاكرة' (الساعات الذائبة)؟", answer: "سلفادور دالي" },
+    { value: 200, question: "من هو الكاتب الذي كتب مسرحية 'روميو وجولييت'؟", answer: "ويليام شكسبير" },
+    { value: 200, question: "ما هو اسم التمثال الشهير الذي يجسد رجلاً عاريًا يفكر؟", answer: "المفكر (The Thinker)" },
+    { value: 200, question: "من هو المؤلف الذي كتب رواية 'مئة عام من العزلة'؟", answer: "غابرييل غارثيا ماركيث" },
+    { value: 200, question: "ما هو اسم القصيدة الملحمية التي كتبها هوميروس عن رحلة عودة أوديسيوس؟", answer: "الأوديسة" },
+    { value: 200, question: "من هو النحات الذي نحت تمثال 'داوود'؟", answer: "مايكل أنجلو" },
+    { value: 200, question: "من هو المؤلف الذي كتب رواية 'الأخوة كارامازوف'؟", answer: "فيودور دوستويفسكي" },
+    { value: 200, question: "ما هو اسم اللوحة الشهيرة التي تصور مشهدًا من الثورة الفرنسية؟", answer: "الحرية تقود الشعب (Liberty Leading the People)" },
+    { value: 200, question: "من هو المؤلف الذي كتب رواية 'الحرب والسلم'؟", answer: "ليو تولستوي" },
+    { value: 200, question: "ما هو اسم المسرحية الشهيرة التي كتبها آرثر ميلر عن محاكمات السحر؟", answer: "البوتقة (The Crucible)" },
+    { value: 300, question: "من هو الرسام الذي رسم لوحة 'غيرنيكا'؟", answer: "بابلو بيكاسو" },
+    { value: 300, question: "من هو الكاتب الذي كتب مسرحية 'ماكبث'؟", answer: "ويليام شكسبير" },
+    { value: 300, question: "ما هو اسم التمثال الشهير الذي يجسد إلهة الحب والجمال؟", answer: "أفروديت (فينوس)" },
+    { value: 300, question: "من هو المؤلف الذي كتب رواية 'البؤساء'؟", answer: "فيكتور هوغو" },
+    { value: 300, question: "ما هو اسم الملحمة الشعرية التي كتبها دانتي أليغييري؟", answer: "الكوميديا الإلهية" },
+    { value: 300, question: "من هو النحات الذي نحت تمثال 'القبلة'؟", answer: "أوغست رودان" },
+    { value: 300, question: "من هو المؤلف الذي كتب رواية 'الجريمة والعقاب'؟", answer: "فيودور دوستويفسكي" },
+    { value: 300, question: "ما هو اسم اللوحة الشهيرة التي تصور حقل قمح وغربان؟", answer: "حقل قمح مع غربان (Wheatfield with Crows)" },
+    { value: 300, question: "من هو المؤلف الذي كتب رواية 'غاتسبي العظيم'؟", answer: "فرانسيس سكوت فيتزجيرالد" },
+    { value: 300, question: "ما هو اسم المسرحية الشهيرة التي كتبها تينيسي وليامز عن عائلة جنوبية؟", answer: "عربة اسمها الرغبة (A Streetcar Named Desire)" },
+    { value: 400, question: "من هو الرسام الذي رسم لوحة 'الفتاة ذات القرط اللؤلؤي'؟", answer: "يوهانس فيرمير" },
+    { value: 400, question: "من هو الكاتب الذي كتب مسرحية 'عطيل'؟", answer: "ويليام شكسبير" },
+    { value: 400, question: "ما هو اسم التمثال الشهير الذي يجسد إله البحر؟", answer: "بوسيدون (نبتون)" },
+    { value: 400, question: "من هو المؤلف الذي كتب رواية 'الأمير الصغير'؟", answer: "أنطوان دو سانت إكزوبيري" },
+    { value: 400, question: "ما هو اسم الملحمة الشعرية التي كتبها جون ميلتون عن سقوط الإنسان؟", answer: "الفردوس المفقود (Paradise Lost)" },
+    { value: 400, question: "من هو النحات الذي نحت تمثال 'موسى'؟", answer: "مايكل أنجلو" },
+    { value: 400, question: "من هو المؤلف الذي كتب رواية 'مدام بوفاري'؟", answer: "غوستاف فلوبير" },
+    { value: 400, question: "ما هو اسم اللوحة الشهيرة التي تصور عشاء المسيح الأخير؟", answer: "العشاء الأخير (The Last Supper)" },
+    { value: 400, question: "من هو المؤلف الذي كتب رواية 'الصخب والعنف'؟", answer: "ويليام فوكنر" },
+    { value: 400, question: "ما هو اسم المسرحية الشهيرة التي كتبها صمويل بيكيت عن شخصين ينتظران؟", answer: "في انتظار غودو (Waiting for Godot)" },
+    { value: 500, question: "من هو الرسام الذي رسم لوحة 'الصرخة'؟", answer: "إدفارد مونك" },
+    { value: 500, question: "من هو الكاتب الذي كتب مسرحية 'الملك لير'؟", answer: "ويليام شكسبير" },
+    { value: 500, question: "ما هو اسم التمثال الشهير الذي يجسد إله الشمس؟", answer: "أبولو" },
+    { value: 500, question: "من هو المؤلف الذي كتب رواية 'يوليسيس'؟", answer: "جيمس جويس" },
+    { value: 500, question: "ما هو اسم الملحمة الشعرية التي كتبها فرجيل عن تأسيس روما؟", answer: "الإنياذة (The Aeneid)" },
+    { value: 500, question: "من هو النحات الذي نحت تمثال 'لاوكون وأبناؤه'؟", answer: "أجيساندروس وأثينودوروس وبوليدوروس (نحاتون من رودس)" },
+    { value: 500, question: "من هو المؤلف الذي كتب رواية 'البحث عن الزمن المفقود'؟", answer: "مارسيل بروست" },
+    { value: 500, question: "ما هو اسم اللوحة الشهيرة التي تصور حديقة زنابق الماء؟", answer: "زنابق الماء (Water Lilies) (سلسلة لوحات لكلود مونيه)" },
+    { value: 500, question: "من هو المؤلف الذي كتب رواية 'الأرض اليباب'؟", answer: "ت. س. إليوت" },
+    { value: 500, question: "ما هو اسم المسرحية الشهيرة التي كتبها ألبير كامو عن الطاعون؟", answer: "الطاعون (The Plague)" }
+  ],
+
+  "التكنولوجيا": [
+    { value: 100, question: "ما هو اختصار الإنترنت؟", answer: "الشبكة العنكبوتية العالمية (World Wide Web)" },
+    { value: 100, question: "من هو مؤسس شركة مايكروسوفت؟", answer: "بيل غيتس وبول ألين" },
+    { value: 100, question: "ما هو نظام التشغيل الأكثر استخدامًا في العالم؟", answer: "ويندوز (Windows)" },
+    { value: 100, question: "ما هو اسم محرك البحث الأكثر استخدامًا في العالم؟", answer: "جوجل (Google)" },
+    { value: 100, question: "ما هو اختصار البريد الإلكتروني؟", answer: "Electronic Mail" },
+    { value: 100, question: "من هو مؤسس شركة آبل؟", answer: "ستيف جوبز وستيف وزنياك ورونالد واين" },
+    { value: 100, question: "ما هو اسم أول هاتف محمول؟", answer: "موتورولا DynaTAC 8000x" },
+    { value: 100, question: "ما هو اختصار الذكاء الاصطناعي؟", answer: "Artificial Intelligence (AI)" },
+    { value: 100, question: "ما هو اسم أول قمر صناعي تم إطلاقه إلى الفضاء؟", answer: "سبوتنيك 1 (Sputnik 1)" },
+    { value: 100, question: "ما هو اسم أول جهاز كمبيوتر إلكتروني؟", answer: "ENIAC" },
+    { value: 200, question: "ما هو اسم لغة البرمجة الأكثر استخدامًا في العالم؟", answer: "يعتمد على التصنيف، لكن غالبًا ما يُذكر جافاسكريبت أو بايثون" },
+    { value: 200, question: "من هو مخترع شبكة الإنترنت؟", answer: "تيم بيرنرز لي" },
+    { value: 200, question: "ما هو نظام التشغيل الأكثر استخدامًا في الهواتف الذكية؟", answer: "أندرويد (Android)" },
+    { value: 200, question: "ما هو اسم أول متصفح ويب؟", answer: "WorldWideWeb (لاحقًا Nexus)" },
+    { value: 200, question: "ما هو اختصار الرسائل النصية القصيرة؟", answer: "Short Message Service (SMS)" },
+    { value: 200, question: "من هو مؤسس شركة أمازون؟", answer: "جيف بيزوس" },
+    { value: 200, question: "ما هو اسم أول لعبة فيديو؟", answer: "Tennis for Two" },
+    { value: 200, question: "ما هو اختصار الواقع الافتراضي؟", answer: "Virtual Reality (VR)" },
+    { value: 200, question: "ما هو اسم أول شبكة كمبيوتر؟", answer: "ARPANET" },
+    { value: 200, question: "ما هو اسم أول طابعة ليزر؟", answer: "Xerox 9700" },
+    { value: 300, question: "ما هو اسم أول لغة برمجة عالية المستوى؟", answer: "Fortran" },
+    { value: 300, question: "من هو مخترع البريد الإلكتروني؟", answer: "راي توملينسون" },
+    { value: 300, question: "ما هو نظام التشغيل مفتوح المصدر؟", answer: "لينكس (Linux)" },
+    { value: 300, question: "ما هو اسم أول محرك بحث؟", answer: "Archie" },
+    { value: 300, question: "ما هو اختصار الوسائط المتعددة؟", answer: "Multimedia" },
+    { value: 300, question: "من هو مؤسس شركة فيسبوك؟", answer: "مارك زوكربيرج وآخرون" },
+    { value: 300, question: "ما هو اسم أول لعبة فيديو تجارية ناجحة؟", answer: "Pong" },
+    { value: 300, question: "ما هو اختصار الواقع المعزز؟", answer: "Augmented Reality (AR)" },
+    { value: 300, question: "ما هو اسم أول شبكة اجتماعية؟", answer: "SixDegrees.com" },
+    { value: 300, question: "ما هو اسم أول طابعة ثلاثية الأبعاد؟", answer: "SLA-1 (من شركة 3D Systems)" },
+    { value: 400, question: "ما هو اسم أول لغة برمجة كائنية التوجه؟", answer: "Simula" },
+    { value: 400, question: "من هو مخترع الفأرة (الماوس)؟", answer: "دوغلاس إنجيلبارت" },
+    { value: 400, question: "ما هو نظام التشغيل الذي طورته شركة آبل؟", answer: "macOS (سابقًا Mac OS X)" },
+    { value: 400, question: "ما هو اسم أول محرك بحث يعتمد على خوارزمية PageRank؟", answer: "جوجل (Google)" },
+    { value: 400, question: "ما هو اختصار الرسائل الفورية؟", answer: "Instant Messaging (IM)" },
+    { value: 400, question: "من هو مؤسس شركة تسلا؟", answer: "إيلون ماسك وآخرون" },
+    { value: 400, question: "ما هو اسم أول لعبة فيديو ثلاثية الأبعاد؟", answer: "Battlezone (على الأرجح)" },
+    { value: 400, question: "ما هو اختصار إنترنت الأشياء؟", answer: "Internet of Things (IoT)" },
+    { value: 400, question: "ما هو اسم أول مدونة (blog)؟", answer: "Links.net (يعتبره البعض أول مدونة)" },
+    { value: 400, question: "ما هو اسم أول طائرة بدون طيار (درون)؟", answer: "Kettering Bug (أول طائرة بدون طيار عسكرية)" },
+    { value: 500, question: "ما هو اسم أول لغة برمجة تعتمد على المنطق؟", answer: "Prolog" },
+    { value: 500, question: "من هو مخترع القرص الصلب (Hard Disk)؟", answer: "رينولد جونسون (فريق في IBM)" },
+    { value: 500, question: "ما هو نظام التشغيل الذي طورته شركة جوجل؟", answer: "أندرويد (Android) و Chrome OS" },
+    { value: 500, question: "ما هو اسم أول محرك بحث يستخدم التعلم الآلي؟", answer: "من الصعب تحديده بدقة، لكن Google استخدمت تقنيات التعلم الآلي في وقت مبكر" },
+    { value: 500, question: "ما هو اختصار الشبكة الخاصة الافتراضية؟", answer: "Virtual Private Network (VPN)" },
+    { value: 500, question: "من هو مؤسس شركة سبيس إكس؟", answer: "إيلون ماسك" },
+    { value: 500, question: "ما هو اسم أول لعبة فيديو تعتمد على الواقع الافتراضي؟", answer: "Virtuality (مجموعة ألعاب)" },
+    { value: 500, question: "ما هو اختصار الحوسبة السحابية؟", answer: "لا يوجد اختصار رسمي شائع، لكن يُستخدم Cloud Computing" },
+    { value: 500, question: "ما هو اسم أول موقع للتجارة الإلكترونية؟", answer: "NetMarket (يعتبره البعض أول موقع للتجارة الإلكترونية الآمنة)" },
+    { value: 500, question: "ما هو اسم أول روبوت بشري؟", answer: "Elektro (من شركة Westinghouse)" }
+  ]
+};
+
+        // Initialize the setup screen
+        function initializeSetup() {
+            const setupScreen = document.querySelector('.setup-screen');
+            const gameScreen = document.querySelector('.game-screen');
+            
+            if (setupScreen) setupScreen.classList.add('active');
+            if (gameScreen) gameScreen.style.display = 'none';
+            
+            const selectedCountElement = document.getElementById('selected-count');
+            if (selectedCountElement) {
+                updateCategoryCount();
+            }
+            
+            gameState = {
+                teams: [
+                    { name: 'الفريق ١', players: [], score: 0, avatar: '😎',
+                      abilities: { chatgpt: false, double: false, google: false, dismiss: false } },
+                    { name: 'الفريق ٢', players: [], score: 0, avatar: '🤖',
+                      abilities: { chatgpt: false, double: false, google: false, dismiss: false } }
+                ],
+                selectedCategories: [],
+                currentTeam: 0,
+                answeredQuestions: 0,
+                totalQuestions: 0,
+                answeredCards: [],
+                usedQuestions: {},
+                currentQuestion: null,
+                gameActive: false
+            };
+            
+            if (document.getElementById('exit-game-btn')) {
+                document.getElementById('exit-game-btn').style.display = 'none';
+            }
+            
+            const categoryEmojis = {
+                "التاريخ العالمي": "🏛️",
+                "العلوم والطبيعة": "🔬",
+                "الثقافة الشعبية (قطر)": "🇶🇦",
+                "ليج أوف ليجندز": "🎮",
+                "الفنون والأدب": "🎨",
+                "الجغرافيا": "🌍",
+                "الرياضة والألعاب": "⚽"
+            };
+            
+            const categoryContainer = document.getElementById('categories-grid');
+            categoryContainer.innerHTML = '';
+            
+            Object.keys(questions).forEach(category => {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'category-item';
+                categoryElement.setAttribute('data-category', category);
+                
+                const emoji = categoryEmojis[category] || '❓';
+                categoryElement.innerHTML = `
+                    <div class="category-icon">${emoji}</div>
+                    <div class="category-name">${category}</div>
+                `;
+                
+                categoryElement.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    updateCategoryCount();
+                });
+                
+                categoryContainer.appendChild(categoryElement);
+            });
+            
+            updateCategoryCount();
+        }
+
+        // Start the game
+        function startGame() {
+            const selectedCategories = document.querySelectorAll('.category-item.selected');
+            if (selectedCategories.length < 3 || selectedCategories.length > 6) {
+                alert('الرجاء اختيار ٣-٦ فئات');
+                return;
+            }
+            
+            const team1Name = document.getElementById('team1-name').value.trim() || 'الفريق ١';
+            const team2Name = document.getElementById('team2-name').value.trim() || 'الفريق ٢';
+            
+            gameState.teams[0].name = team1Name;
+            gameState.teams[1].name = team2Name;
+            
+            if (!gameState.teams[0].avatar) gameState.teams[0].avatar = '😎';
+            if (!gameState.teams[1].avatar) gameState.teams[1].avatar = '🤖';
+
+            for (let i = 1; i <= 2; i++) {
+                const players = Array.from(document.querySelectorAll(`#team${i}-players .player-input`))
+                .map(input => input.value.trim())
+                .filter(name => name !== '');
+            
+                if (players.length < 2) {
+                    alert(`الفريق ${i} يجب أن يحتوي على لاعبين على الأقل`);
+                    return;
+                }
+            
+                gameState.teams[i-1].players = players;
+            }
+
+            gameState.selectedCategories = Array.from(selectedCategories).map(cat => cat.dataset.category);
+            gameState.totalQuestions = gameState.selectedCategories.length * 5;
+            gameState.answeredQuestions = 0;
+            gameState.answeredCards = [];
+            gameState.gameActive = true;
+            
+            document.querySelector('.setup-screen').classList.remove('active');
+            document.querySelector('.game-screen').style.display = 'block';
+            
+            buildGameBoard();
+            updateTeamDisplays();
+            
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        // Build the game board
+        function buildGameBoard() {
+            const gameBoard = document.getElementById('game-board');
+            gameBoard.innerHTML = '';
+            
+            gameState.selectedCategories.forEach(category => {
+                const categoryCol = document.createElement('div');
+                categoryCol.className = 'category-column';
+                
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.textContent = category;
+                categoryCol.appendChild(categoryHeader);
+                
+                [100, 200, 300, 400, 500].forEach(value => {
+                    const card = document.createElement('div');
+                    card.className = 'value-card';
+                    card.textContent = value;
+                    
+                    if (gameState.answeredCards.includes(`${category}-${value}`)) {
+                        card.classList.add('answered');
+                    } else {
+                        card.addEventListener('click', () => showQuestion(category, value));
+                    }
+                    
+                    card.setAttribute('data-category', category);
+                    card.setAttribute('data-value', value);
+                    
+                    categoryCol.appendChild(card);
+                });
+                
+                gameBoard.appendChild(categoryCol);
+            });
+        }
+
+        // Update team displays
+        function updateTeamDisplays() {
+            document.getElementById('team1-avatar').textContent = gameState.teams[0].avatar;
+            document.getElementById('team2-avatar').textContent = gameState.teams[1].avatar;
+            document.getElementById('team1-name').textContent = gameState.teams[0].name;
+            document.getElementById('team2-name').textContent = gameState.teams[1].name;
+            document.getElementById('team1-score').textContent = gameState.teams[0].score;
+            document.getElementById('team2-score').textContent = gameState.teams[1].score;
+            
+            // Update player lists
+            updatePlayersList(0);
+            updatePlayersList(1);
+            
+            // Update ability buttons
+            updateAbilityButtons();
+            
+            if (document.getElementById('award-team1-name')) {
+                document.getElementById('award-team1-name').textContent = gameState.teams[0].name;
+            }
+            if (document.getElementById('award-team2-name')) {
+                document.getElementById('award-team2-name').textContent = gameState.teams[1].name;
+            }
+        }
+
+        // New function to update players list
+        function updatePlayersList(teamIndex) {
+            const playersListElement = document.getElementById(`team${teamIndex+1}-players-list`);
+            if (playersListElement) {
+                playersListElement.innerHTML = '';
+                
+                // Create player items
+                gameState.teams[teamIndex].players.forEach(playerName => {
+                    const playerItem = document.createElement('div');
+                    playerItem.className = 'player-item';
+                    playerItem.textContent = playerName;
+                    playersListElement.appendChild(playerItem);
+                });
+            }
+        }
+
+        // Show question
+        function showQuestion(category, value) {
+            const questionElements = [
+                document.getElementById('game-board'),
+                document.getElementById('question-screen'),
+                document.getElementById('question-category'),
+                document.getElementById('question-value'),
+                document.getElementById('question-text'),
+                document.getElementById('answer-text'),
+                document.getElementById('answer-display'),
+                document.getElementById('return-to-tiles-btn')
+            ];
+            
+            if (questionElements.every(el => el)) {
+                const question = getRandomQuestion(category, value);
+                
+                gameState.currentQuestion = {
+                    category: category,
+                    value: value,
+                    question: question.question,
+                    answer: question.answer,
+                    answered: false
+                };
+                
+                document.getElementById('question-category').textContent = category;
+                document.getElementById('question-value').textContent = value;
+                document.getElementById('question-text').textContent = question.question;
+                document.getElementById('answer-text').textContent = question.answer;
+                document.getElementById('answer-display').style.display = 'none';
+                
+                document.getElementById('question-screen').style.display = 'block';
+                document.getElementById('game-board').style.display = 'none';
+                
+                document.getElementById('return-to-tiles-btn').style.display = 'inline-block';
+                
+                document.getElementById('award-buttons').style.display = 'none';
+                
+                document.getElementById('award-team1-name').textContent = gameState.teams[0].name;
+                document.getElementById('award-team2-name').textContent = gameState.teams[1].name;
+                
+                startTimer(gameState.teams[gameState.currentTeam].name);
+                
+                localStorage.setItem('gameState', JSON.stringify(gameState));
+            } else {
+                console.error('Some question screen elements are missing');
+            }
+        }
+
+        // Award points to team
+        function awardPointsToTeam(teamIndex) {
+            if (!gameState.currentQuestion || !gameState.currentQuestion.answered) {
+                alert('❗ الرجاء إظهار الإجابة أولاً');
+                return;
+            }
+            
+            const awardButtons = document.querySelectorAll('.team1-award, .team2-award, .no-award');
+            awardButtons.forEach(button => {
+                button.disabled = true;
+                button.style.opacity = '0.5';
+                button.style.cursor = 'not-allowed';
+            });
+            
+            let pointValue = parseInt(gameState.currentQuestion.value);
+            
+            // Check if double points is active for this team
+            if (gameState.teams[teamIndex].doublePointsActive) {
+                pointValue *= 2;
+                gameState.teams[teamIndex].doublePointsActive = false;
+                showAbilityFeedback(`${gameState.teams[teamIndex].name} حصل على ${pointValue} نقطة (مضاعفة)!`);
+            }
+            
+            gameState.teams[teamIndex].score += pointValue;
+            
+            showFeedback(true, gameState.teams[teamIndex].name);
+            
+            updateScores();
+            
+            markQuestionAsAnswered();
+            
+            // Automatically return to the game board after awarding points
+            setTimeout(() => {
+                returnToTiles();
+            }, 2000); // 2-second delay for better user experience
+        }
+
+        // No points awarded
+        function noPointsAwarded() {
+            const awardButtons = document.querySelectorAll('.team1-award, .team2-award, .no-award');
+            awardButtons.forEach(button => {
+                button.disabled = true;
+                button.style.opacity = '0.5';
+                button.style.cursor = 'not-allowed';
+            });
+            
+            showFeedback(false);
+            
+            markQuestionAsAnswered();
+            
+            // Automatically return to the game board after no points are awarded
+            setTimeout(() => {
+                returnToTiles();
+            }, 2000); // 2-second delay for better user experience
+        }
+
+        // Return to tiles
+        function returnToTiles() {
+            const questionScreen = document.getElementById('question-screen');
+            const gameBoard = document.getElementById('game-board');
+            const awardButtons = document.getElementById('award-buttons');
+            
+            if (questionScreen) questionScreen.style.display = 'none';
+            if (gameBoard) gameBoard.style.display = 'grid';
+            if (awardButtons) awardButtons.style.display = 'none';
+            
+            if (gameState.currentQuestion && gameState.currentQuestion.answered) {
+                const category = gameState.currentQuestion.category;
+                const value = gameState.currentQuestion.value;
+                
+                if (!gameState.answeredCards.includes(`${category}-${value}`)) {
+                    gameState.answeredCards.push(`${category}-${value}`);
+                    gameState.answeredQuestions++;
+                }
+                
+                updateAnsweredCards();
+            }
+            
+            const awardBtns = document.querySelectorAll('.team1-award, .team2-award, .no-award');
+            awardBtns.forEach(button => {
+                button.disabled = false;
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+            });
+            
+            gameState.currentQuestion = null;
+            stopTimer();
+            
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        // Update answered cards
+        function updateAnsweredCards() {
+            for (const cardId of gameState.answeredCards) {
+                const [category, value] = cardId.split('-');
+                
+                const cards = document.querySelectorAll('.value-card');
+                
+                for (let card of cards) {
+                    const cardCategory = card.getAttribute('data-category');
+                    const cardValue = card.getAttribute('data-value');
+                    
+                    if (cardCategory === category && cardValue === value) {
+                        card.classList.add('answered');
+                        
+                        const clone = card.cloneNode(true);
+                        card.parentNode.replaceChild(clone, card);
+                    }
+                }
+            }
+            
+            if (gameState.answeredQuestions >= gameState.totalQuestions) {
+                const winner = gameState.teams[0].score > gameState.teams[1].score ? 0 : 
+                              gameState.teams[0].score < gameState.teams[1].score ? 1 : -1;
+                
+                let message = '';
+                if (winner === -1) {
+                    message = '🤝 تعادل!';
+                } else {
+                    message = `🏆 ${gameState.teams[winner].name} فاز(ت) بالمسابقة!`;
+                }
+                
+                setTimeout(() => {
+                    alert(message);
+                }, 500);
+            }
+        }
+
+        // Show feedback
+        function showFeedback(isCorrect, teamName = '') {
+            const feedback = document.createElement('div');
+            feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            
+            if (isCorrect && teamName) {
+                feedback.textContent = `✅ ${teamName} حصل على النقاط!`;
+            } else if (!isCorrect) {
+                feedback.textContent = '❌ لم يحصل أحد على النقاط!';
+            }
+            
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(feedback);
+                }, 300);
+            }, 1500);
+            
+            if (isCorrect) {
+                for (let i = 0; i < 30; i++) {
+                    createConfetti();
+                }
+            }
+        }
+
+        // Create confetti
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti-piece';
+            confetti.style.left = `${Math.random() * 100}%`;
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDuration = `${0.5 + Math.random()}s`;
+            
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                document.body.removeChild(confetti);
+            }, 1500);
+        }
+
+        // Adjust score
+        function adjustScore(teamIndex, amount) {
+            gameState.teams[teamIndex].score += amount;
+            
+            if (gameState.teams[teamIndex].score < 0) {
+                gameState.teams[teamIndex].score = 0;
+            }
+            
+            document.getElementById(`team${teamIndex+1}-score`).textContent = gameState.teams[teamIndex].score;
+            
+            document.getElementById(`team${teamIndex+1}-score`).classList.add('updated');
+            setTimeout(() => {
+                document.getElementById(`team${teamIndex+1}-score`).classList.remove('updated');
+            }, 1000);
+            
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        // Go home
+        function goHome() {
+            if (confirm('Return to setup? This will reset the current game.')) {
+                localStorage.removeItem('gameState');
+                location.reload();
+            }
+        }
+
+        // Team emojis
+        const teamEmojis = ['😎', '🤖', '👻', '🦁', '🐯', '🐶', '🦊', '🦄', '🐸', '🦜', '🦩', '🦈'];
+
+        // Get random emoji
+        function getRandomEmoji() {
+            return teamEmojis[Math.floor(Math.random() * teamEmojis.length)];
+        }
+
+        // Refresh team avatar
+        function refreshTeamAvatar(teamNum) {
+            const newEmoji = getRandomEmoji();
+            gameState.teams[teamNum-1].avatar = newEmoji;
+            
+            const avatar = document.querySelector(`#team${teamNum}-avatar`);
+            if (avatar) {
+                avatar.textContent = newEmoji;
+            }
+        }
+
+        // Initialize the game
+        document.addEventListener('DOMContentLoaded', initializeSetup);
+
+        // Get random question
+        function getRandomQuestion(category, value) {
+            const questionsOfValue = questions[category].filter(q => q.value === parseInt(value));
+            
+            if (questionsOfValue.length === 0) {
+                console.error('No questions found for', category, value);
+                return {
+                    question: "لا توجد أسئلة متاحة في هذه الفئة والقيمة",
+                    answer: "غير متاح"
+                };
+            }
+            
+            const randomIndex = Math.floor(Math.random() * questionsOfValue.length);
+            return questionsOfValue[randomIndex];
+        }
+
+        // Update category count
+        function updateCategoryCount() {
+            const selectedCount = document.querySelectorAll('.category-item.selected').length;
+            document.getElementById('selected-count').textContent = selectedCount;
+        }
+
+        // Update scores
+        function updateScores() {
+            document.getElementById('team1-score').textContent = gameState.teams[0].score;
+            document.getElementById('team2-score').textContent = gameState.teams[1].score;
+
+            if (gameState.currentQuestion) {
+                const updatedTeam = gameState.teams.findIndex(team => 
+                    team.score > parseInt(document.getElementById(`team${team+1}-score`).textContent));
+                
+                if (updatedTeam >= 0) {
+                    document.getElementById(`team${updatedTeam+1}-score`).classList.add('updated');
+                    
+                    setTimeout(() => {
+                        document.getElementById(`team${updatedTeam+1}-score`).classList.remove('updated');
+                    }, 1000);
+                }
+            }
+        }
+
+        // Reveal answer
+        function revealAnswer() {
+            if (!gameState.currentQuestion) return;
+            
+            document.getElementById('answer-display').style.display = 'block';
+            document.getElementById('answer-text').textContent = gameState.currentQuestion.answer;
+            
+            document.getElementById('award-buttons').style.display = 'block';
+            
+            gameState.currentQuestion.answered = true;
+            
+            stopTimer();
+        }
+
+        // Timer functionality
+        let timerInterval;
+        let currentTimerSeconds = 30;
+        let currentTimerTeam = 0;
+
+        function startTimer(teamName) {
+            if (!teamName) {
+                teamName = gameState.teams[currentTimerTeam].name;
+            }
+            
+            currentTimerSeconds = 30;
+            clearInterval(timerInterval);
+            
+            const timerElement = document.getElementById('question-timer');
+            if (timerElement) {
+                timerElement.style.display = 'block';
+                timerElement.innerHTML = `<span class="timer-team">${teamName}</span>: <span class="timer-value">${currentTimerSeconds}</span>`;
+                
+                timerInterval = setInterval(function() {
+                    currentTimerSeconds--;
+                    const timerValueElement = document.querySelector('.timer-value');
+                    if (timerValueElement) {
+                        timerValueElement.textContent = currentTimerSeconds;
+                    }
+                    
+                    if (currentTimerSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        
+                        if (currentTimerTeam === 0) {
+                            currentTimerTeam = 1;
+                            startTimer(gameState.teams[1].name);
+                        } else {
+                            currentTimerTeam = 0;
+                            if (timerElement) {
+                                timerElement.innerHTML = 'انتهى الوقت!';
+                                setTimeout(() => {
+                                    timerElement.style.display = 'none';
+                                }, 2000);
+                            }
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            currentTimerTeam = 0;
+            const timerElement = document.getElementById('question-timer');
+            if (timerElement) {
+                timerElement.style.display = 'none';
+            }
+        }
+
+        // Exit the game
+        function exitGame() {
+            if (confirm('هل أنت متأكد من الخروج من اللعبة؟ سيتم حذف جميع البيانات.')) {
+                localStorage.removeItem('gameState');
+                location.reload();
+            }
+        }
+
+        // Add player function - this was missing
+        function addPlayer(teamNum) {
+            const teamPlayersContainer = document.getElementById(`team${teamNum}-players`);
+            if (teamPlayersContainer) {
+                const playerInputs = teamPlayersContainer.querySelectorAll('.player-input');
+                
+                // Limit to maximum 8 players per team
+                if (playerInputs.length >= 8) {
+                    alert(`الحد الأقصى لعدد اللاعبين في الفريق هو 8`);
+                    return;
+                }
+                
+                const newInput = document.createElement('input');
+                newInput.type = 'text';
+                newInput.className = 'player-input';
+                newInput.placeholder = 'اسم اللاعب';
+                
+                teamPlayersContainer.appendChild(newInput);
+            }
+        }
+
+        // Add the function to use abilities
+        function useAbility(teamIndex, abilityType) {
+            // Check if ability is already used
+            if (gameState.teams[teamIndex].abilities[abilityType]) {
+                alert('لقد استخدمت هذه القدرة بالفعل');
+                return;
+            }
+            
+            // Mark ability as used
+            gameState.teams[teamIndex].abilities[abilityType] = true;
+            
+            // Disable the button
+            document.getElementById(`team${teamIndex+1}-${abilityType}`).disabled = true;
+            
+            let message = '';
+            
+            switch (abilityType) {
+                case 'chatgpt':
+                    message = `${gameState.teams[teamIndex].name} يستخدم مساعدة ChatGPT!`;
+                    break;
+                case 'double':
+                    message = `${gameState.teams[teamIndex].name} سيحصل على نقاط مضاعفة للسؤال التالي!`;
+                    // Set active double points for this team
+                    gameState.teams[teamIndex].doublePointsActive = true;
+                    break;
+                case 'google':
+                    message = `${gameState.teams[teamIndex].name} يستخدم بحث جوجل!`;
+                    break;
+                case 'dismiss':
+                    message = `${gameState.teams[teamIndex].name} يستبعد لاعبًا من الفريق الآخر!`;
+                    break;
+            }
+            
+            // Show feedback
+            showAbilityFeedback(message);
+            
+            // Save game state
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        // Function to show ability feedback
+        function showAbilityFeedback(message) {
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback';
+            feedback.style.backgroundColor = '#9c27b0'; // Purple color
+            feedback.style.color = 'white';
+            feedback.textContent = message;
+            
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(feedback);
+                }, 300);
+            }, 2000);
+        }
+
+        // Add function to update ability buttons state
+        function updateAbilityButtons() {
+            for (let i = 0; i < 2; i++) {
+                for (const ability of ['chatgpt', 'double', 'google', 'dismiss']) {
+                    const btn = document.getElementById(`team${i+1}-${ability}`);
+                    if (btn) {
+                        btn.disabled = gameState.teams[i].abilities[ability];
+                    }
+                }
+            }
+        }
+
+        // Music control functions
+        document.addEventListener('DOMContentLoaded', function() {
+            const musicToggle = document.getElementById('music-toggle');
+            const backgroundMusic = document.getElementById('background-music');
+            
+            // Check if music was previously muted
+            const isMuted = localStorage.getItem('musicMuted') === 'true';
+            
+            // Set initial state
+            backgroundMusic.muted = isMuted;
+            if (isMuted) {
+                musicToggle.classList.add('muted');
+                musicToggle.querySelector('.music-icon').textContent = '🔇';
+            }
+            
+            // Start playing music (browsers require user interaction for autoplay)
+            musicToggle.addEventListener('click', function() {
+                // If this is the first click, start playing
+                if (backgroundMusic.paused) {
+                    backgroundMusic.play().catch(e => console.log('Play failed:', e));
+                }
+                
+                // Toggle mute state
+                backgroundMusic.muted = !backgroundMusic.muted;
+                
+                // Update button appearance
+                if (backgroundMusic.muted) {
+                    musicToggle.classList.add('muted');
+                    musicToggle.querySelector('.music-icon').textContent = '🔇';
+                } else {
+                    musicToggle.classList.remove('muted');
+                    musicToggle.querySelector('.music-icon').textContent = '🔊';
+                }
+                
+                // Save preference to localStorage
+                localStorage.setItem('musicMuted', backgroundMusic.muted);
+            });
+            
+            // Try to start music on page click as a fallback (for browsers with strict autoplay policies)
+            document.body.addEventListener('click', function bodyClick() {
+                if (backgroundMusic.paused && !backgroundMusic.muted) {
+                    backgroundMusic.play().catch(e => console.log('Autoplay failed:', e));
+                }
+                document.body.removeEventListener('click', bodyClick);
+            }, { once: true });
+        });
+    </script>
+</body>
+</html>
