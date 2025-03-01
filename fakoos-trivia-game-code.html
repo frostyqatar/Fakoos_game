@@ -10,12 +10,14 @@
             --secondary-color: #7b1fa2;
             --accent-color: #e91e63;
             --light-color: #f3e5f5;
-            --dark-color: #1a1a1a;
+            --dark-color: #2d2d2d;
             --correct-color: #4caf50;
             --incorrect-color: #f44336;
             --primary-gradient: linear-gradient(135deg, #6520a0, #8b44da);
-            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            --hover-transform: translateY(-2px);
+            --card-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            --hover-transform: translateY(-3px);
+            --character-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --button-gradient: linear-gradient(to right, #ff758c, #ff7eb3);
         }
         
         * {
@@ -26,9 +28,10 @@
         }
         
         body {
-            background-color: var(--dark-color);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
             color: white;
             min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         header {
@@ -236,68 +239,69 @@
 
         /* Updated team sidebar with players list */
         .team-sidebar {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.07);
             padding: 1.5rem;
-            border-radius: 10px;
+            border-radius: 18px;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            max-height: 600px;
-            overflow-y: auto;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         /* Add styles for special abilities */
         .special-abilities {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
             width: 100%;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         
         .ability-header {
+            font-size: 1.2rem;
             font-weight: bold;
-            color: var(--accent-color);
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
+            margin-bottom: 10px;
+            color: #ffffff;
         }
         
         .ability-buttons {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            width: 100%;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
         }
         
         .ability-btn {
-            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
-            border-radius: 5px;
-            background-color: var(--secondary-color);
+            border-radius: 10px;
+            padding: 8px;
             color: white;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 0.9rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
         .ability-btn:hover:not(:disabled) {
-            transform: var(--hover-transform);
-            background-color: var(--accent-color);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
         
         .ability-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            background-color: #555;
         }
         
         .ability-icon {
-            font-size: 1.2rem;
-            margin-bottom: 0.3rem;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
         }
 
         .players-header {
@@ -338,8 +342,23 @@
         }
 
         .team-avatar {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 3.5rem;
+            background: var(--primary-gradient);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            box-shadow: var(--character-shadow);
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s ease;
+        }
+
+        .team-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .team-score {
@@ -352,45 +371,95 @@
         .game-board {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
+            gap: 15px;
+            margin-top: 1.5rem;
+            perspective: 1000px;
         }
 
         .category-column {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .category-column:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
         }
 
         .category-header {
-            background-color: var(--secondary-color);
-            padding: 1rem;
-            border-radius: 10px 10px 0 0;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
             text-align: center;
             font-weight: bold;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .value-card {
-            background-color: var(--accent-color);
+            background: linear-gradient(45deg, #303f9f, #5c6bc0);
             color: white;
-            padding: 1.5rem;
-            border-radius: 10px;
+            padding: 20px 15px;
+            margin: 10px 0;
+            border-radius: 15px;
             text-align: center;
             font-size: 1.5rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            transform-style: preserve-3d;
         }
 
         .value-card:hover {
-            transform: var(--hover-transform);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            transform: var(--hover-transform) scale(1.03);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .value-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+
+        .value-card:hover::before {
+            animation: shine 1.5s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+                top: -100%;
+            }
+            100% {
+                left: 100%;
+                top: 100%;
+            }
         }
 
         .value-card.answered {
-            background-color: #333;
-            cursor: not-allowed;
-            color: rgba(255, 255, 255, 0.3);
+            background: rgba(100, 100, 100, 0.3);
+            color: rgba(255, 255, 255, 0.5);
+            box-shadow: none;
+            transform: none;
+            cursor: default;
+        }
+
+        .value-card.answered::before {
+            display: none;
         }
 
         .turn-indicator {
@@ -432,12 +501,14 @@
         
         /* Question Screen */
         .question-screen {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, #303f9f, #1a237e);
             padding: 2rem;
-            border-radius: 10px;
-            margin: 2rem auto;
-            max-width: 800px;
+            border-radius: 20px;
+            position: relative;
             box-shadow: var(--card-shadow);
+            max-width: 900px;
+            margin: 0 auto;
+            overflow: hidden;
         }
 
         .question-header {
@@ -445,35 +516,81 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 15px;
         }
 
         .question-meta {
             display: flex;
             align-items: center;
-            gap: 1rem;
+        }
+
+        .question-meta h2 {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-right: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .value-badge {
-            background-color: var(--accent-color);
+            background: var(--accent-color);
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
+            padding: 5px 15px;
+            border-radius: 50px;
             font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .question-container {
-            background-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
             padding: 2rem;
-            border-radius: 10px;
+            border-radius: 15px;
             margin-bottom: 1.5rem;
-            min-height: 150px;
+            font-size: 1.6rem;
+            line-height: 1.5;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .question-actions {
+        .question-container::before {
+            content: '❓';
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            font-size: 40px;
+            background: var(--accent-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #answer-display {
+            background: rgba(255, 255, 255, 0.95);
+            border-top: 3px solid var(--accent-color);
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 0 0 10px 10px;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-actions, .team-award-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 1rem;
         }
 
         .question-category, .question-value {
@@ -552,25 +669,23 @@
 
         /* Timer styles */
         .timer {
-            background-color: var(--accent-color);
-            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 20px;
+            border-radius: 50px;
             font-size: 1.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            display: none;
-            text-align: center;
-            margin-bottom: 1rem;
-            animation: pulse 1s infinite;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer::before {
+            content: '⏱️';
         }
 
         .timer-team {
             font-weight: bold;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
         }
 
         /* Return to tiles button */
@@ -580,9 +695,20 @@
 
         /* Exit game button */
         #exit-game-btn {
-            background-color: #d32f2f;
-            color: white;
-            margin-left: 1rem;
+            background: linear-gradient(45deg, #c62828, #d32f2f);
+            font-size: 1.2rem;
+            padding: 15px 30px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #exit-game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
 
         /* Make the game more interactive */
@@ -955,24 +1081,23 @@
         }
         
         .music-toggle {
-            background-color: var(--accent-color);
-            color: white;
+            background: rgba(255, 255, 255, 0.15);
             border: none;
-            border-radius: 50%;
             width: 50px;
             height: 50px;
+            border-radius: 50%;
             font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
         
         .music-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
             transform: scale(1.1);
-            background-color: var(--secondary-color);
         }
         
         .music-toggle.muted .music-icon {
@@ -1135,13 +1260,13 @@
                             <div class="award-team-container">
                                 <h3>منح النقاط للفريق:</h3>
                                 <div class="award-buttons">
-                                    <button class="action-button team1-award" onclick="awardPointsToTeam(0)">
+                                    <button class="action-button team1-award" onclick="awardPointsToTeam(0); returnToTiles()">
                                         <span id="award-team1-name">الفريق ١</span> 🏆
                                     </button>
-                                    <button class="action-button team2-award" onclick="awardPointsToTeam(1)">
+                                    <button class="action-button team2-award" onclick="awardPointsToTeam(1); returnToTiles()">
                                         <span id="award-team2-name">الفريق ٢</span> 🏆
                                     </button>
-                                    <button class="action-button no-award" onclick="noPointsAwarded()">
+                                    <button class="action-button no-award" onclick="noPointsAwarded(); returnToTiles()">
                                         لا أحد ❌
                                     </button>
                                 </div>
@@ -1649,6 +1774,36 @@
             const setupScreen = document.querySelector('.setup-screen');
             const gameScreen = document.querySelector('.game-screen');
             
+            // Check if there's a saved game state
+            const savedState = localStorage.getItem('gameState');
+            if (savedState) {
+                try {
+                    const parsedState = JSON.parse(savedState);
+                    if (parsedState.gameActive) {
+                        // Game was active, so restore it
+                        gameState = parsedState;
+                        
+                        if (setupScreen) setupScreen.classList.remove('active');
+                        if (gameScreen) gameScreen.style.display = 'block';
+                        
+                        // Make exit button visible
+                        if (document.getElementById('exit-game-btn')) {
+                            document.getElementById('exit-game-btn').style.display = 'block';
+                        }
+                        
+                        // Rebuild the game board and restore team displays
+                        buildGameBoard();
+                        updateTeamDisplays();
+                        updateAnsweredCards();
+                        return; // Exit early, no need to reinitialize
+                    }
+                } catch (error) {
+                    console.error('Error parsing saved game state:', error);
+                    localStorage.removeItem('gameState');
+                }
+            }
+            
+            // If no valid saved state, initialize a new game
             if (setupScreen) setupScreen.classList.add('active');
             if (gameScreen) gameScreen.style.display = 'none';
             
@@ -1674,6 +1829,7 @@
                 gameActive: false
             };
             
+            // Hide the exit game button in setup screen
             if (document.getElementById('exit-game-btn')) {
                 document.getElementById('exit-game-btn').style.display = 'none';
             }
@@ -1755,42 +1911,83 @@
             buildGameBoard();
             updateTeamDisplays();
             
+            // Make exit button visible
+            if (document.getElementById('exit-game-btn')) {
+                document.getElementById('exit-game-btn').style.display = 'block';
+            }
+            
+            // Make sure to save game state before showing the game screen
             localStorage.setItem('gameState', JSON.stringify(gameState));
         }
 
         // Build the game board
         function buildGameBoard() {
             const gameBoard = document.getElementById('game-board');
+            if (!gameBoard) return;
+            
+            // Clear existing content
             gameBoard.innerHTML = '';
             
-            gameState.selectedCategories.forEach(category => {
-                const categoryCol = document.createElement('div');
-                categoryCol.className = 'category-column';
+            // Set the number of columns based on selected categories
+            gameBoard.style.gridTemplateColumns = `repeat(${gameState.selectedCategories.length}, 1fr)`;
+            
+            // Count total questions for game completion check
+            gameState.totalQuestions = 0;
+            
+            // Create columns for each category
+            for (const category of gameState.selectedCategories) {
+                const categoryQuestions = questions[category];
+                if (!categoryQuestions) continue;
                 
-                const categoryHeader = document.createElement('div');
-                categoryHeader.className = 'category-header';
-                categoryHeader.textContent = category;
-                categoryCol.appendChild(categoryHeader);
+                const column = document.createElement('div');
+                column.className = 'category-column';
+                column.setAttribute('data-category', category);
                 
-                [100, 200, 300, 400, 500].forEach(value => {
+                // Add category header with animation
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.textContent = category;
+                column.appendChild(header);
+                
+                // Create set of unique values for this category
+                const values = [...new Set(categoryQuestions.map(q => q.value))].sort((a, b) => a - b);
+                
+                // Add value cards
+                for (const value of values) {
                     const card = document.createElement('div');
                     card.className = 'value-card';
                     card.textContent = value;
-                    
-                    if (gameState.answeredCards.includes(`${category}-${value}`)) {
-                        card.classList.add('answered');
-                    } else {
-                        card.addEventListener('click', () => showQuestion(category, value));
-                    }
-                    
                     card.setAttribute('data-category', category);
                     card.setAttribute('data-value', value);
                     
-                    categoryCol.appendChild(card);
-                });
+                    // Check if this card has been answered
+                    if (gameState.answeredCards.includes(`${category}-${value}`)) {
+                        card.classList.add('answered');
+                    } else {
+                        // Only add click handler to unanswered cards
+                        card.addEventListener('click', () => selectQuestion(category, value));
+                        
+                        // Add hover effects
+                        card.addEventListener('mouseenter', () => {
+                            card.style.transform = 'translateY(-5px) scale(1.05)';
+                            card.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.4)';
+                        });
+                        
+                        card.addEventListener('mouseleave', () => {
+                            card.style.transform = '';
+                            card.style.boxShadow = '';
+                        });
+                    }
+                    
+                    column.appendChild(card);
+                    gameState.totalQuestions++;
+                }
                 
-                gameBoard.appendChild(categoryCol);
-            });
+                gameBoard.appendChild(column);
+            }
+            
+            // Save game state
+            localStorage.setItem('gameState', JSON.stringify(gameState));
         }
 
         // Update team displays
@@ -1912,10 +2109,13 @@
             
             markQuestionAsAnswered();
             
-            // Automatically return to the game board after awarding points
-            setTimeout(() => {
-                returnToTiles();
-            }, 2000); // 2-second delay for better user experience
+            // Remove this setTimeout since we're calling returnToTiles directly from the button
+            // setTimeout(() => {
+            //     returnToTiles();
+            // }, 2000);
+            
+            // Save game state
+            localStorage.setItem('gameState', JSON.stringify(gameState));
         }
 
         // No points awarded
@@ -1931,10 +2131,13 @@
             
             markQuestionAsAnswered();
             
-            // Automatically return to the game board after no points are awarded
-            setTimeout(() => {
-                returnToTiles();
-            }, 2000); // 2-second delay for better user experience
+            // Remove this setTimeout since we're calling returnToTiles directly from the button
+            // setTimeout(() => {
+            //     returnToTiles();
+            // }, 2000);
+            
+            // Save game state
+            localStorage.setItem('gameState', JSON.stringify(gameState));
         }
 
         // Return to tiles
@@ -1969,6 +2172,7 @@
             gameState.currentQuestion = null;
             stopTimer();
             
+            // Make sure to save the game state
             localStorage.setItem('gameState', JSON.stringify(gameState));
         }
 
@@ -2143,16 +2347,33 @@
 
         // Reveal answer
         function revealAnswer() {
-            if (!gameState.currentQuestion) return;
+            const answerDisplay = document.getElementById('answer-display');
+            const answerText = document.getElementById('answer-text');
             
-            document.getElementById('answer-display').style.display = 'block';
-            document.getElementById('answer-text').textContent = gameState.currentQuestion.answer;
-            
-            document.getElementById('award-buttons').style.display = 'block';
-            
-            gameState.currentQuestion.answered = true;
-            
-            stopTimer();
+            if (gameState.currentQuestion && !gameState.currentQuestion.answered) {
+                // Mark as answered in gameState
+                gameState.currentQuestion.answered = true;
+                
+                // Show award buttons
+                const awardButtons = document.getElementById('award-buttons');
+                if (awardButtons) awardButtons.style.display = 'block';
+                
+                // Update button texts with team names
+                document.getElementById('award-team1-name').textContent = gameState.teams[0].name;
+                document.getElementById('award-team2-name').textContent = gameState.teams[1].name;
+                
+                // Apply animation to the answer reveal
+                if (answerDisplay && answerText) {
+                    answerText.textContent = gameState.currentQuestion.answer;
+                    
+                    // Add animation classes
+                    answerDisplay.style.display = 'block';
+                    answerDisplay.style.animation = 'slideDown 0.5s ease';
+                    
+                    // Add confetti animation for correct answer
+                    createConfetti();
+                }
+            }
         }
 
         // Timer functionality
