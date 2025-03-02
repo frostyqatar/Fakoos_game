@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fakoos Trivia!</title>
+    <!-- Add Google Fonts link for the gamey font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #4a148c;
@@ -29,6 +31,7 @@
             background-color: var(--dark-color);
             color: white;
             min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
         
         header {
@@ -39,8 +42,9 @@
         }
         
         h1 {
-            font-size: 2.5rem;
-            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2.5rem; /* Adjust size as needed */
+            color: var(--primary-color); /* Ensure it matches your theme */
             cursor: pointer;
         }
         
@@ -48,6 +52,7 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 1rem;
+            overflow-x: hidden; /* Prevent horizontal scrolling in the main container */
         }
         
         /* Setup Screen */
@@ -593,6 +598,61 @@
             transition: all 0.3s ease;
         }
 
+        /* Volume slider styles */
+        .music-control {
+            position: relative;
+            display: inline-block;
+        }
+
+        .volume-slider-container {
+            position: absolute;
+            top: 50%;
+            right: calc(100% - 165px); /* Position to the right with 10px gap */
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            display: none;
+            width: 120px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        #mute-button:hover + .volume-slider-container,
+        .volume-slider-container:hover {
+            display: block;
+        }
+
+        #volume-slider {
+            width: 100%;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: #ffffff;
+            outline: none;
+        }
+
+        #volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        #volume-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+        }
+
         .action-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -879,10 +939,6 @@
             transform: scale(1.05);
         }
 
-        .action-button.no-award {
-            background-color: #777;
-        }
-
         .action-button.no-award:hover {
             background-color: var(--incorrect-color);
         }
@@ -996,6 +1052,61 @@
             flex-direction: row;
             align-items: center;
             justify-content: center;
+            position: relative;
+            padding: 10px;
+            border-radius: 15px;
+            overflow: hidden;
+            animation: logoPulse 3s infinite;
+            /* Add a fixed size or ensure container doesn't change size with animation */
+            box-sizing: border-box;
+            margin: 5px auto; /* Gives some margin to prevent affecting layout */
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); } /* Reduce the scale amount */
+            100% { transform: scale(1); }
+        }
+
+        /* Make sure the body or parent container has overflow control */
+        body {
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        .container {
+            overflow-x: hidden; /* Prevent horizontal scrolling in the main container */
+        }
+
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(
+                124deg,
+                #6A11CB, #2575FC, #00C9FF, #FF5E7E, #7F00FF, #C471ED, #00C6FB
+            );
+            background-size: 400% 400%;
+            z-index: -1;
+            filter: blur(5px);
+            border-radius: 15px;
+            animation: flowingBorder 15s ease-in-out infinite;
+        }
+
+        @keyframes flowingBorder {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 25%; }
+            50% { background-position: 50% 100%; }
+            75% { background-position: 25% 75%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes logoPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
         }
 
         #game-logo {
@@ -1207,9 +1318,9 @@
 
         .funny-image-container {
             position: fixed;
-            top: 60%; /* Position below the center */
-            left: 50%; /* Center horizontally */
-            transform: translate(-50%, -50%);
+            top: 50%; /* Center vertically */
+            right: 0; /* Position at the right of the screen */
+            transform: translateY(-50%);
             z-index: 1000;
             opacity: 0;
             transition: opacity 0.8s ease-in-out;
@@ -1227,6 +1338,127 @@
             max-height: 250px;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Turn Indicator Styles */
+        .turn-indicator-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin: 30px auto;
+          width: 100%;
+          max-width: 800px;
+        }
+
+        .turn-indicator-title {
+          margin-bottom: 15px;
+          font-size: 28px;
+          color: #ffcc00;
+          text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .slot-machine {
+          position: relative;
+          width: 300px;
+          height: 70px;
+          background: linear-gradient(to bottom, #333, #222);
+          border-radius: 15px;
+          border: 4px solid gold;
+          box-shadow: 0 5px 15px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.2);
+          overflow: hidden;
+          margin-bottom: 20px;
+        }
+
+        .slot-window {
+          position: absolute;
+          width: 280px;
+          height: 60px;
+          left: 10px;
+          top: 5px;
+          background: #111;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .slot-reel {
+          position: absolute;
+          width: 100%;
+          transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+
+        .team-slot {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 60px;
+          font-size: 24px;
+          font-weight: bold;
+          color: white;
+          text-shadow: 0 0 5px rgba(255,255,255,0.7);
+        }
+
+        .team-slot.team1 {
+          background-color: rgba(0, 100, 200, 0.8);
+        }
+
+        .team-slot.team2 {
+          background-color: rgba(200, 50, 0, 0.8);
+        }
+
+        .slot-decoration {
+          position: absolute;
+          width: 15px;
+          height: 100%;
+          background: linear-gradient(to bottom, gold, #a67c00);
+          top: 0;
+        }
+
+        .slot-decoration.left {
+          left: 0;
+          border-top-left-radius: 10px;
+          border-bottom-left-radius: 10px;
+        }
+
+        .slot-decoration.right {
+          right: 0;
+          border-top-right-radius: 10px;
+          border-bottom-right-radius: 10px;
+        }
+
+        .turn-timer-container {
+          width: 300px;
+          height: 40px;
+          position: relative;
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 20px;
+          box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+          overflow: hidden;
+        }
+
+        .turn-timer-bar {
+          height: 100%;
+          width: 100%;
+          background: linear-gradient(to right, #0066cc, #00aaff);
+          transform-origin: left;
+          transform: scaleX(1);
+          transition: transform 1s linear;
+        }
+
+        .turn-timer-text {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 22px;
+          font-weight: bold;
+          text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
         }
     </style>
 </head>
@@ -1262,10 +1494,13 @@
     <audio id="sound-timer" preload="auto">
         <source src="https://cdn.pixabay.com/download/audio/2024/08/07/audio_e13f63698a.mp3?filename=woosh-230554.mp3" type="audio/mp3">
     </audio>
+    <audio id="victory-sound" preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_e8b2fa25cf.mp3?filename=goodresult-82807.mp3" type="audio/mp3">
+    </audio>
     
     <header>
         <div class="logo-container">
-            <img src="https://beeimg.com/images/c16625250914.webp" alt="Fakoos Trivia Logo" id="game-logo">
+            <img src="https://iili.io/32LgoGa.webp" alt="Fakoos Trivia Logo" id="game-logo">
             <h1>Fakoos Trivia</h1>
         </div>
     </header>
@@ -1481,7 +1716,8 @@
         };
 
         // Questions database
-              const questions = {
+         //will add later
+             const questions = {
   "التاريخ العالمي": [
     { value: 100, question: "ما اسم المعاهدة التي أنهت حرب المائة عام بين إنجلترا وفرنسا؟", answer: "معاهدة أراس" },
     { value: 100, question: "أي إمبراطور روماني بنى الجدار الشهير في بريطانيا؟", answer: "هادريان" },
@@ -1510,14 +1746,14 @@
     { value: 300, question: "من كان مؤسس الإمبراطورية العثمانية؟", answer: "عثمان الأول" },
     { value: 300, question: "ما هي الثورة التي أدت إلى قيام الاتحاد السوفيتي؟", answer: "الثورة الروسية" },
     { value: 300, question: "في أي عام تم إسقاط جدار برلين؟", answer: "1989" },
-    { value: 300, question: "من كان زعيم حركة الحقوق المدنية في الولايات المتحدة؟", answer: "مارتن لوثر كينغ جونيور" },
+    { value: 300, question: "من كان زعيم حركة الحقوق المدنية في الولايات المتحدة؟", answer: "مارتن لوثر كينج جونيور" },
     { value: 300, question: "ما اسم الحرب التي دارت بين الولايات المتحدة والاتحاد السوفيتي بشكل غير مباشر؟", answer: "الحرب الباردة" },
     { value: 300, question: "في أي عام تم تأسيس الأمم المتحدة؟", answer: "1945" },
     { value: 400, question: "من هو الفيلسوف الذي يُعتبر رائد الوجودية؟", answer: "سورين كيركغور (يعتبره البعض رائدًا للوجودية)" },
     { value: 400, question: "ما اسم الإمبراطورية التي حكمها الإسكندر الأكبر؟", answer: "الإمبراطورية المقدونية" },
     { value: 400, question: "في أي عام تم توقيع إعلان الاستقلال الأمريكي؟", answer: "1776" },
     { value: 400, question: "من كان أول إمبراطور لروما؟", answer: "أغسطس" },
-    { value: 400, question: "ما هي الثورة التي أدت إلى قيام الجمهورية في الصين؟", answer: "ثورة شينهاي" },
+    { value: 400, question: "ما هي الثورة التي أدت إلى قيام الجمهورية الإسلامية في إيران؟", answer: "الثورة الإسلامية الإيرانية" },
     { value: 400, question: "في أي عام تم اغتيال الرئيس الأمريكي جون كينيدي؟", answer: "1963" },
     { value: 400, question: "من كان رئيس جنوب أفريقيا الذي أنهى نظام الفصل العنصري؟", answer: "نيلسون مانديلا" },
     { value: 400, question: "ما اسم الحرب التي دارت بين كوريا الشمالية وكوريا الجنوبية؟", answer: "الحرب الكورية" },
@@ -1551,26 +1787,26 @@
     { value: 200, question: "ما هو اسم الحمض النووي الذي يحمل المعلومات الوراثية؟", answer: "DNA" },
     { value: 200, question: "ما هو اسم أكبر كوكب في المجموعة الشمسية؟", answer: "المشتري" },
     { value: 200, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز O؟", answer: "الأكسجين" },
-    { value: 200, question: "ما هي العملية التي يتحول فيها الماء الصلب (الثلج) إلى بخار مباشرة؟", answer: "التسامي" },
+    { value: 200, question: "ما هي العملية التي تتم فيها انقسام الخلية إلى خليتين متماثلتين؟", answer: "الانقسام المتساوي" },
     { value: 200, question: "ما هو اسم الغاز الذي يسبب الاحتباس الحراري؟", answer: "ثاني أكسيد الكربون (وغازات أخرى)" },
     { value: 200, question: "ما هو اسم الجزء من الدماغ المسؤول عن التوازن؟", answer: "المخيخ" },
     { value: 200, question: "ما هو اسم أبعد كوكب عن الشمس في المجموعة الشمسية؟", answer: "نبتون" },
     { value: 200, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Fe؟", answer: "الحديد" },
     { value: 300, question: "ما اسم العالم الذي اكتشف البنسلين؟", answer: "ألكسندر فليمنغ" },
-    { value: 300, question: "ما هي العملية التي يتم فيها انقسام الخلية إلى خليتين متماثلتين؟", answer: "الانقسام المتساوي" },
+    { value: 300, question: "ما هي العملية التي تتم فيها انقسام الخلية إلى أربع خلايا غير متماثلة؟", answer: "الانقسام الاختزالي" },
     { value: 300, question: "ما هو اسم الحمض النووي الذي يحمل التعليمات الوراثية للبروتينات؟", answer: "RNA" },
     { value: 300, question: "ما هو اسم أقرب نجم إلى الأرض؟", answer: "الشمس" },
     { value: 300, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Au؟", answer: "الذهب" },
-    { value: 300, question: "ما هي العملية التي يتحول فيها الماء السائل إلى جليد؟", answer: "التجمد" },
+    { value: 300, question: "ما هي العملية التي يتحول فيها الماء الصلب (الثلج) إلى بخار مباشرة؟", answer: "التسامي" },
     { value: 300, question: "ما هو اسم الغاز الذي يسبب تآكل طبقة الأوزون؟", answer: "الكلوروفلوروكربونات (CFCs)" },
     { value: 300, question: "ما هو اسم الجزء من الدماغ المسؤول عن الذاكرة؟", answer: "الحُصين" },
     { value: 300, question: "ما هو اسم أقرب مجرة إلى مجرتنا درب التبانة؟", answer: "أندروميدا" },
     { value: 300, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Ag؟", answer: "الفضة" },
     { value: 400, question: "ما اسم العالم الذي وضع نظرية التطور؟", answer: "تشارلز داروين" },
-    { value: 400, question: "ما هي العملية التي يتم فيها انقسام الخلية إلى أربع خلايا غير متماثلة؟", answer: "الانقسام الاختزالي" },
+    { value: 400, question: "ما هي العملية التي تتم فيها انقسام الخلية إلى خليتين متماثلتين؟", answer: "الانقسام المتساوي" },
     { value: 400, question: "ما هو اسم الجزيء الذي يحمل الطاقة في الخلية؟", answer: "ATP" },
     { value: 400, question: "ما هو اسم أبعد نجم يمكن رؤيته بالعين المجردة؟", answer: "V762 Cas (متغير، لكنه يعتبر عمومًا الأبعد)" },
-    { value: 400, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز U؟", answer: "اليورانيوم" },
+    { value: 400, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز U？", answer: "اليورانيوم" },
     { value: 400, question: "ما هي العملية التي يتحول فيها الغاز إلى سائل؟", answer: "التكاثف" },
     { value: 400, question: "ما هو اسم الغاز الذي يسبب ظاهرة البيوت الزجاجية؟", answer: "الميثان (وغازات أخرى)" },
     { value: 400, question: "ما هو اسم الجزء من الدماغ المسؤول عن العواطف؟", answer: "اللوزة الدماغية" },
@@ -1578,7 +1814,7 @@
     { value: 400, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Hg؟", answer: "الزئبق" },
     { value: 500, question: "ما اسم الظاهرة الكمومية التي تسمح للجسيمات بالتأثير على بعضها عن بعد؟", answer: "التشابك الكمي" },
     { value: 500, question: "ما اسم العالم الذي وضع نظرية النسبية؟", answer: "ألبرت أينشتاين" },
-    { value: 500, question: "ما هي العملية التي يتم فيها اتحاد نواتين ذريتين لتكوين نواة أثقل؟", answer: "الاندماج النووي" },
+    { value: 500, question: "ما هي العملية التي تتم فيها اتحاد نواتين ذريتين لتكوين نواة أثقل؟", answer: "الاندماج النووي" },
     { value: 500, question: "ما هو اسم الجسيم دون الذري الذي يحمل شحنة سالبة؟", answer: "الإلكترون" },
     { value: 500, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Pu؟", answer: "البلوتونيوم" },
     { value: 500, question: "ما هي العملية التي يتحول فيها السائل إلى صلب؟", answer: "التصلب" },
@@ -1707,7 +1943,7 @@
     { value: 200, question: "من هو اللاعب الذي يُعتبر أفضل لاعب كرة قدم في التاريخ؟", answer: "يعتمد على الرأي، لكن غالبًا ما يُذكر بيليه أو مارادونا أو ميسي أو كريستيانو رونالدو" },
     { value: 200, question: "ما هي البطولة الكبرى في التنس التي تُلعب على الملاعب الرملية؟", answer: "بطولة فرنسا المفتوحة (رولان غاروس)" },
     { value: 200, question: "في أي رياضة يُستخدم مصطلح 'الإرسال الساحق'؟", answer: "التنس" },
-    { value: 200, question: "ما هي الرياضة التي تُلعب في حوض سباحة؟", answer: "السباحة" },
+    { value: 200, question: "ما هي الرياضة التي تُلعب في ملعب سباحة؟", answer: "السباحة" },
     { value: 200, question: "ما هي الرياضة التي تُعرف بـ 'رياضة النبلاء'؟", answer: "الجولف" },
     { value: 200, question: "كم عدد اللاعبين في فريق كرة السلة؟", answer: "5" },
     { value: 200, question: "ما هي الدولة التي فازت بكأس العالم لكرة القدم عام 2018؟", answer: "فرنسا" },
@@ -1721,8 +1957,8 @@
     { value: 300, question: "ما هي الرياضة التي تُعرف بـ 'رياضة العقل'؟", answer: "الشطرنج" },
     { value: 300, question: "كم عدد اللاعبين في فريق الكرة الطائرة؟", answer: "6" },
     { value: 300, question: "ما هي الدولة التي فازت بكأس العالم لكرة القدم عام 2014؟", answer: "ألمانيا" },
-    { value: 300, question: "في أي رياضة يُستخدم مصطلح 'الدانك'؟", answer: "كرة السلة" },
-    { value: 300, question: "ما هي الرياضة التي تُلعب على حلبة وتستخدم دراجات نارية؟", answer: "سباق الدراجات النارية" },
+    { value: 300, question: "في أي رياضة يُستخدم مصطلح 'الهاتريك'؟", answer: "كرة القدم وهوكي الجليد" },
+    { value: 300, question: "ما هي الرياضة التي تُلعب على ملعب رملي وتستخدم كرة وشبكة؟", answer: "الكرة الطائرة الشاطئية" },
     { value: 300, question: "ما هي الدولة التي نشأت فيها رياضة التايكوندو؟", answer: "كوريا" },
     { value: 400, question: "من هو اللاعب الذي يُعتبر أفضل لاعب كرة سلة في التاريخ؟", answer: "يعتمد على الرأي، لكن غالبًا ما يُذكر مايكل جوردان أو ليبرون جيمس" },
     { value: 400, question: "ما هي البطولة الكبرى في التنس التي تُلعب على الملاعب الصلبة؟", answer: "بطولة أمريكا المفتوحة وأستراليا المفتوحة" },
@@ -1731,13 +1967,13 @@
     { value: 400, question: "ما هي الرياضة التي تُعرف بـ 'رياضة الملوك' في إنجلترا؟", answer: "البولو" },
     { value: 400, question: "كم عدد اللاعبين في فريق الهوكي؟", answer: "6 (على الجليد)" },
     { value: 400, question: "ما هي الدولة التي فازت بكأس العالم لكرة القدم عام 2010؟", answer: "إسبانيا" },
-    { value: 400, question: "في أي رياضة يُستخدم مصطلح 'الهاتريك'؟", answer: "كرة القدم وهوكي الجليد" },
-    { value: 400, question: "ما هي الرياضة التي تُلعب على ملعب رملي وتستخدم كرة وشبكة؟", answer: "الكرة الطائرة الشاطئية" },
-    { value: 400, question: "ما هي الدولة التي نشأت فيها رياضة الكابادي؟", answer: "الهند" },
+    { value: 400, question: "في أي رياضة يُستخدم مصطلح 'الجراند سلام'؟", answer: "التنس والجولف" },
+    { value: 400, question: "ما هي الرياضة التي تُلعب على جبل وتستخدم لوح تزلج؟", answer: "التزلج على الجليد (Snowboarding)" },
+    { value: 400, question: "ما هي الدولة التي نشأت فيها رياضة السومو؟", answer: "اليابان" },
     { value: 500, question: "من هو اللاعب الذي يحمل الرقم القياسي لأكبر عدد من الميداليات الذهبية الأولمبية؟", answer: "مايكل فيلبس (سباحة)" },
     { value: 500, question: "ما هي البطولة الكبرى في الجولف التي تُعتبر الأقدم؟", answer: "البطولة المفتوحة (The Open Championship)" },
     { value: 500, question: "في أي رياضة يُستخدم مصطلح 'الباركور'؟", answer: "الباركور (رياضة مستقلة)" },
-    { value: 500, question: "ما هي الرياضة التي تُلعب في حلبة وتستخدم زلاجات؟", answer: "التزلج على الجليد (بأنواعه)" },
+    { value: 500, question: "ما هي الرياضة التي تُلعب في حلبة وتستخدم لوح تزلج؟", answer: "التزلج على الجليد (Snowboarding)" },
     { value: 500, question: "ما هي الرياضة التي تُعرف بـ 'رياضة الأثرياء'؟", answer: "رياضة الفروسية" },
     { value: 500, question: "كم عدد اللاعبين في فريق الكريكيت؟", answer: "11" },
     { value: 500, question: "ما هي الدولة التي فازت بأكبر عدد من بطولات كأس العالم للرجبي؟", answer: "نيوزيلندا وجنوب أفريقيا (3 مرات لكل منهما)" },
@@ -1747,56 +1983,322 @@
   ],
 
   "ليج أوف ليجندز": [
-    { value: 100, question: "ما هو اسم الخريطة الرئيسية في لعبة ليج أوف ليجندز؟", answer: "Summoner's Rift" },
-    { value: 100, question: "كم عدد الممرات (lanes) الموجودة في Summoner's Rift؟", answer: "3" },
-    { value: 100, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله قوة إضافية كبيرة؟", answer: "Baron Nashor" },
-    { value: 100, question: "ما هو اسم العملة المستخدمة لشراء الأبطال (champions) في اللعبة؟", answer: "Blue Essence (BE)" },
-    { value: 100, question: "ما هو الحد الأقصى للمستوى (level) الذي يمكن أن يصل إليه البطل في المباراة؟", answer: "18" },
-    { value: 100, question: "ما هو اسم التنين (dragon) الذي يمنح الفريق الذي يقتله زيادة في سرعة الحركة؟", answer: "Cloud Drake" },
-    { value: 100, question: "ما هو اسم العنصر (item) الذي يزيد من قوة الهجوم (attack damage) بشكل كبير؟", answer: "Infinity Edge" },
-    { value: 100, question: "ما هو اسم البطل (champion) الذي يستخدم القوس والسهم؟", answer: "Ashe" },
-    { value: 100, question: "ما هو اسم البطل الذي يستخدم السيف؟", answer: "Garen" },
-    { value: 100, question: "ما هو اسم البطل الذي يستخدم السحر؟", answer: "Ryze" },
-    { value: 200, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها Baron Nashor؟", answer: "Baron Pit" },
-    { value: 200, question: "كم عدد الأبراج (turrets) الموجودة في كل ممر في بداية المباراة؟", answer: "3" },
-    { value: 200, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله رؤية إضافية في الغابة؟", answer: "Rift Herald" },
-    { value: 200, question: "ما هو اسم العملة المستخدمة لشراء العناصر (items) أثناء المباراة؟", answer: "Gold" },
-    { value: 200, question: "ما هو اسم القدرة النهائية (ultimate ability) للبطل Ashe؟", answer: "Enchanted Crystal Arrow" },
-    { value: 200, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله زيادة في قوة الهجوم وقوة القدرة؟", answer: "Infernal Drake" },
-    { value: 200, question: "ما هو اسم العنصر الذي يزيد من قوة القدرة (ability power) بشكل كبير؟", answer: "Rabadon's Deathcap" },
-    { value: 200, question: "ما هو اسم البطل الذي يمكنه التحول إلى دب؟", answer: "Annie" },
-    { value: 200, question: "ما هو اسم البطل الذي يمكنه الاختفاء؟", answer: "Teemo" },
-    { value: 200, question: "ما هو اسم البطل الذي يمكنه إطلاق الصواريخ؟", answer: "Jinx" },
-    { value: 300, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها التنين (dragon)؟", answer: "Dragon Pit" },
-    { value: 300, question: "كم عدد المثبطات (inhibitors) الموجودة في كل قاعدة في بداية المباراة؟", answer: "3" },
-    { value: 300, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله درعًا إضافيًا ومقاومة سحرية؟", answer: "Mountain Drake" },
-    { value: 300, question: "ما هو اسم العنصر الذي يمنح صاحبه فرصة ثانية للحياة بعد الموت؟", answer: "Guardian Angel" },
-    { value: 300, question: "ما هو اسم القدرة النهائية للبطل Garen؟", answer: "Demacian Justice" },
-    { value: 300, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله زيادة في الصحة القصوى؟", answer: "Ocean Drake" },
-    { value: 300, question: "ما هو اسم العنصر الذي يزيد من سرعة الهجوم (attack speed) بشكل كبير؟", answer: "Phantom Dancer" },
-    { value: 300, question: "ما هو اسم البطل الذي يمكنه التحكم في الظلال؟", answer: "Zed" },
-    { value: 300, question: "ما هو اسم البطل الذي يمكنه إطلاق الليزر؟", answer: "Vel'Koz" },
-    { value: 300, question: "ما هو اسم البطل الذي يمكنه رمي الفؤوس؟", answer: "Draven" },
-    { value: 400, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها المتجر (shop)؟", answer: "Base" },
-    { value: 400, question: "كم عدد الأبراج الداخلية (inner turrets) الموجودة في كل قاعدة؟", answer: "2" },
-    { value: 400, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله زيادة في الضرر ضد الأبراج؟", answer: "Elder Dragon" },
-    { value: 400, question: "ما هو اسم العنصر الذي يقلل من تأثيرات التحكم في الحشود (crowd control)؟", answer: "Mercurial Scimitar" },
-    { value: 400, question: "ما هو اسم القدرة النهائية للبطل Zed؟", answer: "Death Mark" },
-    { value: 400, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله زيادة في الضرر الحقيقي؟", answer: "Elder Dragon" },
-    { value: 400, question: "ما هو اسم العنصر الذي يزيد من الاختراق السحري (magic penetration)؟", answer: "Void Staff" },
-    { value: 400, question: "ما هو اسم البطل الذي يمكنه استدعاء وحوش صغيرة؟", answer: "Malzahar" },
-    { value: 400, question: "ما هو اسم البطل الذي يمكنه القفز لمسافات طويلة؟", answer: "Kha'Zix" },
-    { value: 400, question: "ما هو اسم البطل الذي يمكنه رمي الشباك؟", answer: "Caitlyn" },
-    { value: 500, question: "ما هو اسم المنطقة في الخريطة التي يتواجد فيها Nexus؟", answer: "Base" },
-    { value: 500, question: "كم عدد أبراج Nexus الموجودة في كل قاعدة؟", answer: "2" },
-    { value: 500, question: "ما هو اسم الوحش المحايد الذي يمنح الفريق الذي يقتله تأثيرًا مؤقتًا يزيد من قوة جميع الأتباع (minions) القريبين؟", answer: "Baron Nashor" },
-    { value: 500, question: "ما هو اسم العنصر الذي يمنح صاحبه درعًا وسحرًا إضافيًا بناءً على الضرر الذي يتلقاه؟", answer: "Gargoyle Stoneplate" },
-    { value: 500, question: "ما هو اسم القدرة النهائية للبطل Yasuo؟", answer: "Last Breath" },
-    { value: 500, question: "ما هو اسم التنين الذي يمنح الفريق الذي يقتله تأثيرًا متزايدًا لكل تنين آخر تم قتله؟", answer: "Elder Dragon" },
-    { value: 500, question: "ما هو اسم العنصر الذي يزيد من الاختراق الدرعي (armor penetration)؟", answer: "Lord Dominik's Regards" },
-    { value: 500, question: "ما هو اسم البطل الذي يمكنه استدعاء جدار من الجليد؟", answer: "Anivia" },
-    { value: 500, question: "ما هو اسم البطل الذي يمكنه التحول إلى حيوانات مختلفة؟", answer: "Nidalee" },
-    { value: 500, question: "ما هو اسم البطل الذي يمكنه رمي القنابل؟", answer: "Ziggs" }
+  
+
+    {
+      "value": 100,
+      "question": "ما اسم القارة التي تقع فيها مدينتا ديماسيا ونوكسوس؟",
+      "answer": "فالوران"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل في ليج أوف ليجندز كان من المقرر في البداية أن يُسمى 'Vassal' قبل أن يُغير اسمه؟",
+      "answer": "Xin Zhao"
+    },
+    {
+      "value": 100,
+      "question": "من كان أول بطل يحصل على مظهر تم إطلاقه بالتزامن مع أغنية؟",
+      "answer": "DJ Sona"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل تعتمد قدراته على عدد الأجراس التي يجمعها في الخريطة؟",
+      "answer": "Bard"
+    },
+    {
+      "value": 100,
+      "question": "من هو الجبّار الغير حي؟",
+      "answer": "Sion"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل لديه سلبية مخفية تمنحه خبرة إضافية عند قربه من بطل حليف؟",
+      "answer": "Zilean"
+    },
+    {
+      "value": 100,
+      "question": "ما اسم النهر الذي يمر عبر وسط Summoner's Rift؟",
+      "answer": "النهر الثعباني"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل ترقص حركاته مستوحاة من أغنية 'Thriller' لمايكل جاكسون؟",
+      "answer": "Warwick"
+    },
+    {
+      "value": 100,
+      "question": "من كان أول بطل تم تصميمه بواسطة Riot Games؟",
+      "answer": "Singed"
+    },
+    {
+      "value": 100,
+      "question": "أي بطلين يرتبط اسمهما بعبارة 'The Quick and the Dead'؟",
+      "answer": "Lucian وThresh"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل لديه سلبية مخفية تزيد من سرعة حركته عند تواجده في الأدغال؟",
+      "answer": "Nidalee"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل من قصته يظهر أنه كان عضواً سابقاً في نظام Kinkou Order ثم تحول إلى قاتل مستقل؟",
+      "answer": "Kayn"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يحصل على مكافآت دائمة لقدراته عند قتل وحوش الأدغال أو الأبطال المعلمين؟",
+      "answer": "Kindred"
+    },
+    {
+      "value": 100,
+      "question": "ما اسم القدرة النهائية التي يحملها بطل Rumble؟",
+      "answer": "The Equalizer"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل لديه سلبية فريدة تتيح له ابتلاع وحوش الأدغال والأبطال للحصول على زيادة دائمة في الصحة؟",
+      "answer": "Cho'Gath"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل معروف بقدرته على خلق مناطق سيطرة باستخدام التوريلات؟",
+      "answer": "Heimerdinger"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يستطيع تنفيذ قتل عالمي لبطل عدو مع الحصول على ذهب إضافي؟",
+      "answer": "Draven"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل لديه سلبية تؤدي إلى نزيف الأعداء مع مرور الوقت وتزيد الضرر مع كل تكدس؟",
+      "answer": "Darius"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يمتلك قدرة نهائية تتيح له استحواذ أبطال الأعداء؟",
+      "answer": "Viego"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يمتلك قدرة فريدة تتيح له تغيير شكله أثناء المباراة مما يؤثر على أسلوب لعبه؟",
+      "answer": "Kayn"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل لديه سلبية مخفية تمنحه سرعة هجوم إضافية عند قربه من بطل معين؟",
+      "answer": "Kalista"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يمتلك سلبية تمكنه من الحصول على صحة وقوة قدرات إضافية؟",
+      "answer": "Vladimir"
+    },
+    {
+      "value": 100,
+      "question": "من كان أول بطل يحصل على مظهر أسطوري؟",
+      "answer": "Tryndamere"
+    },
+    {
+      "value": 100,
+      "question": "من كانت أول حب لشخصية Gangplank؟",
+      "answer": "Illaoi"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل تعتمد قدراته على إله مصري قديم؟",
+      "answer": "Nasus"
+    },
+    {
+      "value": 100,
+      "question": "من هما البطلان الوحيدان اللذان يحملان لقب 'Witch' في ألقابهما؟",
+      "answer": "Aurora وLissandra"
+    },
+    {
+      "value": 100,
+      "question": "ما الذي يشربه Aphelios الذي يجعله صامتاً لكنه يمكنه التواصل مع Alune؟",
+      "answer": "Noctum Essence"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل استُلهم من شخصية Samus Aran من سلسلة Metroid ويستخدم أسلحة ودروعاً متكيفة مع الفراغ؟",
+      "answer": "Kai'Sa"
+    },
+    {
+      "value": 100,
+      "question": "ما اسم القدرة السلبية لبطل Garen؟",
+      "answer": "Perseverance"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل معروف بقدرته على إحداث انفجارات باستخدام طاقته في تجميع قنابل؟",
+      "answer": "Ziggs"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يستمد قوته من الرياح ويتحكم بها لإلحاق الضرر من بعيد؟",
+      "answer": "Janna"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يستخدم الشفاء والموسيقى لتحفيز زملائه في المعارك؟",
+      "answer": "Sona"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يتقن فنون الظلام ويستخدم قوى الفراغ لتحقيق انتقامه؟",
+      "answer": "Rek'Sai"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يعتمد على تقنيات الصيد والكمائن للظهور فجأة في ساحة المعركة من الأدغال؟",
+      "answer": "Rengar"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يتميز بقدرته على إحداث تحطم في الهياكل الدفاعية بفضل ضرباته القوية؟",
+      "answer": "Malphite"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل لديه القدرة على استدعاء أرواح الطبيعة لدعم فريقه في المعارك؟",
+      "answer": "Ivern"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يمتلك قدرات تتحكم في البرق لإلحاق الضرر بالأعداء؟",
+      "answer": "Volibear"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يستدعي جيوش الرمال ويتحكم بها في ساحة المعركة؟",
+      "answer": "Azir"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يمكنه تغيير مصير المعارك من خلال قدرته على اختيار ورقة من مجموعة أوراقه؟",
+      "answer": "Twisted Fate"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يستخدم الخدع والأوهام لإرباك أعدائه؟",
+      "answer": "LeBlanc"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يشتهر بتحوله إلى مخلوق شبيه بالتنين خلال المعارك؟",
+      "answer": "Shyvana"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يمتلك قدرات تجميد تُبطئ حركة الأعداء وتعيق تحركاتهم؟",
+      "answer": "Lissandra"
+    },
+    {
+      "value": 100,
+      "question": "أي بطل يستخدم سلاحين في آن واحد ويتميز بسرعته في الهجوم؟",
+      "answer": "Talon"
+    },
+    {
+      "value": 200,
+      "question": "أي بطل يعتمد على الظلال لاستدراج أعدائه ثم مهاجمتهم من الخلف؟",
+      "answer": "Evelynn"
+    },
+    {
+      "value": 200,
+      "question": "أي بطل يستطيع استدعاء أمواج مائية ضخمة لإغراق أعدائه؟",
+      "answer": "Nami"
+    },
+    {
+      "value": 200,
+      "question": "أي بطل يُعرف بقدرته على قراءة المستقبل وإحباط خطط الخصوم؟",
+      "answer": "Swain"
+    },
+    {
+      "value": 200,
+      "question": "أي بطل يمتلك القدرة على امتصاص طاقة الأعداء وتحويلها إلى قوة له؟",
+      "answer": "Aatrox"
+    },
+    {
+      "value": 200,
+      "question": "أي بطل يتميز بقدرته على قصف الأعداء من مسافات بعيدة باستخدام أسلحة نارية دقيقة؟",
+      "answer": "Caitlyn"
+    },
+    { value: 300, question: "ما اسم القارة التي تقع فيها مدينة ديماسيا ونوكسوس؟", answer: "فالوران" },
+    { value: 300, question: "من هو البطل الذي كان من المفترض أن يُسمى 'فاسال' قبل تغيير اسمه؟", answer: "شين زاو" },
+    { value: 300, question: "من أول بطل حصل على سكن مرتبط بأغنية موسيقية؟", answer: "دي جي سونا" },
+    { value: 300, question: "ما اسم البطل الذي يمتلك مهارة سرية تزيد سرعة حركته في الأدغال؟", answer: "نيدالي" },
+    { value: 300, question: "من هو 'الجاغرنوت الميت'؟", answer: "سيون" },
+
+    // 200 Level (Deeper Knowledge)  
+    { value: 300, question: "ما اسم النهر الذي يمر عبر وسط سومورز ريفت؟", answer: "نهر سيربنتاين" },
+    { value: 400, question: "من البطل الذي يرقص رقصة من أغنية 'ثرايلر' لمايكل جاكسون؟", answer: "وارويك" },
+    { value: 400, question: "من هو أول بطل صممته شركة رايوت جيمز؟", answer: "سينجد" },
+    { value: 400, question: "من هما البطلان المرتبطان بعبارة 'السريع والميت'؟", answer: "لوسيان وثرش" },
+    { value: 400, question: "ما اسم البطل الذي يمتلك مهارة سرية تمنح خبرة إضافية للحلفاء؟", answer: "زيليان" },
+
+    // 300 Level (Detailed Mechanics/Lore)  
+    { value: 400, question: "من هو البطل الذي ترك منظمة 'كينكو' ليصبح قاتلاً مستقلاً؟", answer: "كاين" },
+    { value: 400, question: "ما اسم البطل الذي تمنحه قتل الوحوش أو الأعداء زيادة في مدى الهجوم والضرر؟", answer: "كيندريد" },
+    { value: 400, question: "ما اسم المهارة النهائية لرامبل؟", answer: "المعادل" },
+    { value: 400, question: "من البطل الذي يكتسب صحة دائمة عند أكل الوحوش أو الأعداء؟", answer: "تشوغاث" },
+    { value: 400, question: "من البطل الذي يمكنه السيطرة على الأعداء باستخدام مهارته النهائية؟", answer: "فيغو" },
+    // 500 Level (Extreme/Obscure Details)  
+    { value: 500, question: "ما اسم الجوهرة التي يشربها أفليوس ليتواصل مع ألون؟", answer: "جوهرة النوكتوم" },
+    { value: 500, question: "من هي الحب الأول لقانغبلانك؟", answer: "إيلوي" },
+    { value: 500, question: "ما اسم البطل المستوحى من شخصية ساموس آران (مترويد)؟", answer: "كايسا" },
+    { value: 500, question: "ما اسم المهارة السرية لغارين التي تعيد صحته؟", answer: "المثابرة" },
+    { value: 500, question: "من البطلتان الوحيدتان اللتان تحملان لقب 'الساحرة'؟", answer: "أورورا وليساندرا" },
+
+    // Additional Questions (Total 50)  
+    // 100 Level  
+    { value: 100, question: "ما اسم البطل الذي يمتلك مهارة سرية تمنح خبرة إضافية للحلفاء؟", answer: "زيليان" },
+    { value: 100, question: "من البطل الذي يمتلك مهارة نهائية اسمها 'المُعادل'؟", answer: "رامبل" },
+    { value: 100, question: "ما اسم المهارة التي تسبب نزيفًا وتقوي قدرات داريوس؟", answer: "ديسيميت" },
+    { value: 100, question: "من البطل الذي يكتسب قوة سحرية دائمة عند قتل الأعداء؟", answer: "فيجار" },
+    { value: 100, question: "ما اسم البطل الذي يغير شكله أثناء اللعبة؟", answer: "كاين" },
+
+    // 200 Level  
+    { value: 200, question: "ما اسم المهارة السرية لكاليستا مع حليف معين؟", answer: "القسم الأسود" },
+    { value: 200, question: "من هو البطل الذي يمتلك مهارة سرية تزيد سرعة الهجوم؟", answer: "كاليس" },
+    { value: 200, question: "ما اسم العنصر الذي يحرق الأعداء مع كل هجوم؟", answer: "شفرة الملك المدمر" },
+    { value: 200, question: "من البطل الذي يستطيع بناء أبراج؟", answer: "هايمردنغر" },
+    { value: 200, question: "ما اسم المهارة التي تمنح درعًا بعد استخدام تعويذة؟", answer: "شيلد باش" },
+
+    // 300 Level  
+    { value: 300, question: "ما اسم العنصر القديم الذي يمنح 'هجومًا عالميًا'؟", answer: "تيلبورت" },
+    { value: 300, question: "من البطل الذي يمتلك قدرة 'أبوكاليبس'؟", answer: "جالو" },
+
+    // 500 Level  
+    { value: 500, question: "ما اسم العنصر الذي أُزيل وكان يمنح 'حرق سحري'؟", answer: "إرادة القدامى" },
+    { value: 500, question: "من البطل الذي كان يُسمى 'الملك المظلم' قبل إعادة تصميمه؟", answer: "فاروس" },
+    { value: 500, question: "ما اسم الوضع المؤقت الذي سمح بسرقة أرواح الأعداء؟", answer: "مقاتلو السوق السوداء" },
+    { value: 500, question: "ما اسم التميمة التي أُزيلت وتمنح 'مضاعفة الضرر'؟", answer: "سيف الإلهي" },
+    { value: 500, question: "ما اسم البطل الذي يمتلك تفاعلًا صوتيًا سريًا مع جينكس؟", answer: " جينكس ضد جينكس" },
+     
+    { value: 500, question: "ما اسم العنصر الذي أُزيل في الموسم 3 وكان يكشف الأعداء المختبئين؟", answer: "إكسير أوراكل (Oracle's Elixir)" },
+    { value: 500, question: "ما اسم المهارة النهائية القديمة لتويستد فيت التي سمحت له بالانتقال لأي مكان؟", answer: "غيت (Gate)" },
+    { value: 500, question: "ما اسم الوضع المؤقت الذي سمح بشراء عناصر فريدة من 'تجار السوق السوداء'؟", answer: "مقاتلو السوق السوداء (Black Market Brawlers)" },
+    { value: 500, question: "من هو البطل الذي كان يُسمى 'الترول الملعون' قبل إعادة تصميمه؟", answer: "تراندل" },
+    { value: 500, question: "ما اسم العنصر الذي أُزيل وكان يمنح 'هجومًا سريعًا بنسبة 100%'؟", answer: "سيف الإلهي (Sword of the Divine)" },
+    { value: 500, question: "ما اسم التميمة التي أُزيلت وسمحت باستدعاء وحش لمساعدتك؟", answer: "بيكر (Banner of Command)" },
+    { value: 500, question: "من البطل الذي كان يمتلك قدرة 'أبوكاليبس' قبل إعادة تصميمه؟", answer: "جالو (Galio)" },
+    { value: 500, question: "ما اسم المهارة القديمة لسايون التي جعلته غير قابل للقتل؟", answer: "فينال سترايك (Final Strike)" },
+    { value: 500, question: "ما اسم العنصر الذي أُزيل وكان يحرق الأعداء بالضرر الحقيقي؟", answer: "دياث فاير غراسب (Deathfire Grasp)" },
+    { value: 500, question: "من هي البطلة التي كانت تُسمى 'سيدة الظلام' قبل تغيير اسمها؟", answer: "إفي (Evelynn)" },
+    { value: 500, question: "ما اسم التميمة القديمة التي كانت تمنح 'حرق' للمهارات؟", answer: "دياث فاير تاتو (Deathfire Touch)" },
+    { value: 500, question: "ما اسم الوضع الذي سمح بلعب 5 ضد 5 مع أبراج متحركة؟", answer: "أسجارد ضد النكسوس (Ascension)" },
+    { value: 500, question: "من البطل الذي كان يمتلك تفاعلًا سريًا مع 'نيدالي' في الأدغال؟", answer: "رينجر (Rengar)" },
+    { value: 500, question: "ما اسم العنصر الذي أُزيل وكان يزيد الضرر بناءً على سرعة الهجوم؟", answer: "ستارك فيفر (Stark's Fervor)" },
+    { value: 500, question: "ما اسم التميمة التي أُزيلت وسمحت بسرقة سرعة حركة العدو؟", answer: "فيبور أوف كازر (Phage of Celerity)" },
+    { value: 500, question: "من البطل الذي كان لقبه 'سيد الفوضى' قبل تغييره؟", answer: "فيكتور (Viktor)" },
+    { value: 500, question: "ما اسم المهارة القديمة لوارويك التي جعلته يتحول إلى ذئب؟", answer: "إنفينيت دوريس (Infinite Duress)" },
+    { value: 500, question: "ما اسم العنصر الذي أُزيل وكان يمنح 'درعًا سحريًا' عند التنشيط؟", answer: "هيكس تك غنبلاد (Hextech Gunblade)" },
+    { value: 500, question: "ما اسم الوضع الذي سمح بلعب 1 ضد 1 على خريطة خاصة؟", answer: "هواي إت (Howling Abyss)" },
+    { value: 500, question: "من البطل الذي كان يمتلك خطًا صوتيًا يشير إلى أنه 'لا يحتاج سلاحًا حقيقيًا'؟", answer: "جاكس (Jax)" },
+
+
   ],
 
   "الفنون والأدب": [
@@ -1853,56 +2355,567 @@
   ],
 
   "التكنولوجيا": [
-    { value: 100, question: "ما هو اختصار الإنترنت؟", answer: "الشبكة العنكبوتية العالمية (World Wide Web)" },
-    { value: 100, question: "من هو مؤسس شركة مايكروسوفت؟", answer: "بيل غيتس وبول ألين" },
-    { value: 100, question: "ما هو نظام التشغيل الأكثر استخدامًا في العالم؟", answer: "ويندوز (Windows)" },
-    { value: 100, question: "ما هو اسم محرك البحث الأكثر استخدامًا في العالم؟", answer: "جوجل (Google)" },
-    { value: 100, question: "ما هو اختصار البريد الإلكتروني؟", answer: "Electronic Mail" },
-    { value: 100, question: "من هو مؤسس شركة آبل؟", answer: "ستيف جوبز وستيف وزنياك ورونالد واين" },
-    { value: 100, question: "ما هو اسم أول هاتف محمول؟", answer: "موتورولا DynaTAC 8000x" },
-    { value: 100, question: "ما هو اختصار الذكاء الاصطناعي؟", answer: "Artificial Intelligence (AI)" },
-    { value: 100, question: "ما هو اسم أول قمر صناعي تم إطلاقه إلى الفضاء؟", answer: "سبوتنيك 1 (Sputnik 1)" },
-    { value: 100, question: "ما هو اسم أول جهاز كمبيوتر إلكتروني؟", answer: "ENIAC" },
-    { value: 200, question: "ما هو اسم لغة البرمجة الأكثر استخدامًا في العالم؟", answer: "يعتمد على التصنيف، لكن غالبًا ما يُذكر جافاسكريبت أو بايثون" },
-    { value: 200, question: "من هو مخترع شبكة الإنترنت؟", answer: "تيم بيرنرز لي" },
-    { value: 200, question: "ما هو نظام التشغيل الأكثر استخدامًا في الهواتف الذكية؟", answer: "أندرويد (Android)" },
-    { value: 200, question: "ما هو اسم أول متصفح ويب؟", answer: "WorldWideWeb (لاحقًا Nexus)" },
-    { value: 200, question: "ما هو اختصار الرسائل النصية القصيرة؟", answer: "Short Message Service (SMS)" },
-    { value: 200, question: "من هو مؤسس شركة أمازون؟", answer: "جيف بيزوس" },
-    { value: 200, question: "ما هو اسم أول لعبة فيديو؟", answer: "Tennis for Two" },
-    { value: 200, question: "ما هو اختصار الواقع الافتراضي؟", answer: "Virtual Reality (VR)" },
-    { value: 200, question: "ما هو اسم أول شبكة كمبيوتر؟", answer: "ARPANET" },
-    { value: 200, question: "ما هو اسم أول طابعة ليزر؟", answer: "Xerox 9700" },
-    { value: 300, question: "ما هو اسم أول لغة برمجة عالية المستوى؟", answer: "Fortran" },
-    { value: 300, question: "من هو مخترع البريد الإلكتروني؟", answer: "راي توملينسون" },
-    { value: 300, question: "ما هو نظام التشغيل مفتوح المصدر؟", answer: "لينكس (Linux)" },
-    { value: 300, question: "ما هو اسم أول محرك بحث؟", answer: "Archie" },
-    { value: 300, question: "ما هو اختصار الوسائط المتعددة؟", answer: "Multimedia" },
-    { value: 300, question: "من هو مؤسس شركة فيسبوك؟", answer: "مارك زوكربيرج وآخرون" },
-    { value: 300, question: "ما هو اسم أول لعبة فيديو تجارية ناجحة؟", answer: "Pong" },
-    { value: 300, question: "ما هو اختصار الواقع المعزز؟", answer: "Augmented Reality (AR)" },
-    { value: 300, question: "ما هو اسم أول شبكة اجتماعية؟", answer: "SixDegrees.com" },
-    { value: 300, question: "ما هو اسم أول طابعة ثلاثية الأبعاد؟", answer: "SLA-1 (من شركة 3D Systems)" },
-    { value: 400, question: "ما هو اسم أول لغة برمجة كائنية التوجه؟", answer: "Simula" },
-    { value: 400, question: "من هو مخترع الفأرة (الماوس)؟", answer: "دوغلاس إنجيلبارت" },
-    { value: 400, question: "ما هو نظام التشغيل الذي طورته شركة آبل؟", answer: "macOS (سابقًا Mac OS X)" },
-    { value: 400, question: "ما هو اسم أول محرك بحث يعتمد على خوارزمية PageRank؟", answer: "جوجل (Google)" },
-    { value: 400, question: "ما هو اختصار الرسائل الفورية؟", answer: "Instant Messaging (IM)" },
-    { value: 400, question: "من هو مؤسس شركة تسلا؟", answer: "إيلون ماسك وآخرون" },
-    { value: 400, question: "ما هو اسم أول لعبة فيديو ثلاثية الأبعاد؟", answer: "Battlezone (على الأرجح)" },
-    { value: 400, question: "ما هو اختصار إنترنت الأشياء؟", answer: "Internet of Things (IoT)" },
-    { value: 400, question: "ما هو اسم أول مدونة (blog)؟", answer: "Links.net (يعتبره البعض أول مدونة)" },
-    { value: 400, question: "ما هو اسم أول طائرة بدون طيار (درون)؟", answer: "Kettering Bug (أول طائرة بدون طيار عسكرية)" },
-    { value: 500, question: "ما هو اسم أول لغة برمجة تعتمد على المنطق؟", answer: "Prolog" },
-    { value: 500, question: "من هو مخترع القرص الصلب (Hard Disk)؟", answer: "رينولد جونسون (فريق في IBM)" },
-    { value: 500, question: "ما هو نظام التشغيل الذي طورته شركة جوجل؟", answer: "أندرويد (Android) و Chrome OS" },
-    { value: 500, question: "ما هو اسم أول محرك بحث يستخدم التعلم الآلي؟", answer: "من الصعب تحديده بدقة، لكن Google استخدمت تقنيات التعلم الآلي في وقت مبكر" },
-    { value: 500, question: "ما هو اختصار الشبكة الخاصة الافتراضية؟", answer: "Virtual Private Network (VPN)" },
-    { value: 500, question: "من هو مؤسس شركة سبيس إكس؟", answer: "إيلون ماسك" },
-    { value: 500, question: "ما هو اسم أول لعبة فيديو تعتمد على الواقع الافتراضي؟", answer: "Virtuality (مجموعة ألعاب)" },
-    { value: 500, question: "ما هو اختصار الحوسبة السحابية؟", answer: "لا يوجد اختصار رسمي شائع، لكن يُستخدم Cloud Computing" },
+  {
+      "value": 100,
+      "question": "في تطور الهواتف المحمولة، ما الابتكار الذي جعل جهاز IBM Simon يُعتبر رائداً في تصميم الشاشات؟",
+      "answer": "استخدام الشاشة اللمسية"
+    },
+    {
+      "value": 100,
+      "question": "ما الميزة التقنية التي ساهمت في انتشار لغة جافا في تطبيقات الويب متعددة المنصات؟",
+      "answer": "قابلية النقل بين الأنظمة"
+    },
+    {
+      "value": 100,
+      "question": "كيف تضمن تقنية الواي فاي نقل البيانات عبر الهواء باستخدام ترددات محددة؟",
+      "answer": "باستخدام موجات الراديو المخصصة"
+    },
+    {
+      "value": 100,
+      "question": "ما الدور الرئيسي لمحول ADC في الأجهزة الإلكترونية؟",
+      "answer": "تحويل الإشارات التناظرية إلى رقمية"
+    },
+    {
+      "value": 100,
+      "question": "ما الفارق الرئيسي بين تقنيات SSD والأقراص الصلبة التقليدية من حيث الأداء؟",
+      "answer": "سرعة القراءة والكتابة العالية وعدم وجود أجزاء متحركة"
+    },
+    {
+      "value": 100,
+      "question": "ما الخاصية التي تميز نواة Linux عن غيرها في سياق التخصيص والتطوير؟",
+      "answer": "كونها مفتوحة المصدر وقابلة للتعديل"
+    },
+    {
+      "value": 100,
+      "question": "ما المكون الأساسي الذي يعتمد عليه بروتوكول TLS لتأمين الاتصالات عبر الإنترنت؟",
+      "answer": "الشهادات الرقمية والمفاتيح العامة والخاصة"
+    },
+    {
+      "value": 100,
+      "question": "ما التقنية التي تعتمد على استخدام الأعداد الأولية كأساس في تشفير البيانات؟",
+      "answer": "خوارزمية RSA"
+    },
+    {
+      "value": 100,
+      "question": "كيف غيّرت تقنية Docker طريقة توزيع وتشغيل التطبيقات؟",
+      "answer": "عن طريق استخدام الحاويات لتوفير بيئة تشغيل معزولة"
+    },
+    {
+      "value": 100,
+      "question": "ما المبدأ الذي يجعل شبكات توزيع المحتوى (CDN) قادرة على تحسين سرعة تحميل المواقع؟",
+      "answer": "توزيع البيانات عبر خوادم جغرافية متعددة"
+    },
+    {
+      "value": 100,
+      "question": "في مجال الألعاب الإلكترونية، كيف تسهم تقنيات الواقع الافتراضي (VR) في تعزيز تجربة المستخدم؟",
+      "answer": "خلق بيئة افتراضية غامرة"
+    },
+    {
+      "value": 100,
+      "question": "ما هو العنصر الأساسي الذي تعتمد عليه تقنيات تحليل البيانات الكبيرة (Big Data Analytics)؟",
+      "answer": "معالجة كميات ضخمة من البيانات"
+    },
+    {
+      "value": 100,
+      "question": "ما المبدأ الذي تعتمد عليه واجهات برمجة التطبيقات (APIs) في تبادل البيانات بين الأنظمة؟",
+      "answer": "توحيد طرق الاتصال لتسهيل التكامل"
+    },
+    {
+      "value": 100,
+      "question": "في نقل البيانات عبر الويب، ما الدور الذي يلعبه بروتوكول HTTP في عملية التواصل؟",
+      "answer": "نقل طلبات واستجابات الويب بين العميل والخادم"
+    },
+    {
+      "value": 100,
+      "question": "ما الفائدة التي تقدمها مكتبة scikit-learn في مجال التعلم الآلي بلغة بايثون؟",
+      "answer": "توفير خوارزميات جاهزة لتحليل البيانات والتعلم الآلي"
+    },
+    { value: 100, question: "ما هو اسم أول نظام تشغيل تم تطويره بواسطة شركة مايكروسوفت؟", answer: "MS-DOS" },
+    { value: 100, question: "ما هو اسم أول هاتف ذكي يعمل بنظام iOS؟", answer: "آيفون 2G" },
+    { value: 100, question: "ما هو اسم أول محرك بحث شهير على الإنترنت؟", answer: "Archie" },
+    { value: 100, question: "ما هو اسم أول لغة برمجة عالية المستوى؟", answer: "Fortran" },
+    { value: 100, question: "ما هو اسم أول جهاز كمبيوتر شخصي تم طرحه في الأسواق؟", answer: "ألتير 8800" },
+    {
+      "value": 200,
+      "question": "ما المفهوم الذي يستخدم في الحوسبة لتوزيع عبء العمل عبر عدة عقد لتحسين الأداء؟",
+      "answer": "الحوسبة الموزعة"
+    },
+    {
+      "value": 200,
+      "question": "في مجال الذكاء الاصطناعي، ما الفرق التقني بين التعلم العميق والتعلم الآلي التقليدي؟",
+      "answer": "استخدام الشبكات العصبية المتعددة الطبقات في التعلم العميق"
+    },
+    {
+      "value": 200,
+      "question": "ما الدور الذي تقوم به بروتوكولات BGP في بنية الإنترنت العالمية؟",
+      "answer": "توجيه البيانات بين الأنظمة المستقلة"
+    },
+    {
+      "value": 200,
+      "question": "ما الخاصية المميزة لإطار Django التي تسهل تطوير تطبيقات الويب بسرعة في بايثون؟",
+      "answer": "اعتماده على نمط MVC وتوفير أدوات متكاملة"
+    },
+    {
+      "value": 200,
+      "question": "ما التقنية التي تُستخدم لتحليل حركة الشبكة واكتشاف الثغرات الأمنية بدقة؟",
+      "answer": "استخدام أدوات تحليل الشبكات مثل Wireshark"
+    },
+    {
+      "value": 200,
+      "question": "ما الفائدة التي يقدمها نظام التحكم في الإصدارات مثل Git في مشاريع البرمجيات؟",
+      "answer": "تتبع التغييرات وتنظيم العمل بين المطورين"
+    },
+    {
+      "value": 200,
+      "question": "ما الدور الذي تلعبه لغة C في تطوير الأنظمة المدمجة من حيث التحكم والأداء؟",
+      "answer": "توفير تحكم دقيق في الموارد مع أداء عالٍ"
+    },
+    {
+      "value": 200,
+      "question": "ما العملية التي يتم من خلالها تحويل البيانات من تنسيق إلى آخر في أنظمة ETL؟",
+      "answer": "استخراج وتحويل وتحميل البيانات"
+    },
+    {
+      "value": 200,
+      "question": "ما المبدأ الذي يُستخدم في بروتوكول SFTP لضمان أمان نقل الملفات عبر الشبكات؟",
+      "answer": "استخدام طبقة SSH للتشفير"
+    },
+    {
+      "value": 200,
+      "question": "ما الخاصية التي تجعل لغة سويفت مفضلة لتطوير تطبيقات iOS مقارنة باللغات السابقة؟",
+      "answer": "سهولة الاستخدام وتحسين الأداء"
+    },
+
+    // 300 Level (Very Hard) - 15 Questions
+    {
+      "value": 300,
+      "question": "في أمن المعلومات، ما نوع الهجوم الذي يستغل تحليل توقيت الاستجابة للكشف عن مفاتيح التشفير؟",
+      "answer": "هجوم التوقيت (Side-channel attack)"
+    },
+    {
+      "value": 300,
+      "question": "ما التقنية التي تعتمد على استخدام خوارزميات الضغط بدون فقدان لتقليل حجم الملفات؟",
+      "answer": "ضغط البيانات بدون فقدان"
+    },
+    {
+      "value": 300,
+      "question": "في الحوسبة الكمومية، ما الخاصية الفريدة التي تميز Qubit عن البت التقليدي؟",
+      "answer": "التراكب الكمومي"
+    },
+    {
+      "value": 300,
+      "question": "ما التقنية التي تُستخدم لتحليل الصور باستخدام الشبكات العصبية التلافيفية (CNN)؟",
+      "answer": "التعلم العميق في تحليل الصور"
+    },
+    {
+      "value": 300,
+      "question": "ما المبدأ الرياضي الذي يعتمد عليه تحليل المكونات الرئيسية (PCA) في تقليل أبعاد البيانات؟",
+      "answer": "التحليل الخطي والإحصائي"
+    },
+    {
+      "value": 300,
+      "question": "ما التقنية التي تُستخدم لتحسين أداء قواعد البيانات عبر تخزين النتائج مؤقتاً؟",
+      "answer": "التخزين المؤقت (Caching)"
+    },
+    {
+      "value": 300,
+      "question": "في نظم التشغيل، ما المكون الذي يسهم في تخصيص الموارد بشكل عادل بين العمليات؟",
+      "answer": "جدولة المهام (Scheduling)"
+    },
+    {
+      "value": 300,
+      "question": "ما المبدأ الأساسي وراء إدارة الحاويات باستخدام تقنية Kubernetes؟",
+      "answer": "أوركسترا الحاويات وتنسيقها"
+    },
+    {
+      "value": 300,
+      "question": "ما التقنية التي تعتمد على التشفير المزدوج لضمان أمان البيانات في عمليات المعاملات؟",
+      "answer": "3DES (Triple DES)"
+    },
+    {
+      "value": 300,
+      "question": "في تطوير الشبكات، ما البروتوكول الذي يُستخدم لتحسين أمان تبادل البيانات بين الخوادم؟",
+      "answer": "IPsec"
+    },
+    {
+      "value": 300,
+      "question": "ما التقنية التي تعتمد على استخدام وحدات معالجة الرسوميات (GPU) لتسريع خوارزميات التعلم العميق؟",
+      "answer": "GPU Computing"
+    },
+    {
+      "value": 300,
+      "question": "ما التقنية التي تعتمد على تخزين البيانات بكفاءة في بيئات الحوسبة الموزعة مثل Hadoop؟",
+      "answer": "Hadoop Distributed File System (HDFS)"
+    },
+    {
+      "value": 300,
+      "question": "ما المبدأ الذي يُستخدم في تحليل البيانات الكبيرة لتحسين دقة التنبؤات باستخدام نماذج التعلم الآلي؟",
+      "answer": "نمذجة البيانات المتقدمة"
+    },
+    {
+      "value": 300,
+      "question": "ما التقنية التي تُستخدم لتوفير بيئة تطوير متكاملة عبر الإنترنت دون الحاجة لتثبيت أدوات محلية؟",
+      "answer": "Cloud IDE"
+    },
+    {
+      "value": 300,
+      "question": "ما الفارق الرئيسي بين RESTful وGraphQL في طريقة استرجاع البيانات من الخوادم؟",
+      "answer": "تنظيم الطلبات واسترجاع البيانات بمرونة أكبر"
+    },
+
+    // 500 Level (Extreme) - 10 Questions
+    {
+      "value": 500,
+      "question": "في مجال التشفير المتقدم، ما الخوارزمية التي تُستخدم لاستغلال ثغرات 'Side-Channel' في الأنظمة الأمنية؟",
+      "answer": "الهجوم الزمني (Timing attack)"
+    },
+    {
+      "value": 500,
+      "question": "ما التقنية المبتكرة في تصنيع رقائق MRAM والتي تعتمد على خصائص مغناطيسية غير تقليدية؟",
+      "answer": "الذاكرة الممغنطة (MRAM)"
+    },
+    {
+      "value": 500,
+      "question": "في الحوسبة الموزعة، ما البروتوكول الذي يضمن توافق العقد في بيئة لا مركزية؟",
+      "answer": "Paxos"
+    },
+    {
+      "value": 500,
+      "question": "ما التقنية التي تستخدم خوارزميات التشفير لتحويل البيانات إلى نص مشفر لا يمكن قراءته بدون مفتاح؟",
+      "answer": "التشفير المتماثل"
+    },
+    {
+      "value": 500,
+      "question": "ما المبدأ الأساسي الذي يقوم عليه نظام ETL في تكامل وتحويل البيانات من مصادر مختلفة؟",
+      "answer": "استخراج وتحويل وتحميل البيانات"
+    },
+    {
+      "value": 500,
+      "question": "في الحوسبة الكمومية، ما التحدي الرئيسي الذي يواجه تحقيق استقرار ذرات Qubit؟",
+      "answer": "فقدان التماسك الكمومي (Quantum decoherence)"
+    },
+    {
+      "value": 500,
+      "question": "ما التقنية التي تعتمد على نماذج رياضية معقدة لتحليل الشبكات الاجتماعية واستخراج الأنماط الخفية؟",
+      "answer": "تحليل الشبكات الاجتماعية (Social Network Analysis)"
+    },
+    {
+      "value": 500,
+      "question": "في أمن المعلومات، ما نوع الهجوم الذي يستهدف استغلال ثغرات واجهات برمجة التطبيقات غير المحمية؟",
+      "answer": "هجوم الحقن (Injection attack)"
+    },
+    {
+      "value": 500,
+      "question": "ما التقنية المستخدمة لتحسين أداء الأنظمة عبر توزيع الحمل الديناميكي بين الخوادم؟",
+      "answer": "التحميل المتوازن (Load Balancing)"
+    },
+    {
+      "value": 500,
+      "question": "في تحليل البيانات الضخمة، ما المفهوم الذي يشير إلى استخدام تقنيات متقدمة لتجميع وتحليل البيانات في الوقت الحقيقي؟",
+      "answer": "معالجة التدفقات الفورية (Real-time Stream Processing)"
+    }, 
     { value: 500, question: "ما هو اسم أول موقع للتجارة الإلكترونية؟", answer: "NetMarket (يعتبره البعض أول موقع للتجارة الإلكترونية الآمنة)" },
     { value: 500, question: "ما هو اسم أول روبوت بشري؟", answer: "Elektro (من شركة Westinghouse)" }
+  ],
+
+  "الأنمي والمانجا": [
+    // 100 Level (Normal)
+    { value: 100, question: "في أنمي 'هجوم العمالقة'، ما هو اسم العائلة التي تمتلك قوة العمالقة؟", answer: "عائلة رايس" },
+    { value: 100, question: "ما هو اسم السيف الأسطوري الذي يستخدمه زورو في أنمي 'ون بيس'؟", answer: "وادو إيتشيمونجي" },
+    { value: 100, question: "في أنمي 'وفاة نوت بوك'، ما هو اسم الشرطي الذي يحقق في قضايا كيرا؟", answer: "إل" },
+    { value: 100, question: "ما هو اسم الفريق الذي ينتمي إليه ديكو في أنمي 'كوروكو نو باسكت'؟", answer: "سيرين" },
+    { value: 100, question: "في أنمي 'فولمتال بيرش'، ما هو اسم الشخصية التي تتحكم في النار؟", answer: "روي موستانغ" },
+    { value: 100, question: "ما هو اسم العالم الخياري الذي تدور فيه أحداث أنمي 'سورد آرت أونلاين'؟", answer: "ألفهايم أونلاين" },
+    { value: 100, question: "في أنمي 'بليتش'، ما هو اسم السيف الذي يستخدمه إيتشيغو؟", answer: "زانغيتسو" },
+    { value: 100, question: "ما هو اسم الشخصية التي تمتلك قوة 'العين البيضاء' في أنمي 'ناروتو'؟", answer: "هيناتا هيوغا" },
+    { value: 100, question: "في أنمي 'أكاديميتي للأبطال'، ما هو اسم القدرة التي يمتلكها أل مايت؟", answer: "ون فور أول" },
+    { value: 100, question: "ما هو اسم الشخصية التي تلعب دور الشرير الرئيسي في أنمي 'أوتاكو يوجو'؟", answer: "مومونغا" },
+    {
+      "value": 100,
+      "question": "في أنمي 'هجوم العمالقة', ما الابتكار التكتيكي الذي ساهم في تطوير أساليب الدفاع عن الجدران؟",
+      "answer": "استخدام آلات المناورة ثلاثية الأبعاد لتعزيز المرونة الدفاعية"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'ون بيس', ما الخاصية الفريدة التي يُعتقد أنها تكمن وراء قدرات سيف 'وادو إيتشيمونجي'؟",
+      "answer": "وجود نقوش غامضة تمنحه خصائص سحرية خارقة"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'ناروتو', ما العامل الأساسي الذي يُمكن أن يؤثر في نمو قدرات النينجا من خلال تقنيات التشاكرا؟",
+      "answer": "تنمية الطاقة الطبيعية من خلال التأمل والتدريب المستمر"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'بليتش', ما العنصر الذي يساعد إيتشيغو على التحكم في قواه الروحية أثناء المعارك؟",
+      "answer": "الاتصال العميق مع الأرواح الحارسة داخله"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'كوروكو نو باسكت', ما الميزة التي تجعل فريق 'سيرين' يتفوق على الفرق التقليدية؟",
+      "answer": "تنسيق حركات اللعب الجماعي والسرعة في اتخاذ القرار"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'فولمتال بيرش', كيف تُعبر النار عن التحول الداخلي لشخصية روي موستانغ؟",
+      "answer": "ترمز إلى شغفه وإرادته القوية للتجديد والتحول"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'سورد آرت أونلاين', ما الخاصية التي تجعل عالم 'ألفهايم أونلاين' فريدًا في دمجه بين الواقع والافتراضي؟",
+      "answer": "خلق بيئة تفاعلية تتداخل مع العالم الحقيقي"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'وفاة نوت بوك', ما الدافع الخفي الذي يحفز الشرطي 'إل' على كشف أسرار الجرائم؟",
+      "answer": "السعي الدائم وراء العدالة في عالم مظلم من الخبايا"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'أكاديميتي للأبطال', كيف تؤثر القدرة 'ون فور أول' على رحلة تطور شخصية أل مايت؟",
+      "answer": "تمثل تحديًا يتطلب تجاوز حدود القدرات البشرية"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'أوتاكو يوجو', ما العنصر الذي يبرز الطابع الغامض لشخصية 'مومونغا' كخصم رئيسي؟",
+      "answer": "استخدامه لقوى الظلام المختلطة بتقنيات غير متوقعة"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'هجوم العمالقة', ما التقنية التي تُستخدم للكشف المبكر عن تحركات العمالقة؟",
+      "answer": "أنظمة استشعار متطورة تراقب التغيرات في البيئة"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'ون بيس', كيف يضيف تنوع الثقافات والقبائل عمقاً لرحلة البحث عن الكنز؟",
+      "answer": "من خلال تقديم تحديات استراتيجية متنوعة في كل جزيرة"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'ناروتو', ما الدور الذي تلعبه الروح القتالية في صقل مهارات النينجا؟",
+      "answer": "تسهم في تعزيز تقنيات النينجوتسو وتطويرها عبر التدريب المكثف"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'بليتش', كيف تسهم السيوف الروحية في توجيه قوى الروح خلال المعارك؟",
+      "answer": "عن طريق نقل الطاقة الروحية بدقة أثناء الاشتباكات"
+    },
+    {
+      "value": 100,
+      "question": "في أنمي 'كوروكو نو باسكت', كيف يساعد التدريب العقلي الفريق على تحقيق نتائج مميزة؟",
+      "answer": "من خلال زيادة التركيز وتحسين التواصل بين اللاعبين"
+    },
+
+    // 200 Level (Hard)
+    {
+      "value": 200,
+      "question": "في أنمي 'هجوم العمالقة', كيف يُفسر دور عائلة رايس في تعزيز قدرات العمالقة ضمن استراتيجيات القتال؟",
+      "answer": "باستخدام أسرار تقليدية لتحسين الأداء التكتيكي"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'ون بيس', كيف يُساهم سيف 'وادو إيتشيمونجي' في تغيير مجرى معارك القراصنة؟",
+      "answer": "بفضل خصائصه الأسطورية التي تعيد تشكيل القتال عند استخدامه"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'ناروتو', كيف يرتبط تطوير تقنيات التشاكرا بتقدم الشخصيات في ساحة المعركة؟",
+      "answer": "من خلال ترابط تنمية الطاقة الطبيعية مع تعلم تقنيات النينجوتسو"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'بليتش', ما الأسلوب الذي يستخدمه إيتشيغو لدمج قواه الروحية مع قدراته البدنية؟",
+      "answer": "تحقيق توازن بين العالم الروحي والفيزيائي في قتال الأعداء"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'كوروكو نو باسكت', ما التحدي الذي يواجهه فريق 'سيرين' عند مقارنته بفرق تعتمد على تقنيات متطورة؟",
+      "answer": "ضرورة التكيف مع استراتيجيات اللعب القائمة على التكنولوجيا الحديثة"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'فولمتال بيرش', كيف يتطور رمز النار في شخصية روي موستانغ مع مرور الأحداث؟",
+      "answer": "يتحول إلى علامة على التحولات الدرامية الداخلية"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'سورد آرت أونلاين', ما الخصائص التقنية التي تجعل عالم 'ألفهايم أونلاين' منصة مثالية للتحديات الرقمية؟",
+      "answer": "دمج تكنولوجيا الواقع الافتراضي مع بيئة ألعاب تفاعلية"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'وفاة نوت بوك', كيف يُستخدم تحليل البيانات الدقيقة لمساعدة 'إل' في فك شيفرة الجرائم؟",
+      "answer": "بتوظيف تقنيات ذكية لتحليل الأنماط الخفية وراء الأحداث"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'أكاديميتي للأبطال', ما العلاقة بين القدرات الخارقة والتحديات الاجتماعية التي تواجه شخصية أل مايت؟",
+      "answer": "تنعكس القوى في صراعات داخلية تعيد تشكيل هويته"
+    },
+    {
+      "value": 200,
+      "question": "في أنمي 'أوتاكو يوجو', كيف تساهم التقنيات الحديثة في تعزيز أبعاد الشر لشخصية 'مومونغا'؟",
+      "answer": "عن طريق دمج عناصر التكنولوجيا مع قوى الظلام لخلق تأثير غير متوقع"
+    },
+    { value: 200, question: "في أنمي 'هجوم العمالقة'، ما هو اسم العائلة التي تمتلك قوة العمالقة؟", answer: "عائلة رايس" },
+    { value: 200, question: "ما هو اسم التقنية النهائية التي يستخدمها ألوكارد في أنمي 'هيلسينغ'؟", answer: "إطلاق مستوى صفر" },
+    { value: 200, question: "في أنمي 'فايت/ستاي نايت'، ما هو اسم السيف الذي يستخدمه سابير؟", answer: "إكسكاليبور" },
+    { value: 200, question: "ما هو اسم الشخصية التي تلعب دور الشرير الرئيسي في أنمي 'كيمي نو نا وا'؟", answer: "ميتشيرو" },
+    { value: 200, question: "في أنمي 'نو غيم نو لايف'، ما هو اسم العالم الذي ينقل إليه سورا وشيرو؟", answer: "ديس بورد" },
+    { value: 200, question: "ما هو اسم الشخصية التي تمتلك قوة 'الكتاب المظلم' في أنمي 'بلاك كلوفر'؟", answer: "يامي سوكيهيرو" },
+    { value: 200, question: "في أنمي 'أكاديميتي للأبطال'، ما هو اسم القدرة التي يمتلكها أل مايت؟", answer: "ون فور أول" },
+    { value: 200, question: "ما هو اسم الشخصية التي تلعب دور الشرير الرئيسي في أنمي 'أوتاكو يوجو'؟", answer: "مومونغا" },
+    { value: 200, question: "في أنمي 'أكيرا'، ما هو اسم المادة التي تمنح القوى الخارقة؟", answer: "أكيرا" },
+    { value: 200, question: "ما هو اسم الشخصية التي تمتلك قوة 'العين البيضاء' في أنمي 'ناروتو'؟", answer: "هيناتا هيوغا" },
+
+    // 300 Level (Very Hard)
+    {
+      "value": 300,
+      "question": "في أنمي 'هجوم العمالقة', كيف أثرت التحولات التكتيكية في الجدران على ديناميكيات المعارك بين البشر والعمالقة؟",
+      "answer": "أدت إلى إعادة تشكيل استراتيجيات الدفاع وتوزيع المهام بين الجنود"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'ون بيس', كيف يُستخدم سيف 'وادو إيتشيمونجي' كرمز يُربط بين الأساطير البحرية والواقع القتالي؟",
+      "answer": "من خلال دمج الأساطير القديمة مع تقنيات قتال فريدة"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'ناروتو', ما الدور الذي تلعبه تقنيات استحضار المخلوقات في دعم النينجا أثناء المعارك؟",
+      "answer": "توفير دعم تكتيكي متعدد الجوانب يعزز قدرات المعركة"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'بليتش', كيف يُساعد التوازن بين عالم الأرواح والعالم المادي في صقل أسلوب قتال إيتشيغو؟",
+      "answer": "بخلق انسجام يسمح بدمج القوى الروحية مع الحركات البدنية"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'كوروكو نو باسكت', ما الاستراتيجية التي يتبعها فريق 'سيرين' لتجاوز القيود الفردية وتحقيق الانتصار؟",
+      "answer": "تعزيز العمل الجماعي وتنسيق المهارات بطريقة مبتكرة"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'فولمتال بيرش', ما البعد الفلسفي وراء اختيار النار كرمز للتحول والتطهير في شخصية روي موستانغ؟",
+      "answer": "يرمز إلى الشغف الداخلي والتجديد الروحي في مواجهة المصير"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'سورد آرت أونلاين', كيف أدت التحديثات الدورية في عالم 'ألفهايم أونلاين' إلى تغيير قواعد اللعبة؟",
+      "answer": "أدخلت تحديات جديدة وأعادت تشكيل استراتيجيات اللاعبين"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'وفاة نوت بوك', كيف ساهم الجمع بين التحليل الرقمي والأساليب التقليدية في تقدم تحقيقات 'إل'؟",
+      "answer": "من خلال دمج التكنولوجيا مع الخبرة الاستقصائية لقراءة الأدلة الدقيقة"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'أكاديميتي للأبطال', كيف يؤثر الصراع بين القدرات الخارقة والتوقعات الاجتماعية على تطور شخصية أل مايت؟",
+      "answer": "يخلق صراعات داخلية تزيد من عمق وتعقيد الشخصية"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'أوتاكو يوجو', كيف يُبرز الاستخدام المتقن للتقنيات الحديثة جانب الشر في شخصية 'مومونغا'؟",
+      "answer": "من خلال استغلال التكنولوجيا لتعزيز قواه الغامضة وتفصيلها"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'هجوم العمالقة', كيف ساهمت التعديلات في بنية الجدران في تغيير مسار الأحداث الدرامية؟",
+      "answer": "أدت إلى انقسام استراتيجي في الدفاع عن البشرية"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'ون بيس', ما العنصر السري في تصميم سيف 'وادو إيتشيمونجي' الذي يربطه بأساطير البحار؟",
+      "answer": "نقوش ورموز تعكس إرثه الأسطوري العتيق"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'ناروتو', ما التقنية المتقدمة التي يمكن أن تغير مفهوم النينجوتسو التقليدي؟",
+      "answer": "دمج تقنيات العصر الحديث مع التقاليد النينجا القديمة"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'بليتش', كيف يؤثر استخدام الطقوس الروحية في استعادة قوى المحاربين خلال المعارك؟",
+      "answer": "يعزز قدرة الشخصيات على استرجاع طاقتهم الروحية بصورة أسرع"
+    },
+    {
+      "value": 300,
+      "question": "في أنمي 'كوروكو نو باسكت', ما الدور الذي يلعبه التدريب العقلي في تحسين أداء الفريق خلال اللحظات الحاسمة؟",
+      "answer": "يزيد من التركيز ويعزز التواصل الفعّال بين اللاعبين"
+    },
+    { value: 300, question: "في أنمي 'مونوغاتاري'، ما هو اسم الروح التي تلاحق كويومي أراراغي؟", answer: "كيسهوتشي" },
+    { value: 300, question: "ما هو اسم الشخصية التي تمتلك قوة 'الكتاب الأسود' في أنمي 'بلاك لاغون'؟", answer: "ريفاي" },
+    { value: 300, question: "في أنمي 'بوكو نو هيرو أكاديميا'، ما هو اسم القدرة التي يمتلكها شوتو تودوروكي؟", answer: "نصف ساخن ونصف بارد" },
+    { value: 300, question: "ما هو اسم الشخصية التي تمتلك قوة 'العين الإلهية' في أنمي 'ناروتو'؟", answer: "ناغاتو" },
+    { value: 300, question: "في أنمي 'أفتر ستوري'، ما هو اسم الشخصية التي تلعب دور الشرير الرئيسي؟", answer: "أكيرا" },
+    { value: 300, question: "ما هو اسم الشخصية التي تمتلك قوة 'الكتاب الأبيض' في أنمي 'بلاك كلوفر'؟", answer: "يوليوس نوفاكرونو" },
+    { value: 300, question: "في أنمي 'أكاديميتي للأبطال'، ما هو اسم القدرة التي يمتلكها إنديفور؟", answer: "هيلفليم" },
+    { value: 300, question: "ما هو اسم الشخصية التي تمتلك قوة 'العين الحمراء' في أنمي 'ناروتو'؟", answer: "ساسكي أوتشيها" },
+    { value: 300, question: "في أنمي 'أكيرا'، ما هو اسم الشخصية التي تمتلك قوة 'أكيرا'؟", answer: "تيتسوو" },
+    { value: 300, question: "ما هو اسم الشخصية التي تمتلك قوة 'الكتاب الأزرق' في أنمي 'بلاك كلوفر'؟", answer: "نويل سيلفا" },
+
+    // 500 Level (Extreme)
+    {
+      "value": 500,
+      "question": "في أنمي 'هجوم العمالقة', ما النظرية التي تربط بين التحولات النفسية للمحاربين وتغيرات قواهم الخارقة؟",
+      "answer": "نظرية التحول النفسي العميق وتأثيره على القدرات القتالية"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'ون بيس', كيف تُفسر الأساطير القديمة المرتبطة بسيف 'وادو إيتشيمونجي' تأثيره على الحبكة الجانبية؟",
+      "answer": "بربط ماضيه الغامض بالقدرات الخارقة التي يملكها"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'ناروتو', ما السر الكامن وراء استخدام تقنيات استحضار مخلوقات نادرة في معارك النينجا؟",
+      "answer": "اتصال روحاني مع عوالم موازية غير معروفة"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'بليتش', ما التفسير الفلسفي وراء التوازن بين عالم الأرواح والعالم المادي في معارك الروح؟",
+      "answer": "تحقيق التكامل بين الوجود المادي والروحاني في قتال الأعداء"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'كوروكو نو باسكت', كيف يؤثر التحليل النفسي العميق على استراتيجيات لعب فريق 'سيرين' في اللحظات الحرجة؟",
+      "answer": "بناء استراتيجيات تكتيكية قائمة على فهم دقيق لشخصيات اللاعبين"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'فولمتال بيرش', ما المفهوم الفلسفي الذي يرمز لاستخدام النار كوسيلة للتطهير الداخلي والتحول؟",
+      "answer": "استخدام النار كرمز للتحول الروحي والتجديد الداخلي"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'سورد آرت أونلاين', كيف تؤثر التعديلات الخفية في بيئة 'ألفهايم أونلاين' على خلق تحديات متدرجة للمستخدمين؟",
+      "answer": "إدخال عناصر مفاجئة تعيد تشكيل قواعد اللعبة باستمرار"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'وفاة نوت بوك', ما العلاقة المعقدة بين تحليل الأدلة الرقمية والأساليب التقليدية في تحقيق 'إل' لحل الجرائم؟",
+      "answer": "دمج التكنولوجيا الحديثة مع الفطنة التحليلية للكشف عن الأنماط الخفية"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'أكاديميتي للأبطال', كيف ينعكس الصراع الداخلي بين القدرات الخارقة والتوقعات الاجتماعية على بنية السرد الدرامي؟",
+      "answer": "من خلال خلق تناقضات نفسية تزيد من عمق الشخصية وتعقيد الحبكة"
+    },
+    {
+      "value": 500,
+      "question": "في أنمي 'أوتاكو يوجو', ما التفسير العلمي الذي يمكن أن يفسر دمج التقنيات الحديثة بالسحر في تجسيد شخصية 'مومونغا'؟",
+      "answer": "مزج بين مفاهيم الذكاء الاصطناعي والتقاليد السحرية القديمة"
+    },
+    { value: 500, question: "في أنمي 'ستينز;غيت'، ما هو اسم العالم الموازي الذي ينتقل إليه أوكابي رينتارو؟", answer: "خط العالم ألفا" },
+    { value: 500, question: "ما هو اسم الشخصية التي تمتلك قوة 'العين الذهبية' في أنمي 'ناروتو'؟", answer: "مادارا أوتشيها" },
+    { value: 500, question: "في أنمي 'أفتر ستوري'، ما هو اسم الشخصية التي تلعب دور البطل الرئيسي؟", answer: "كانيدا" },
+    { value: 500, question: "ما هو اسم الشخصية التي تمتلك قوة 'الكتاب الأخضر' في أنمي 'بلاك كلوفر'؟", answer: "يامي سوكيهيرو" },
+    { value: 500, question: "في أنمي 'أكاديميتي للأبطال'، ما هو اسم القدرة التي يمتلكها أل فور ون؟", answer: "ون فور أول" },
+    { value: 500, question: "ما هو اسم الشخصية التي تمتلك قوة 'العين الزرقاء' في أنمي 'ناروتو'؟", answer: "هيناتا هيوغا" },
+    { value: 500, question: "في أنمي 'أكيرا'، ما هو اسم الشخصية التي تمتلك قوة 'أكيرا'؟", answer: "تيتسوو" },
+    { value: 500, question: "ما هو اسم الشخصية التي تمتلك قوة 'الكتاب الأصفر' في أنمي 'بلاك كلوفر'؟", answer: "يوليوس نوفاكرونو" },
+    { value: 500, question: "في أنمي 'أفتر ستوري'، ما هو اسم الشخصية التي تلعب دور الشرير الرئيسي؟", answer: "أكيرا" },
+    { value: 500, question: "ما هو اسم الشخصية التي تمتلك قوة 'العين البنفسجية' في أنمي 'ناروتو'؟", answer: "ساسكي أوتشيها" }
   ]
 };
 
@@ -1980,7 +2993,8 @@
                 "ليج أوف ليجندز": "🎮",
                 "الفنون والأدب": "🎨",
                 "الجغرافيا": "🌍",
-                "الرياضة والألعاب": "⚽"
+                "الرياضة والألعاب": "⚽",
+                "الأنمي والمانجا": "🎌" // Adding emoji for Anime category
             };
             
             const categoryContainer = document.getElementById('categories-grid');
@@ -2675,34 +3689,72 @@
             const musicToggle = document.getElementById('music-toggle');
             const backgroundMusic = document.getElementById('background-music');
             const allSounds = document.querySelectorAll('audio');
+            const soundEffects = document.querySelectorAll('audio:not(#background-music)');
+            
+            // Create and add volume slider container
+            const volumeSliderContainer = document.createElement('div');
+            volumeSliderContainer.className = 'volume-slider-container';
+            volumeSliderContainer.innerHTML = `
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+            `;
+            
+            // Append the volume slider container to the music toggle's parent
+            musicToggle.parentNode.appendChild(volumeSliderContainer);
             
             // Check if music was previously muted
             const isMuted = localStorage.getItem('musicMuted') === 'true';
             
-            // Set initial state for all audio elements
-            allSounds.forEach(sound => {
-                sound.muted = isMuted;
-            });
+            // Set initial state for background music ONLY
+            backgroundMusic.muted = isMuted;
             
             if (isMuted) {
                 musicToggle.classList.add('muted');
                 musicToggle.querySelector('.music-icon').textContent = '🔇';
             }
             
+            // Load saved volume if available and apply to all sounds
+            let currentVolume = 1.0;
+            const savedVolume = localStorage.getItem('soundVolume');
+            if (savedVolume !== null) {
+                currentVolume = parseFloat(savedVolume);
+                // Apply volume to all audio elements
+                allSounds.forEach(sound => {
+                    sound.volume = currentVolume;
+                });
+            }
+            
+            // Set initial value of volume slider
+            const volumeSlider = document.getElementById('volume-slider');
+            volumeSlider.value = currentVolume;
+            
+            // Add volume slider event listener - affects ALL sounds
+            volumeSlider.addEventListener('input', function() {
+                const newVolume = parseFloat(this.value);
+                
+                // Apply volume to ALL audio elements
+                allSounds.forEach(sound => {
+                    sound.volume = newVolume;
+                });
+                
+                // Save volume preference
+                localStorage.setItem('soundVolume', newVolume);
+                
+                // If background music was muted but user adjusts volume, keep it muted
+                // This maintains the separation between volume control and mute control
+            });
+            
+            // Set up the mute toggle - ONLY affects background music
             musicToggle.addEventListener('click', function() {
                 // If this is the first click, start playing
                 if (backgroundMusic.paused) {
                     backgroundMusic.play().catch(e => console.log('Play failed:', e));
                 }
                 
-                // Toggle mute state for all sounds
-                const newMuteState = !backgroundMusic.muted;
-                allSounds.forEach(sound => {
-                    sound.muted = newMuteState;
-                });
+                // Toggle mute state for background music only
+                backgroundMusic.muted = !backgroundMusic.muted;
                 
                 // Update button appearance
-                if (newMuteState) {
+                if (backgroundMusic.muted) {
                     musicToggle.classList.add('muted');
                     musicToggle.querySelector('.music-icon').textContent = '🔇';
                 } else {
@@ -2711,16 +3763,35 @@
                 }
                 
                 // Save preference to localStorage
-                localStorage.setItem('musicMuted', newMuteState);
+                localStorage.setItem('musicMuted', backgroundMusic.muted);
             });
             
-            // Try to start music on page click as a fallback
-            document.body.addEventListener('click', function bodyClick() {
-                if (backgroundMusic.paused && !backgroundMusic.muted) {
-                    backgroundMusic.play().catch(e => console.log('Autoplay failed:', e));
+            // Try to start the music on any user interaction with the page
+            const startMusicOnInteraction = () => {
+                if (backgroundMusic.paused && !isMuted) {
+                    backgroundMusic.play().catch(e => console.log('Play failed:', e));
                 }
-                document.body.removeEventListener('click', bodyClick);
-            }, { once: true });
+                
+                // Remove event listeners after first interaction
+                document.removeEventListener('click', startMusicOnInteraction);
+                document.removeEventListener('keydown', startMusicOnInteraction);
+                document.removeEventListener('touchstart', startMusicOnInteraction);
+            };
+            
+            document.addEventListener('click', startMusicOnInteraction);
+            document.addEventListener('keydown', startMusicOnInteraction);
+            document.addEventListener('touchstart', startMusicOnInteraction);
+            
+            // Function to play victory sound
+            window.playVictorySound = function() {
+                const victorySound = document.getElementById('victory-sound');
+                if (victorySound) {
+                    // Reset the audio to the beginning if it's already playing
+                    victorySound.currentTime = 0;
+                    // Play the sound
+                    victorySound.play().catch(e => console.log('Victory sound play failed:', e));
+                }
+            };
         });
 
         // Add this function after the music control functions
@@ -2771,39 +3842,29 @@
         });
 
         function handleTeamAward(teamIndex) {
-            const currentQuestion = gameState.currentQuestion;
-            const pointsValue = currentQuestion.value;
+            // Check if the double points ability is active for this team
+            let pointsToAward = gameState.currentQuestion.value;
             
-            // Play the correct sound
-            document.getElementById('sound-correct').play();
+            if (gameState.teams[teamIndex].abilities && gameState.teams[teamIndex].abilities.double) {
+                // Double the points if the ability is active
+                pointsToAward *= 2;
+                
+                // Reset the ability after use
+                gameState.teams[teamIndex].abilities.double = false;
+                document.getElementById(`team${teamIndex+1}-double`).classList.remove('ability-active');
+            }
             
-            // Update the team's score
-            gameState.teams[teamIndex].score += pointsValue;
-            
-            // Update the score display
+            // Award points to the selected team
+            gameState.teams[teamIndex].score += pointsToAward;
             document.getElementById(`team${teamIndex + 1}-score`).textContent = gameState.teams[teamIndex].score;
+            playVictorySound();
+            // Hide the award buttons
+            document.getElementById('award-buttons').style.display = 'none';
             
-            // Add animation class
-            document.getElementById(`team${teamIndex + 1}-score`).classList.add('updated');
-            
-            // Remove animation class after animation completes
+            // Automatically return to the game board after 3 seconds
             setTimeout(() => {
-                document.getElementById(`team${teamIndex + 1}-score`).classList.remove('updated');
-            }, 1000);
-
-            // Mark the card as answered
-            const cardKey = `${currentQuestion.category}_${currentQuestion.value}`;
-            gameState.answeredCards.push(cardKey);
-            gameState.answeredQuestions++;
-            
-            // Save game state
-            saveGameState();
-            
-            // Check if all questions have been answered
-            checkGameEnd();
-            
-            // Return to game board
-            returnToTiles();
+                returnToTiles();
+            }, 3000);
         }
 
         // Add function to check if the game has ended
@@ -3007,21 +4068,21 @@
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    overflow: hidden;
+          overflow: hidden;
                     animation: fadeIn 0.5s ease-in-out;
-                }
-                
+        }
+
                 .disco-background {
-                    position: absolute;
+          position: absolute;
                     top: 0;
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    overflow: hidden;
-                }
-                
+          overflow: hidden;
+        }
+
                 .disco-light {
-                    position: absolute;
+          position: absolute;
                     top: 0;
                     width: 10px;
                     height: 100%;
@@ -3078,7 +4139,7 @@
                 }
                 
                 .final-scores {
-                    display: flex;
+          display: flex;
                     justify-content: space-around;
                     margin: 2rem 0;
                 }
@@ -3107,13 +4168,13 @@
                 
                 .team-score {
                     font-size: 2rem;
-                    font-weight: bold;
+          font-weight: bold;
                     color: #ffcc00;
                 }
                 
                 .action-button {
                     background-color: #4CAF50;
-                    color: white;
+          color: white;
                     border: none;
                     padding: 1rem 2rem;
                     font-size: 1.5rem;
@@ -3142,38 +4203,6 @@
                 
                 .glow-button {
                     animation: buttonGlow 1.5s infinite alternate;
-                }
-                
-                @keyframes dance {
-                    0% { transform: translateY(0) rotate(-3deg); }
-                    50% { transform: translateY(-10px) rotate(0deg); }
-                    100% { transform: translateY(0) rotate(3deg); }
-                }
-                
-                @keyframes glow {
-                    0% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ffcc00, 0 0 35px #ffcc00; }
-                    100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ffcc00, 0 0 70px #ffcc00; }
-                }
-                
-                @keyframes pulse {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(1.1); }
-                    100% { transform: scale(1); }
-                }
-                
-                @keyframes bounce {
-                    0% { transform: translateY(0); }
-                    100% { transform: translateY(-20px); }
-                }
-                
-                @keyframes buttonGlow {
-                    0% { box-shadow: 0 0 5px #4CAF50, 0 0 10px #4CAF50; }
-                    100% { box-shadow: 0 0 15px #4CAF50, 0 0 30px #4CAF50; }
-                }
-                
-                @keyframes fadeIn {
-                    0% { opacity: 0; }
-                    100% { opacity: 1; }
                 }
             `;
             document.head.appendChild(styleElement);
@@ -3330,6 +4359,518 @@
                 funnyImageContainer.classList.remove('active');
             }
         }
+
+        // Function to play victory sound when points are awarded
+        function playVictorySound() {
+          const victorySound = document.getElementById('victory-sound');
+          
+          // Reset the audio to the beginning if it's already playing
+          victorySound.currentTime = 0;
+          
+          // Play the sound
+          victorySound.play().catch(e => console.log('Victory sound play failed:', e));
+        }
+
+        // Add this to your existing DOMContentLoaded event listener
+        document.addEventListener('DOMContentLoaded', function() {
+          // ... your existing code ...
+          
+          // Make sure victory sound is not affected by music mute setting
+          const victorySound = document.getElementById('victory-sound');
+          if (victorySound) {
+            // Set a reasonable volume for the victory sound
+            victorySound.volume = 0.7;
+          }
+        });
+
+        // Call this function whenever points are awarded
+        // For example:
+        // function awardPoints(team, points) {
+        //   teamScores[team] += points;
+        //   updateScoreDisplay();
+        //   playVictorySound();
+        // }
+
+        // Turn indicator and timer functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up the turn indicator
+            setupTurnIndicator();
+            
+            // Initialize game variables
+            window.gameState = window.gameState || {};
+            window.gameState.currentTeam = 1; // Start with team 1
+            window.gameState.turnDuration = 30; // 30 seconds per turn
+            window.gameState.timerInterval = null;
+            
+            // Start the game with team 1
+            changeTurn(1);
+            
+            // Add event listeners to all reveal answer buttons
+            const revealButtons = document.querySelectorAll('.reveal-answer-btn');
+            revealButtons.forEach(button => {
+                button.addEventListener('click', handleRevealAnswer);
+            });
+        });
+
+        function setupTurnIndicator() {
+            const slotReel = document.querySelector('.slot-reel');
+            
+            // Get team names (or use defaults if not set)
+            const team1Name = window.gameState?.teams?.team1?.name || "الفريق الأول";
+            const team2Name = window.gameState?.teams?.team2?.name || "الفريق الثاني";
+            
+            // Create multiple copies of teams to create the illusion of an infinite reel
+            let slotReelHTML = '';
+            for (let i = 0; i < 10; i++) {
+                slotReelHTML += `<div class="team-slot team1" data-team="1">${team1Name}</div>`;
+                slotReelHTML += `<div class="team-slot team2" data-team="2">${team2Name}</div>`;
+            }
+            
+            slotReel.innerHTML = slotReelHTML;
+            
+            // Position the reel to show first team (centered)
+            positionSlotReel(1, false);
+        }
+
+        function positionSlotReel(teamNumber, animate = true) {
+            const slotReel = document.querySelector('.slot-reel');
+            const teamSlots = document.querySelectorAll('.team-slot');
+            const slotHeight = 60; // Height of one slot
+            
+            // Find the position of the 5th occurrence of the team (middle of our reel)
+            let targetIndex = 0;
+            let count = 0;
+            for (let i = 0; i < teamSlots.length; i++) {
+                if (parseInt(teamSlots[i].getAttribute('data-team')) === teamNumber) {
+                    count++;
+                    if (count === 5) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            // Calculate position to center the selected team
+            const yPosition = targetIndex * slotHeight - (slotHeight * 0.5) + 30;
+            
+            // Temporarily remove transition for immediate positioning
+            if (!animate) {
+                slotReel.style.transition = 'none';
+                slotReel.style.transform = `translateY(-${yPosition}px)`;
+                // Force reflow to ensure the style is applied
+                void slotReel.offsetWidth;
+                slotReel.style.transition = 'transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+            } else {
+                // Add some randomness to the animation
+                const randomOffset = Math.floor(Math.random() * 5) * slotHeight;
+                const totalRotations = 3; // Number of full rotations
+                const totalHeight = teamSlots.length * slotHeight;
+                
+                // Animate the reel
+                slotReel.style.transform = `translateY(-${(totalRotations * totalHeight) + yPosition + randomOffset}px)`;
+                
+                // Play slot machine sound
+                playSlotMachineSound();
+            }
+        }
+
+        function playSlotMachineSound() {
+            // Create or get slot machine sound
+            let slotSound = document.getElementById('slot-sound');
+            if (!slotSound) {
+                slotSound = document.createElement('audio');
+                slotSound.id = 'slot-sound';
+                slotSound.src = 'https://assets.mixkit.co/sfx/preview/mixkit-slot-machine-spin-1008.mp3'; // Replace with your sound
+                slotSound.preload = 'auto';
+                document.body.appendChild(slotSound);
+            }
+            
+            slotSound.currentTime = 0;
+            slotSound.play().catch(e => console.log('Slot sound play failed:', e));
+        }
+
+        function changeTurn(teamNumber) {
+            // Update current team
+            window.gameState.currentTeam = teamNumber;
+            
+            // Animate the slot machine
+            positionSlotReel(teamNumber, true);
+            
+            // Update the timer color based on team
+            const timerBar = document.querySelector('.turn-timer-bar');
+            if (teamNumber === 1) {
+                timerBar.style.background = 'linear-gradient(to right, #0066cc, #00aaff)';
+            } else {
+                timerBar.style.background = 'linear-gradient(to right, #cc3300, #ff6600)';
+            }
+            
+            // Reset and start the timer
+            startTurnTimer();
+        }
+
+        function startTurnTimer() {
+            // Clear any existing timer
+            if (window.gameState.timerInterval) {
+                clearInterval(window.gameState.timerInterval);
+            }
+            
+            const timerBar = document.querySelector('.turn-timer-bar');
+            const timerText = document.querySelector('.turn-timer-text');
+            let timeLeft = window.gameState.turnDuration;
+            
+            // Reset the timer display
+            timerBar.style.transform = 'scaleX(1)';
+            timerText.textContent = timeLeft;
+            
+            // Start the countdown
+            window.gameState.timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                // Update timer display
+                timerText.textContent = timeLeft;
+                timerBar.style.transform = `scaleX(${timeLeft / window.gameState.turnDuration})`;
+                
+                if (timeLeft <= 10) {
+                    // Add urgency effect when time is running out
+                    timerBar.style.backgroundColor = timeLeft <= 5 ? '#ff0000' : '#ffaa00';
+                    
+                    if (timeLeft <= 5) {
+                        // Play tick sound for last 5 seconds
+                        playTickSound();
+                    }
+                }
+                
+                if (timeLeft <= 0) {
+                    // Time's up!
+                    clearInterval(window.gameState.timerInterval);
+                    playTimeUpSound();
+                    
+                    // Switch to the other team
+                    setTimeout(() => {
+                        changeTurn(window.gameState.currentTeam === 1 ? 2 : 1);
+                    }, 1500);
+                }
+            }, 1000);
+        }
+
+        function playTickSound() {
+            // Create or get tick sound
+            let tickSound = document.getElementById('tick-sound');
+            if (!tickSound) {
+                tickSound = document.createElement('audio');
+                tickSound.id = 'tick-sound';
+                tickSound.src = 'https://assets.mixkit.co/sfx/preview/mixkit-clock-tick-1045.mp3'; // Replace with your sound
+                tickSound.preload = 'auto';
+                document.body.appendChild(tickSound);
+            }
+            
+            tickSound.currentTime = 0;
+            tickSound.play().catch(e => console.log('Tick sound play failed:', e));
+        }
+
+        function playTimeUpSound() {
+            // Create or get time up sound
+            let timeUpSound = document.getElementById('timeup-sound');
+            if (!timeUpSound) {
+                timeUpSound = document.createElement('audio');
+                timeUpSound.id = 'timeup-sound';
+                timeUpSound.src = 'https://assets.mixkit.co/sfx/preview/mixkit-game-show-wrong-answer-buzz-950.mp3'; // Replace with your sound
+                timeUpSound.preload = 'auto';
+                document.body.appendChild(timeUpSound);
+            }
+            
+            timeUpSound.currentTime = 0;
+            timeUpSound.play().catch(e => console.log('Time up sound play failed:', e));
+        }
+
+        // Expose functions to global scope for use in other parts of the game
+        window.changeTurn = changeTurn;
+
+        // Function to handle revealing an answer and switching turns
+        function handleRevealAnswer(event) {
+            // Your existing reveal answer logic here...
+            
+            // After revealing the answer, switch to the other team
+            const nextTeam = window.gameState.currentTeam === 1 ? 2 : 1;
+            changeTurn(nextTeam);
+        }
+
+        // If you don't have reveal buttons yet, here's how to add them to each question card
+        function addRevealButtonsToQuestions() {
+            const questionCards = document.querySelectorAll('.question-card');
+            
+            questionCards.forEach(card => {
+                // Create reveal button if it doesn't exist
+                if (!card.querySelector('.reveal-answer-btn')) {
+                    const revealButton = document.createElement('button');
+                    revealButton.className = 'reveal-answer-btn';
+                    revealButton.textContent = 'كشف الإجابة';
+                    revealButton.addEventListener('click', handleRevealAnswer);
+                    
+                    // Add button to card
+                    card.appendChild(revealButton);
+                }
+            });
+        }
+
+        // First, let's create and add the turn indicator HTML elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create turn indicator structure
+            const turnIndicatorHTML = `
+            <div class="turn-indicator-container">
+              <h2 class="turn-indicator-title">الدور على</h2>
+              <div class="slot-machine">
+                <div class="slot-window">
+                  <div class="slot-reel">
+                    <!-- Team names will be added here dynamically -->
+                  </div>
+                </div>
+                <div class="slot-decoration left"></div>
+                <div class="slot-decoration right"></div>
+              </div>
+              <div class="turn-timer-container">
+                <div class="turn-timer-bar"></div>
+                <div class="turn-timer-text">30</div>
+              </div>
+            </div>
+            `;
+            
+            // Find the tiles container and add the turn indicator below it
+            const tilesContainer = document.querySelector('.trivia-board') || document.querySelector('.question-board') || document.querySelector('.jeopardy-board');
+            
+            if (tilesContainer) {
+                // Create a div to hold our turn indicator
+                const turnIndicatorElement = document.createElement('div');
+                turnIndicatorElement.innerHTML = turnIndicatorHTML;
+                
+                // Insert after the tiles container
+                tilesContainer.parentNode.insertBefore(turnIndicatorElement, tilesContainer.nextSibling);
+                
+                // Now setup the turn indicator
+                setupTurnIndicator();
+                
+                // Initialize game variables
+                window.gameState = window.gameState || {};
+                window.gameState.currentTeam = 1; // Start with team 1
+                window.gameState.turnDuration = 30; // 30 seconds per turn
+                window.gameState.timerInterval = null;
+                
+                // Start the game with team 1
+                changeTurn(1);
+                
+                // Add event listeners to reveal buttons if they exist
+                const revealButtons = document.querySelectorAll('.reveal-answer-btn');
+                revealButtons.forEach(button => {
+                    button.addEventListener('click', handleRevealAnswer);
+                });
+                
+                console.log('Turn indicator successfully added below tiles');
+            } else {
+                console.error('Could not find tiles container to add turn indicator');
+            }
+        });
+
+        // Function to handle revealing an answer
+        function handleRevealAnswer(event) {
+            // Switch to the other team
+            const nextTeam = window.gameState.currentTeam === 1 ? 2 : 1;
+            changeTurn(nextTeam);
+        }
+
+        function setupTurnIndicator() {
+            const slotReel = document.querySelector('.slot-reel');
+            if (!slotReel) {
+                console.error('Slot reel element not found');
+                return;
+            }
+            
+            // Get team names (or use defaults if not set)
+            const team1Name = window.gameState?.teams?.team1?.name || "الفريق الأول";
+            const team2Name = window.gameState?.teams?.team2?.name || "الفريق الثاني";
+            
+            // Create multiple copies of teams to create the illusion of an infinite reel
+            let slotReelHTML = '';
+            for (let i = 0; i < 10; i++) {
+                slotReelHTML += `<div class="team-slot team1" data-team="1">${team1Name}</div>`;
+                slotReelHTML += `<div class="team-slot team2" data-team="2">${team2Name}</div>`;
+            }
+            
+            slotReel.innerHTML = slotReelHTML;
+            
+            // Position the reel to show first team (centered)
+            positionSlotReel(1, false);
+        }
+
+        function positionSlotReel(teamNumber, animate = true) {
+            const slotReel = document.querySelector('.slot-reel');
+            if (!slotReel) {
+                console.error('Slot reel element not found');
+                return;
+            }
+            
+            const teamSlots = document.querySelectorAll('.team-slot');
+            const slotHeight = 60; // Height of one slot
+            
+            // Find the position of the 5th occurrence of the team (middle of our reel)
+            let targetIndex = 0;
+            let count = 0;
+            for (let i = 0; i < teamSlots.length; i++) {
+                if (parseInt(teamSlots[i].getAttribute('data-team')) === teamNumber) {
+                    count++;
+                    if (count === 5) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            // Calculate position to center the selected team
+            const yPosition = targetIndex * slotHeight - (slotHeight * 0.5) + 30;
+            
+            // Temporarily remove transition for immediate positioning
+            if (!animate) {
+                slotReel.style.transition = 'none';
+                slotReel.style.transform = `translateY(-${yPosition}px)`;
+                // Force reflow to ensure the style is applied
+                void slotReel.offsetWidth;
+                slotReel.style.transition = 'transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67)';
+            } else {
+                // Add some randomness to the animation
+                const randomOffset = Math.floor(Math.random() * 5) * slotHeight;
+                const totalRotations = 3; // Number of full rotations
+                const totalHeight = teamSlots.length * slotHeight;
+                
+                // Animate the reel
+                slotReel.style.transform = `translateY(-${(totalRotations * totalHeight) + yPosition + randomOffset}px)`;
+                
+                // Play slot machine sound
+                playSlotMachineSound();
+            }
+        }
+
+        function playSlotMachineSound() {
+            // Create or get slot machine sound
+            let slotSound = document.getElementById('slot-sound');
+            if (!slotSound) {
+                slotSound = document.createElement('audio');
+                slotSound.id = 'slot-sound';
+                slotSound.src = 'https://assets.mixkit.co/sfx/preview/mixkit-slot-machine-spin-1008.mp3';
+                slotSound.preload = 'auto';
+                document.body.appendChild(slotSound);
+            }
+            
+            slotSound.currentTime = 0;
+            slotSound.play().catch(e => console.log('Slot sound play failed:', e));
+        }
+
+        function changeTurn(teamNumber) {
+            // Update current team
+            window.gameState = window.gameState || {};
+            window.gameState.currentTeam = teamNumber;
+            
+            // Animate the slot machine
+            positionSlotReel(teamNumber, true);
+            
+            // Update the timer color based on team
+            const timerBar = document.querySelector('.turn-timer-bar');
+            if (timerBar) {
+                if (teamNumber === 1) {
+                    timerBar.style.background = 'linear-gradient(to right, #0066cc, #00aaff)';
+                } else {
+                    timerBar.style.background = 'linear-gradient(to right, #cc3300, #ff6600)';
+                }
+            }
+            
+            // Reset and start the timer
+            startTurnTimer();
+            
+            console.log(`Turn changed to team ${teamNumber}`);
+        }
+
+        function startTurnTimer() {
+            window.gameState = window.gameState || {};
+            // Clear any existing timer
+            if (window.gameState.timerInterval) {
+                clearInterval(window.gameState.timerInterval);
+            }
+            
+            const timerBar = document.querySelector('.turn-timer-bar');
+            const timerText = document.querySelector('.turn-timer-text');
+            if (!timerBar || !timerText) {
+                console.error('Timer elements not found');
+                return;
+            }
+            
+            let timeLeft = window.gameState.turnDuration || 30;
+            
+            // Reset the timer display
+            timerBar.style.transform = 'scaleX(1)';
+            timerText.textContent = timeLeft;
+            
+            // Start the countdown
+            window.gameState.timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                // Update timer display
+                timerText.textContent = timeLeft;
+                timerBar.style.transform = `scaleX(${timeLeft / window.gameState.turnDuration})`;
+                
+                if (timeLeft <= 10) {
+                    // Add urgency effect when time is running out
+                    timerBar.style.backgroundColor = timeLeft <= 5 ? '#ff0000' : '#ffaa00';
+                    
+                    if (timeLeft <= 5) {
+                        // Play tick sound for last 5 seconds
+                        playTickSound();
+                    }
+                }
+                
+                if (timeLeft <= 0) {
+                    // Time's up!
+                    clearInterval(window.gameState.timerInterval);
+                    playTimeUpSound();
+                    
+                    // Switch to the other team
+                    setTimeout(() => {
+                        changeTurn(window.gameState.currentTeam === 1 ? 2 : 1);
+                    }, 1500);
+                }
+            }, 1000);
+        }
+
+        function playTickSound() {
+            // Create or get tick sound
+            let tickSound = document.getElementById('tick-sound');
+            if (!tickSound) {
+                tickSound = document.createElement('audio');
+                tickSound.id = 'tick-sound';
+                tickSound.src = 'https://assets.mixkit.co/sfx/preview/mixkit-clock-tick-1045.mp3';
+                tickSound.preload = 'auto';
+                document.body.appendChild(tickSound);
+            }
+            
+            tickSound.currentTime = 0;
+            tickSound.play().catch(e => console.log('Tick sound play failed:', e));
+        }
+
+        function playTimeUpSound() {
+            // Create or get time up sound
+            let timeUpSound = document.getElementById('timeup-sound');
+            if (!timeUpSound) {
+                timeUpSound = document.createElement('audio');
+                timeUpSound.id = 'timeup-sound';
+                timeUpSound.src = 'https://assets.mixkit.co/sfx/preview/mixkit-game-show-wrong-answer-buzz-950.mp3';
+                timeUpSound.preload = 'auto';
+                document.body.appendChild(timeUpSound);
+            }
+            
+            timeUpSound.currentTime = 0;
+            timeUpSound.play().catch(e => console.log('Time up sound play failed:', e));
+        }
+
+        // Expose functions to global scope for use in other parts of the game
+        window.changeTurn = changeTurn;
+        window.handleRevealAnswer = handleRevealAnswer;
     </script>
 </body>
 </html>
