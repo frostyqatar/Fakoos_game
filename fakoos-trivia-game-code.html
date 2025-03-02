@@ -990,6 +990,39 @@
             background-color: white;
             transform: rotate(-45deg);
         }
+
+        .logo-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-logo {
+            width: 120px;
+            height: 120px;
+            margin-right: 1rem;
+            border-radius: 50%;
+            object-fit: cover;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s ease;
+            align-self: center;
+        }
+
+        #game-logo:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        @media (max-width: 768px) {
+            #game-logo {
+                width: 60px;
+                height: 60px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1005,8 +1038,31 @@
         <source src="https://cdn.pixabay.com/download/audio/2025/02/27/audio_9c5363b7af.mp3?filename=funny-cartoon-comedy-background-music-306997.mp3" type="audio/mp3">
     </audio>
     
+    <!-- Add these audio elements after the background music player -->
+    <audio id="sound-select" preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2024/08/07/audio_a88b4e255c.mp3?filename=coin-recieved-230517.mp3" type="audio/mp3">
+    </audio>
+    <audio id="sound-correct" preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bf3620f48d.mp3?filename=yay-6120.mp3" type="audio/mp3">
+    </audio>
+    <audio id="sound-incorrect" preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2024/08/07/audio_e13f63698a.mp3?filename=woosh-230554.mp3" type="audio/mp3">
+    </audio>
+    <audio id="sound-question" preload="auto">
+        <source src= "https://cdn.pixabay.com/download/audio/2024/08/07/audio_e13f63698a.mp3?filename=woosh-230554.mp3" type="audio/mp3">
+    </audio>
+    <audio id="sound-gamestart" preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2024/08/07/audio_c11dea5bd4.mp3?filename=victorymale-version-230553.mp3" type="audio/mp3">
+    </audio>
+    <audio id="sound-timer" preload="auto">
+        <source src="https://cdn.pixabay.com/download/audio/2024/08/07/audio_e13f63698a.mp3?filename=woosh-230554.mp3" type="audio/mp3">
+    </audio>
+    
     <header>
-        <h1 onclick="goHome()">Fakoos Trivia!</h1>
+        <div class="logo-container">
+            <img src="https://beeimg.com/images/c16625250914.webp" alt="Fakoos Trivia Logo" id="game-logo">
+            <h1>Fakoos Trivia</h1>
+        </div>
     </header>
     
     <div class="container">
@@ -1136,10 +1192,10 @@
                             <div class="award-team-container">
                                 <h3>منح النقاط للفريق:</h3>
                                 <div class="award-buttons">
-                                    <button class="action-button team1-award" onclick="awardPointsToTeam(0); returnToTiles()">
+                                    <button class="action-button team1-award" onclick="handleTeamAward(0)">
                                         <span id="award-team1-name">الفريق ١</span> 🏆
                                     </button>
-                                    <button class="action-button team2-award" onclick="awardPointsToTeam(1); returnToTiles()">
+                                    <button class="action-button team2-award" onclick="handleTeamAward(1)">
                                         <span id="award-team2-name">الفريق ٢</span> 🏆
                                     </button>
                                     <button class="action-button no-award" onclick="noPointsAwarded(); returnToTiles()">
@@ -1794,6 +1850,9 @@
             
             // Make sure to save game state before showing the game screen
             localStorage.setItem('gameState', JSON.stringify(gameState));
+            
+            // Play game start sound
+            playSound('sound-gamestart');
         }
 
         // Build the game board
@@ -1917,6 +1976,9 @@
             } else {
                 console.error('Some question screen elements are missing');
             }
+            
+            // Play question sound
+            playSound('sound-question');
         }
 
         // Award points to team
@@ -1957,6 +2019,9 @@
             
             // Save game state
             localStorage.setItem('gameState', JSON.stringify(gameState));
+            
+            // Play sound (correct or incorrect based on points)
+            playSound('sound-correct');
         }
 
         // No points awarded
@@ -1979,6 +2044,9 @@
             
             // Save game state
             localStorage.setItem('gameState', JSON.stringify(gameState));
+            
+            // Play sound (incorrect answer sound)
+            playSound('sound-incorrect');
         }
 
         // Return to tiles
@@ -2112,6 +2180,13 @@
                 document.getElementById(`team${teamIndex+1}-score`).classList.remove('updated');
             }, 1000);
             
+            // Play sound when score changes
+            if (amount > 0) {
+                playSound('sound-correct');
+            } else {
+                playSound('sound-incorrect');
+            }
+            
             localStorage.setItem('gameState', JSON.stringify(gameState));
         }
 
@@ -2197,6 +2272,9 @@
             
             gameState.currentQuestion.answered = true;
             
+            // Play bell sound when revealing answer
+            playSound('sound-incorrect');
+            
             stopTimer();
         }
 
@@ -2218,8 +2296,14 @@
                 timerElement.style.display = 'block';
                 timerElement.innerHTML = `<span class="timer-team">${teamName}</span>: <span class="timer-value">${currentTimerSeconds}</span>`;
                 
-                timerInterval = setInterval(function() {
+                timerInterval = setInterval(() => {
                     currentTimerSeconds--;
+                    
+                    // Play timer warning sound when 10 seconds or less remain
+                    if (currentTimerSeconds <= 10 && currentTimerSeconds > 0) {
+                        playSound('sound-timer');
+                    }
+                    
                     const timerValueElement = document.querySelector('.timer-value');
                     if (timerValueElement) {
                         timerValueElement.textContent = currentTimerSeconds;
@@ -2316,6 +2400,9 @@
                     break;
             }
             
+            // Play sound for special ability
+            playSound('sound-correct');
+            
             // Show feedback
             showAbilityFeedback(message);
             
@@ -2357,29 +2444,35 @@
         document.addEventListener('DOMContentLoaded', function() {
             const musicToggle = document.getElementById('music-toggle');
             const backgroundMusic = document.getElementById('background-music');
+            const allSounds = document.querySelectorAll('audio');
             
             // Check if music was previously muted
             const isMuted = localStorage.getItem('musicMuted') === 'true';
             
-            // Set initial state
-            backgroundMusic.muted = isMuted;
+            // Set initial state for all audio elements
+            allSounds.forEach(sound => {
+                sound.muted = isMuted;
+            });
+            
             if (isMuted) {
                 musicToggle.classList.add('muted');
                 musicToggle.querySelector('.music-icon').textContent = '🔇';
             }
             
-            // Start playing music (browsers require user interaction for autoplay)
             musicToggle.addEventListener('click', function() {
                 // If this is the first click, start playing
                 if (backgroundMusic.paused) {
                     backgroundMusic.play().catch(e => console.log('Play failed:', e));
                 }
                 
-                // Toggle mute state
-                backgroundMusic.muted = !backgroundMusic.muted;
+                // Toggle mute state for all sounds
+                const newMuteState = !backgroundMusic.muted;
+                allSounds.forEach(sound => {
+                    sound.muted = newMuteState;
+                });
                 
                 // Update button appearance
-                if (backgroundMusic.muted) {
+                if (newMuteState) {
                     musicToggle.classList.add('muted');
                     musicToggle.querySelector('.music-icon').textContent = '🔇';
                 } else {
@@ -2388,10 +2481,10 @@
                 }
                 
                 // Save preference to localStorage
-                localStorage.setItem('musicMuted', backgroundMusic.muted);
+                localStorage.setItem('musicMuted', newMuteState);
             });
             
-            // Try to start music on page click as a fallback (for browsers with strict autoplay policies)
+            // Try to start music on page click as a fallback
             document.body.addEventListener('click', function bodyClick() {
                 if (backgroundMusic.paused && !backgroundMusic.muted) {
                     backgroundMusic.play().catch(e => console.log('Autoplay failed:', e));
@@ -2399,6 +2492,59 @@
                 document.body.removeEventListener('click', bodyClick);
             }, { once: true });
         });
+
+        // Add this function after the music control functions
+        function playSound(soundId) {
+            // Don't play sounds if music is muted
+            if (document.getElementById('background-music').muted) return;
+            
+            const sound = document.getElementById(soundId);
+            if (sound) {
+                sound.currentTime = 0;  // Reset to start
+                sound.play().catch(e => console.log('Sound play failed:', e));
+            }
+        }
+
+        // Add click sounds to category items
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            
+            // Add click sound to category items
+            const categoryContainer = document.getElementById('categories-grid');
+            if (categoryContainer) {
+                categoryContainer.addEventListener('click', function(e) {
+                    const categoryItem = e.target.closest('.category-item');
+                    if (categoryItem) {
+                        playSound('sound-select');
+                    }
+                });
+            }
+            
+            // Add sound to value cards
+            const gameBoard = document.getElementById('game-board');
+            if (gameBoard) {
+                gameBoard.addEventListener('click', function(e) {
+                    const valueCard = e.target.closest('.value-card');
+                    if (valueCard && !valueCard.classList.contains('answered')) {
+                        playSound('sound-select');
+                    }
+                });
+            }
+            
+            // Add sound to reveal answer button
+            const revealBtn = document.getElementById('reveal-btn');
+            if (revealBtn) {
+                revealBtn.addEventListener('click', function() {
+                    playSound('sound-correct');
+                });
+            }
+        });
+
+        function handleTeamAward(teamIndex) {
+            awardPointsToTeam(teamIndex);
+            returnToTiles();
+            playSound('sound-gamestart');
+        }
     </script>
 </body>
 </html>
