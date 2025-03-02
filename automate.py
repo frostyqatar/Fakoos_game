@@ -21,9 +21,7 @@ def automate_game_setup():
             EC.presence_of_element_located((By.CLASS_NAME, "setup-screen"))
         )
         
-        # Take a screenshot of initial state
-        driver.save_screenshot("initial_screen.png")
-        print("Initial screen saved as initial_screen.png")
+        print("Initial screen loaded successfully")
         
         # 1. Select 3 random categories
         print("📋 Selecting categories...")
@@ -137,16 +135,10 @@ def automate_game_setup():
                     
         except Exception as e:
             print(f"⚠️ Error setting up team 2: {e}")
-            driver.save_screenshot("team2_error.png")
-            print("Screenshot saved as team2_error.png")
         
         # 4. Start the game
         print("🎲 Starting the game...")
         time.sleep(2)  # Longer delay before clicking
-        
-        # Take screenshot before attempting to click start button
-        driver.save_screenshot("before_start.png")
-        print("Screenshot saved as before_start.png")
         
         # Try to find and click the start game button
         try:
@@ -173,26 +165,22 @@ def automate_game_setup():
                             print("Clicked last button in setup screen")
             except Exception as inner_e:
                 print(f"⚠️ Error finding start button: {inner_e}")
-                driver.save_screenshot("button_error.png")
         
         # Wait to see the game board
-        time.sleep(5)
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.ID, "game-board"))
+        )
+        print("✅ Game board loaded successfully")
         
-        # Take a screenshot of the game board
-        driver.save_screenshot("game_board.png")
-        print("Game board screenshot saved as game_board.png")
-        
-        # Keep the browser window open
-        print("Script complete. Browser will remain open.")
+        # Login complete - leave the browser open
+        print("✅ Setup complete! Browser will remain open.")
         input("Press Enter to close the browser window...")
         
     except Exception as e:
         print(f"⚠️ Error: {e}")
-        driver.save_screenshot("error.png")
-        print("Screenshot saved as error.png")
         
     finally:
-        # Close the browser
+        # Close the browser when user hits Enter
         driver.quit()
 
 if __name__ == "__main__":

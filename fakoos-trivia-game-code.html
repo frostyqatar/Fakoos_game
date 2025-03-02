@@ -1023,6 +1023,211 @@
                 font-size: 2rem;
             }
         }
+
+        /* Celebration styles */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .disco-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .disco-light {
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(255,0,0,0.5), 
+                rgba(255,255,0,0.5), 
+                rgba(0,255,0,0.5), 
+                rgba(0,255,255,0.5), 
+                rgba(0,0,255,0.5), 
+                rgba(255,0,255,0.5));
+            filter: blur(10px);
+            animation: discoLight 3s infinite linear;
+        }
+        
+        @keyframes discoLight {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(100%) rotate(360deg); opacity: 0.3; }
+        }
+        
+        .celebration-content {
+            position: relative;
+            background-color: rgba(30, 30, 60, 0.8);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            text-align: center;
+            max-width: 90%;
+            width: 600px;
+            z-index: 1001;
+            color: white;
+        }
+        
+        .winner-title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: gold;
+        }
+        
+        .winner-avatar {
+            font-size: 5rem;
+            margin: 1rem 0;
+        }
+        
+        .winner-name {
+            font-size: 2.5rem;
+            margin: 1rem 0;
+            color: #fff;
+        }
+        
+        .winner-score {
+            font-size: 1.8rem;
+            margin: 1rem 0;
+            color: #ffcc00;
+        }
+        
+        .final-scores {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+        }
+        
+        .team-score-display {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: rgba(255,255,255,0.1);
+            min-width: 40%;
+        }
+        
+        .team-score-display.winner {
+            background-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 15px gold;
+        }
+        
+        .team-avatar {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-name {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-family: inherit;
+        }
+        
+        /* Animation classes */
+        .dancing-text {
+            animation: dance 2s infinite alternate ease-in-out;
+        }
+        
+        .glow-text {
+            animation: glow 1.5s infinite alternate;
+        }
+        
+        .pulse-text {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .bounce-animation {
+            animation: bounce 1s infinite alternate;
+        }
+        
+        .glow-button {
+            animation: buttonGlow 1.5s infinite alternate;
+        }
+        
+        @keyframes dance {
+            0% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-10px) rotate(0deg); }
+            100% { transform: translateY(0) rotate(3deg); }
+        }
+        
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ffcc00, 0 0 35px #ffcc00; }
+            100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ffcc00, 0 0 70px #ffcc00; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+        
+        @keyframes buttonGlow {
+            0% { box-shadow: 0 0 5px #4CAF50, 0 0 10px #4CAF50; }
+            100% { box-shadow: 0 0 15px #4CAF50, 0 0 30px #4CAF50; }
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .funny-image-container {
+            position: fixed;
+            top: 60%; /* Position below the center */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            text-align: center;
+            pointer-events: none; /* Prevent interaction when not active */
+        }
+
+        .funny-image-container.active {
+            opacity: 1;
+            pointer-events: auto; /* Allow interaction when active */
+        }
+
+        .funny-image {
+            max-width: 250px;
+            max-height: 250px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -1747,9 +1952,11 @@
             gameState = {
                 teams: [
                     { name: 'الفريق ١', players: [], score: 0, avatar: '😎',
-                      abilities: { chatgpt: false, double: false, google: false, dismiss: false } },
+                      abilities: { chatgpt: false, double: false, google: false, dismiss: false },
+                      doublePointsActive: false },
                     { name: 'الفريق ٢', players: [], score: 0, avatar: '🤖',
-                      abilities: { chatgpt: false, double: false, google: false, dismiss: false } }
+                      abilities: { chatgpt: false, double: false, google: false, dismiss: false },
+                      doublePointsActive: false }
                 ],
                 selectedCategories: [],
                 currentTeam: 0,
@@ -1972,6 +2179,9 @@
                 
                 startTimer(gameState.teams[gameState.currentTeam].name);
                 
+                // Start the funny image timer when showing a question
+                startFunnyImageTimer();
+                
                 localStorage.setItem('gameState', JSON.stringify(gameState));
             } else {
                 console.error('Some question screen elements are missing');
@@ -1981,13 +2191,14 @@
             playSound('sound-question');
         }
 
-        // Award points to team
+        // Completely rewrite the award points function to fix double points
         function awardPointsToTeam(teamIndex) {
             if (!gameState.currentQuestion || !gameState.currentQuestion.answered) {
                 alert('❗ الرجاء إظهار الإجابة أولاً');
                 return;
             }
             
+            // Disable award buttons to prevent double-clicking
             const awardButtons = document.querySelectorAll('.team1-award, .team2-award, .no-award');
             awardButtons.forEach(button => {
                 button.disabled = true;
@@ -1995,33 +2206,47 @@
                 button.style.cursor = 'not-allowed';
             });
             
+            // Get base point value
             let pointValue = parseInt(gameState.currentQuestion.value);
+            let isDoubled = false;
             
-            // Check if double points is active for this team
-            if (gameState.teams[teamIndex].doublePointsActive) {
+            // Check for double points and apply if active
+            console.log(`Checking double points for team ${teamIndex+1}. Current status:`, gameState.teams[teamIndex].doublePointsActive);
+            
+            if (gameState.teams[teamIndex].doublePointsActive === true) {
                 pointValue *= 2;
+                isDoubled = true;
                 gameState.teams[teamIndex].doublePointsActive = false;
+                
+                // Add special notification for double points
                 showAbilityFeedback(`${gameState.teams[teamIndex].name} حصل على ${pointValue} نقطة (مضاعفة)!`);
+                console.log(`Applied double points: ${pointValue} points awarded`);
             }
             
+            // Add points to team score
             gameState.teams[teamIndex].score += pointValue;
             
+            // Show feedback
             showFeedback(true, gameState.teams[teamIndex].name);
             
+            // Update displayed scores
             updateScores();
             
+            // Mark question as answered
             markQuestionAsAnswered();
             
-            // Remove this setTimeout since we're calling returnToTiles directly from the button
-            // setTimeout(() => {
-            //     returnToTiles();
-            // }, 2000);
-            
-            // Save game state
+            // Save game state to persist changes
             localStorage.setItem('gameState', JSON.stringify(gameState));
             
-            // Play sound (correct or incorrect based on points)
+            // Play correct answer sound
             playSound('sound-correct');
+            
+            // Extra debug alert to confirm points awarded
+            if (isDoubled) {
+                setTimeout(() => {
+                    alert(`تم منح ${pointValue} نقطة (مضاعفة) لـ ${gameState.teams[teamIndex].name}`);
+                }, 500);
+            }
         }
 
         // No points awarded
@@ -2105,20 +2330,16 @@
                 }
             }
             
-            if (gameState.answeredQuestions >= gameState.totalQuestions) {
-                const winner = gameState.teams[0].score > gameState.teams[1].score ? 0 : 
-                              gameState.teams[0].score < gameState.teams[1].score ? 1 : -1;
-                
-                let message = '';
-                if (winner === -1) {
-                    message = '🤝 تعادل!';
-                } else {
-                    message = `🏆 ${gameState.teams[winner].name} فاز(ت) بالمسابقة!`;
-                }
-                
+            // Instead of just checking the count, let's check if all cards on the board are answered
+            const totalCards = document.querySelectorAll('.value-card').length;
+            const answeredCards = document.querySelectorAll('.value-card.answered').length;
+            
+            // Only show the winner when ALL cards are answered
+            if (answeredCards === totalCards && totalCards > 0) {
+                // Delay to let current actions complete
                 setTimeout(() => {
-                    alert(message);
-                }, 500);
+                    showWinnerCelebration();
+                }, 1000);
             }
         }
 
@@ -2367,7 +2588,7 @@
             }
         }
 
-        // Add the function to use abilities
+        // Completely rewrite the ability functionality to fix double points
         function useAbility(teamIndex, abilityType) {
             // Check if ability is already used
             if (gameState.teams[teamIndex].abilities[abilityType]) {
@@ -2379,7 +2600,10 @@
             gameState.teams[teamIndex].abilities[abilityType] = true;
             
             // Disable the button
-            document.getElementById(`team${teamIndex+1}-${abilityType}`).disabled = true;
+            const abilityButton = document.getElementById(`team${teamIndex+1}-${abilityType}`);
+            if (abilityButton) {
+                abilityButton.disabled = true;
+            }
             
             let message = '';
             
@@ -2389,8 +2613,11 @@
                     break;
                 case 'double':
                     message = `${gameState.teams[teamIndex].name} سيحصل على نقاط مضاعفة للسؤال التالي!`;
-                    // Set active double points for this team
+                    // Explicitly set double points flag
                     gameState.teams[teamIndex].doublePointsActive = true;
+                    
+                    // Show additional confirmation for debugging
+                    console.log(`Double points activated for team ${teamIndex+1}`);
                     break;
                 case 'google':
                     message = `${gameState.teams[teamIndex].name} يستخدم بحث جوجل!`;
@@ -2406,16 +2633,19 @@
             // Show feedback
             showAbilityFeedback(message);
             
-            // Save game state
+            // Save game state to persist the change
             localStorage.setItem('gameState', JSON.stringify(gameState));
         }
 
-        // Function to show ability feedback
+        // Add or enhance the showAbilityFeedback function
         function showAbilityFeedback(message) {
             const feedback = document.createElement('div');
-            feedback.className = 'feedback';
-            feedback.style.backgroundColor = '#9c27b0'; // Purple color
+            feedback.className = 'feedback ability-feedback';
+            feedback.style.backgroundColor = '#9c27b0'; // Purple color for ability feedback
             feedback.style.color = 'white';
+            feedback.style.fontWeight = 'bold';
+            feedback.style.padding = '15px';
+            feedback.style.borderRadius = '10px';
             feedback.textContent = message;
             
             document.body.appendChild(feedback);
@@ -2425,7 +2655,7 @@
                 setTimeout(() => {
                     document.body.removeChild(feedback);
                 }, 300);
-            }, 2000);
+            }, 2500);
         }
 
         // Add function to update ability buttons state
@@ -2541,9 +2771,564 @@
         });
 
         function handleTeamAward(teamIndex) {
-            awardPointsToTeam(teamIndex);
+            const currentQuestion = gameState.currentQuestion;
+            const pointsValue = currentQuestion.value;
+            
+            // Play the correct sound
+            document.getElementById('sound-correct').play();
+            
+            // Update the team's score
+            gameState.teams[teamIndex].score += pointsValue;
+            
+            // Update the score display
+            document.getElementById(`team${teamIndex + 1}-score`).textContent = gameState.teams[teamIndex].score;
+            
+            // Add animation class
+            document.getElementById(`team${teamIndex + 1}-score`).classList.add('updated');
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                document.getElementById(`team${teamIndex + 1}-score`).classList.remove('updated');
+            }, 1000);
+
+            // Mark the card as answered
+            const cardKey = `${currentQuestion.category}_${currentQuestion.value}`;
+            gameState.answeredCards.push(cardKey);
+            gameState.answeredQuestions++;
+            
+            // Save game state
+            saveGameState();
+            
+            // Check if all questions have been answered
+            checkGameEnd();
+            
+            // Return to game board
             returnToTiles();
+        }
+
+        // Add function to check if the game has ended
+        function checkGameEnd() {
+            // Calculate total number of cards on the board
+            const totalCategories = gameState.selectedCategories.length;
+            const totalQuestions = totalCategories * 5; // 5 questions per category
+            
+            if (gameState.answeredQuestions >= totalQuestions) {
+                // All questions have been answered - show winner
+                setTimeout(() => {
+                    showWinner();
+                }, 1000); // Short delay before showing winner
+            }
+        }
+
+        // Add function to display the winner with animation
+        function showWinner() {
+            // Determine winning team
+            let winningTeamIndex = 0;
+            let highestScore = gameState.teams[0].score;
+            
+            for (let i = 1; i < gameState.teams.length; i++) {
+                if (gameState.teams[i].score > highestScore) {
+                    highestScore = gameState.teams[i].score;
+                    winningTeamIndex = i;
+                }
+            }
+            
+            // Create winner announcement overlay
+            const winnerOverlay = document.createElement('div');
+            winnerOverlay.className = 'winner-overlay';
+            
+            const isTie = gameState.teams.filter(team => team.score === highestScore).length > 1;
+            
+            const winnerContent = document.createElement('div');
+            winnerContent.className = 'winner-content';
+            
+            if (isTie) {
+                winnerContent.innerHTML = `
+                    <h1 class="winner-title">تعادل!</h1>
+                    <p class="winner-score">النتيجة: ${highestScore}</p>
+                    <button class="action-button" onclick="exitGame()">العب مرة أخرى</button>
+                `;
+            } else {
+                winnerContent.innerHTML = `
+                    <h1 class="winner-title">🎉 الفائز هو 🎉</h1>
+                    <div class="winner-avatar">${gameState.teams[winningTeamIndex].avatar}</div>
+                    <h2 class="winner-name">${gameState.teams[winningTeamIndex].name}</h2>
+                    <p class="winner-score">النتيجة: ${highestScore}</p>
+                    <button class="action-button" onclick="exitGame()">العب مرة أخرى</button>
+                `;
+                
+                // Create confetti elements
+                for (let i = 0; i < 50; i++) {
+                    createConfetti(winnerOverlay);
+                }
+            }
+            
+            winnerOverlay.appendChild(winnerContent);
+            document.body.appendChild(winnerOverlay);
+            
+            // Play victory sound
+            document.getElementById('sound-gamestart').play();
+        }
+
+        // Function to create individual confetti element
+        function createConfetti(container) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // Random confetti properties
+            const colors = ['#FFC700', '#FF0097', '#00CAFF', '#6FFF00', '#9D00FF'];
+            const size = Math.floor(Math.random() * 10) + 5;
+            const left = Math.floor(Math.random() * 100) + 1;
+            const duration = Math.floor(Math.random() * 5) + 3;
+            const delay = Math.random() * 2;
+            
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            confetti.style.left = `${left}%`;
+            confetti.style.animationDuration = `${duration}s`;
+            confetti.style.animationDelay = `${delay}s`;
+            
+            container.appendChild(confetti);
+        }
+
+        // Fix the noPointsAwarded function to ensure it returns to tiles
+        function noPointsAwarded() {
+            // Play sound
+            document.getElementById('sound-incorrect').play();
+            
+            // Mark the card as answered
+            const currentQuestion = gameState.currentQuestion;
+            const cardKey = `${currentQuestion.category}_${currentQuestion.value}`;
+            gameState.answeredCards.push(cardKey);
+            gameState.answeredQuestions++;
+            
+            // Save game state
+            saveGameState();
+            
+            // Check if all questions have been answered
+            checkGameEnd();
+            
+            // Return to game board
+            returnToTiles();
+        }
+
+        // New function for the winner celebration with animations
+        function showWinnerCelebration() {
+            // Determine winning team
+            let winningTeamIndex = gameState.teams[0].score > gameState.teams[1].score ? 0 : 
+                                  gameState.teams[0].score < gameState.teams[1].score ? 1 : -1;
+            
+            // Create the celebration overlay
+            const celebrationOverlay = document.createElement('div');
+            celebrationOverlay.className = 'celebration-overlay';
+            document.body.appendChild(celebrationOverlay);
+            
+            // Add disco background
+            const discoBackground = document.createElement('div');
+            discoBackground.className = 'disco-background';
+            celebrationOverlay.appendChild(discoBackground);
+            
+            // Create 5 disco lights
+            for (let i = 0; i < 5; i++) {
+                const discoLight = document.createElement('div');
+                discoLight.className = 'disco-light';
+                discoLight.style.animationDelay = `${i * 0.2}s`;
+                discoLight.style.left = `${i * 20 + 10}%`;
+                discoBackground.appendChild(discoLight);
+            }
+            
+            // Create content container
+            const celebrationContent = document.createElement('div');
+            celebrationContent.className = 'celebration-content';
+            celebrationOverlay.appendChild(celebrationContent);
+            
+            // Set the content based on whether there's a tie or a winner
+            if (winningTeamIndex === -1) {
+                celebrationContent.innerHTML = `
+                    <h1 class="winner-title dancing-text">🤝 تعادل! 🤝</h1>
+                    <p class="winner-score pulse-text">النتيجة: ${gameState.teams[0].score}</p>
+                    <div class="final-scores">
+                        <div class="team-score-display">
+                            <div class="team-avatar">${gameState.teams[0].avatar}</div>
+                            <div class="team-name">${gameState.teams[0].name}</div>
+                            <div class="team-score">${gameState.teams[0].score}</div>
+                        </div>
+                        <div class="team-score-display">
+                            <div class="team-avatar">${gameState.teams[1].avatar}</div>
+                            <div class="team-name">${gameState.teams[1].name}</div>
+                            <div class="team-score">${gameState.teams[1].score}</div>
+                        </div>
+                    </div>
+                    <button class="action-button glow-button" onclick="exitGame()">لعب مرة أخرى</button>
+                `;
+            } else {
+                // Get the winning team
+                const winner = gameState.teams[winningTeamIndex];
+                
+                celebrationContent.innerHTML = `
+                    <h1 class="winner-title dancing-text">🎉 الفائز هو 🎉</h1>
+                    <div class="winner-avatar bounce-animation">${winner.avatar}</div>
+                    <h2 class="winner-name glow-text">${winner.name}</h2>
+                    <p class="winner-score pulse-text">النتيجة: ${winner.score}</p>
+                    <div class="final-scores">
+                        <div class="team-score-display ${winningTeamIndex === 0 ? 'winner' : ''}">
+                            <div class="team-avatar">${gameState.teams[0].avatar}</div>
+                            <div class="team-name">${gameState.teams[0].name}</div>
+                            <div class="team-score">${gameState.teams[0].score}</div>
+                        </div>
+                        <div class="team-score-display ${winningTeamIndex === 1 ? 'winner' : ''}">
+                            <div class="team-avatar">${gameState.teams[1].avatar}</div>
+                            <div class="team-name">${gameState.teams[1].name}</div>
+                            <div class="team-score">${gameState.teams[1].score}</div>
+                        </div>
+                    </div>
+                    <button class="action-button glow-button" onclick="exitGame()">لعب مرة أخرى</button>
+                `;
+            }
+            
+            // Create and add confetti
+            createManyConfetti(celebrationOverlay, 150);
+            
+            // Play victory sound
             playSound('sound-gamestart');
+            
+            // Add CSS for the celebration screen
+            const styleElement = document.createElement('style');
+            styleElement.textContent = `
+                .celebration-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.85);
+                    z-index: 1000;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    overflow: hidden;
+                    animation: fadeIn 0.5s ease-in-out;
+                }
+                
+                .disco-background {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden;
+                }
+                
+                .disco-light {
+                    position: absolute;
+                    top: 0;
+                    width: 10px;
+                    height: 100%;
+                    background: linear-gradient(to bottom, 
+                        rgba(255,0,0,0.5), 
+                        rgba(255,255,0,0.5), 
+                        rgba(0,255,0,0.5), 
+                        rgba(0,255,255,0.5), 
+                        rgba(0,0,255,0.5), 
+                        rgba(255,0,255,0.5));
+                    filter: blur(10px);
+                    animation: discoLight 3s infinite linear;
+                }
+                
+                @keyframes discoLight {
+                    0% { transform: translateY(-100%) rotate(0deg); opacity: 0.7; }
+                    100% { transform: translateY(100%) rotate(360deg); opacity: 0.3; }
+                }
+                
+                .celebration-content {
+                    position: relative;
+                    background-color: rgba(30, 30, 60, 0.8);
+                    padding: 2rem;
+                    border-radius: 1rem;
+                    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+                    text-align: center;
+                    max-width: 90%;
+                    width: 600px;
+                    z-index: 1001;
+                    color: white;
+                }
+                
+                .winner-title {
+                    font-size: 3rem;
+                    margin-bottom: 1rem;
+                    color: gold;
+                }
+                
+                .winner-avatar {
+                    font-size: 5rem;
+                    margin: 1rem 0;
+                }
+                
+                .winner-name {
+                    font-size: 2.5rem;
+                    margin: 1rem 0;
+                    color: #fff;
+                }
+                
+                .winner-score {
+                    font-size: 1.8rem;
+                    margin: 1rem 0;
+                    color: #ffcc00;
+                }
+                
+                .final-scores {
+                    display: flex;
+                    justify-content: space-around;
+                    margin: 2rem 0;
+                }
+                
+                .team-score-display {
+                    padding: 1rem;
+                    border-radius: 0.5rem;
+                    background-color: rgba(255,255,255,0.1);
+                    min-width: 40%;
+                }
+                
+                .team-score-display.winner {
+                    background-color: rgba(255, 215, 0, 0.3);
+                    box-shadow: 0 0 15px gold;
+                }
+                
+                .team-avatar {
+                    font-size: 2.5rem;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .team-name {
+                    font-size: 1.5rem;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .team-score {
+                    font-size: 2rem;
+                    font-weight: bold;
+                    color: #ffcc00;
+                }
+                
+                .action-button {
+                    background-color: #4CAF50;
+                    color: white;
+                    border: none;
+                    padding: 1rem 2rem;
+                    font-size: 1.5rem;
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    margin-top: 1rem;
+                    font-family: inherit;
+                }
+                
+                /* Animation classes */
+                .dancing-text {
+                    animation: dance 2s infinite alternate ease-in-out;
+                }
+                
+                .glow-text {
+                    animation: glow 1.5s infinite alternate;
+                }
+                
+                .pulse-text {
+                    animation: pulse 1.5s infinite;
+                }
+                
+                .bounce-animation {
+                    animation: bounce 1s infinite alternate;
+                }
+                
+                .glow-button {
+                    animation: buttonGlow 1.5s infinite alternate;
+                }
+                
+                @keyframes dance {
+                    0% { transform: translateY(0) rotate(-3deg); }
+                    50% { transform: translateY(-10px) rotate(0deg); }
+                    100% { transform: translateY(0) rotate(3deg); }
+                }
+                
+                @keyframes glow {
+                    0% { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ffcc00, 0 0 35px #ffcc00; }
+                    100% { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ffcc00, 0 0 70px #ffcc00; }
+                }
+                
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+                
+                @keyframes bounce {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-20px); }
+                }
+                
+                @keyframes buttonGlow {
+                    0% { box-shadow: 0 0 5px #4CAF50, 0 0 10px #4CAF50; }
+                    100% { box-shadow: 0 0 15px #4CAF50, 0 0 30px #4CAF50; }
+                }
+                
+                @keyframes fadeIn {
+                    0% { opacity: 0; }
+                    100% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(styleElement);
+        }
+
+        // Function to create many confetti elements
+        function createManyConfetti(container, count) {
+            const colors = ['#FFC700', '#FF0097', '#00CAFF', '#6FFF00', '#9D00FF', '#FF4500', '#00FF88'];
+            const shapes = ['circle', 'square', 'triangle'];
+            
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'celebration-confetti';
+                
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                const size = Math.random() * 15 + 5;
+                const left = Math.random() * 100;
+                const duration = Math.random() * 6 + 3;
+                const delay = Math.random() * 3;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                confetti.style.position = 'absolute';
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.backgroundColor = color;
+                confetti.style.left = `${left}%`;
+                confetti.style.top = '-5%';
+                confetti.style.opacity = Math.random() * 0.7 + 0.3;
+                
+                if (shape === 'circle') {
+                    confetti.style.borderRadius = '50%';
+                } else if (shape === 'triangle') {
+                    confetti.style.width = '0';
+                    confetti.style.height = '0';
+                    confetti.style.backgroundColor = 'transparent';
+                    confetti.style.borderLeft = `${size/2}px solid transparent`;
+                    confetti.style.borderRight = `${size/2}px solid transparent`;
+                    confetti.style.borderBottom = `${size}px solid ${color}`;
+                }
+                
+                confetti.style.animation = `confettiFall ${duration}s linear ${delay}s forwards, confettiRotate ${duration/2}s ease-in-out ${delay}s infinite alternate`;
+                
+                // Add this style directly to document head for the animations
+                if (!document.getElementById('confetti-animations')) {
+                    const confettiStyles = document.createElement('style');
+                    confettiStyles.id = 'confetti-animations';
+                    confettiStyles.textContent = `
+                        @keyframes confettiFall {
+                            0% { transform: translateY(-5vh) rotate(0deg); }
+                            100% { transform: translateY(105vh) rotate(720deg); }
+                        }
+                        
+                        @keyframes confettiRotate {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    `;
+                    document.head.appendChild(confettiStyles);
+                }
+                
+                container.appendChild(confetti);
+            }
+        }
+
+        // Also modify markQuestionAsAnswered to ensure proper tracking
+        function markQuestionAsAnswered() {
+            if (gameState.currentQuestion) {
+                const cardId = `${gameState.currentQuestion.category}-${gameState.currentQuestion.value}`;
+                
+                // Check if already in the array to prevent duplicates
+                if (!gameState.answeredCards.includes(cardId)) {
+                    gameState.answeredCards.push(cardId);
+                    gameState.answeredQuestions++;
+                }
+            }
+        }
+
+        // Array of funny image URLs
+        const funnyImages = [
+            'https://i.postimg.cc/sxgQsQYG/1-dub.png',
+            'https://i.postimg.cc/fTktPdW6/2-dub.png',
+            'https://i.postimg.cc/GhN8npH9/3-dub.png',
+            'https://i.postimg.cc/3rt091hX/4-dub.png',
+            'https://i.postimg.cc/fyq3LzC2/5-dub.png',
+            'https://i.postimg.cc/vZV1YdVh/6-dub.png',
+            'https://i.postimg.cc/PqbPDzK8/7-dub.png',
+            'https://i.postimg.cc/s2CM10Pr/8-dub.png'
+        ];
+
+        // Variables to manage the funny image display
+        let funnyImageTimer = null;
+        let funnyImageContainer = null;
+
+        // Function to show a random funny image
+        function showRandomFunnyImage() {
+            // Don't show images if there's already one displaying
+            if (document.querySelector('.funny-image-container.active')) {
+                return;
+            }
+            
+            // Select a random image from the array
+            const randomImageUrl = funnyImages[Math.floor(Math.random() * funnyImages.length)];
+            
+            // Create or reuse the container
+            if (!funnyImageContainer) {
+                funnyImageContainer = document.createElement('div');
+                funnyImageContainer.className = 'funny-image-container';
+                document.body.appendChild(funnyImageContainer);
+            }
+            
+            // Set the image
+            funnyImageContainer.innerHTML = `<img src="${randomImageUrl}" class="funny-image" alt="Funny Image">`;
+            
+            // Force a reflow before adding the active class to ensure the animation works
+            void funnyImageContainer.offsetWidth;
+            
+            // Make it visible with animation
+            funnyImageContainer.classList.add('active');
+            
+            // Set timeout to hide it after 6 seconds
+            setTimeout(() => {
+                funnyImageContainer.classList.remove('active');
+            }, 6000);
+        }
+
+        // Function to start the random funny image timer
+        function startFunnyImageTimer() {
+            // Clear any existing timers
+            if (funnyImageTimer) {
+                clearInterval(funnyImageTimer);
+            }
+            
+            // Create two timers:
+            // 1. A 20-second timer
+            setTimeout(() => {
+                showRandomFunnyImage();
+            }, 10000);
+            
+            // 2. A 120-second timer (2 minutes)
+            setTimeout(() => {
+                showRandomFunnyImage();
+            }, 120000);
+        }
+
+        // Function to stop the funny image timer
+        function stopFunnyImageTimer() {
+            if (funnyImageTimer) {
+                clearInterval(funnyImageTimer);
+                funnyImageTimer = null;
+            }
+            
+            // Hide any visible images
+            if (funnyImageContainer && funnyImageContainer.classList.contains('active')) {
+                funnyImageContainer.classList.remove('active');
+            }
         }
     </script>
 </body>
