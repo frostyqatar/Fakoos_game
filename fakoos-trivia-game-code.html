@@ -3073,7 +3073,8 @@
                         avatar: document.getElementById('team1-avatar').textContent || '😎',
                         players: Array.from(document.querySelectorAll('#team1-players .player-input'))
                             .map(input => input.value.trim())
-                            .filter(name => name !== '')
+                            .filter(name => name !== ''),
+                        abilities: { electrocute: false }
                     },
                     { 
                         name: document.getElementById('team2-name').value.trim() || 'الفريق ٢',
@@ -3081,7 +3082,8 @@
                         avatar: document.getElementById('team2-avatar').textContent || '🤖',
                         players: Array.from(document.querySelectorAll('#team2-players .player-input'))
                             .map(input => input.value.trim())
-                            .filter(name => name !== '')
+                            .filter(name => name !== ''),
+                        abilities: { electrocute: false }
                     }
                 ],
                 selectedCategories: Array.from(document.querySelectorAll('.category-item.selected'))
@@ -3181,14 +3183,11 @@
                 document.getElementById('exit-game-btn').style.display = 'block';
             }
             
-            // Make sure to save game state before showing the game screen
-            localStorage.setItem('gameState', JSON.stringify(gameState));
+            // Save game state to localStorage
+            saveGameState();
             
             // Play game start sound
             playSound('sound-gamestart');
-            
-            // Save initial state to local storage
-            saveGameState();
             
             console.log('Game started with state:', gameState);
         }
@@ -3292,7 +3291,7 @@
             document.body.appendChild(announcement);
             
             // Play thunder sound
-            const thunderSound = new Audio("https://www.fesliyanstudios.com/play-mp3/2654");
+            const thunderSound = new Audio("https://cdn.pixabay.com/download/audio/2024/07/30/audio_cf17467766.mp3?filename=ui-abstract-electricity-glitch-228341.mp3");
             thunderSound.volume = 0.5;
             thunderSound.play();
             
@@ -3471,7 +3470,7 @@
             
             // Play shock sound
             const shockSound = new Audio();
-            shockSound.src = "https://www.fesliyanstudios.com/play-mp3/2654";
+            shockSound.src = "https://cdn.pixabay.com/download/audio/2024/07/30/audio_cf17467766.mp3?filename=ui-abstract-electricity-glitch-228341.mp3";
             shockSound.volume = 0.5;
             shockSound.play();
             
@@ -4194,7 +4193,7 @@
             
             // Play shock sound
             const shockSound = new Audio();
-            shockSound.src = "https://www.fesliyanstudios.com/play-mp3/2654";
+            shockSound.src = "https://cdn.pixabay.com/download/audio/2024/07/30/audio_cf17467766.mp3?filename=ui-abstract-electricity-glitch-228341.mp3";
             shockSound.volume = 0.5;
             shockSound.play();
             
@@ -5526,7 +5525,7 @@
             
             // Play shock sound
             const shockSound = new Audio();
-            shockSound.src = "https://www.fesliyanstudios.com/play-mp3/2654";
+            shockSound.src = "https://cdn.pixabay.com/download/audio/2024/07/30/audio_cf17467766.mp3?filename=ui-abstract-electricity-glitch-228341.mp3";
             shockSound.volume = 0.5;
             shockSound.play();
             
