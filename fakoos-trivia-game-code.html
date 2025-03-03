@@ -1460,6 +1460,65 @@
           font-weight: bold;
           text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
         }
+
+        .ability-ready {
+            background-color: #ffeb3b !important;
+            color: #000 !important;
+            animation: pulse-ability 1.5s infinite alternate;
+        }
+        
+        @keyframes pulse-ability {
+            0% { box-shadow: 0 0 0 0 rgba(255, 235, 59, 0.7); }
+            100% { box-shadow: 0 0 0 10px rgba(255, 235, 59, 0); }
+        }
+        
+        .cooldown-timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            z-index: 2;
+        }
+        
+        .shocked {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+            color: red !important;
+            text-shadow: 0 0 10px red;
+        }
+        
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        
+        .game-message {
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        
+        .announcement {
+            animation: flash 0.5s infinite alternate;
+        }
+        
+        @keyframes flash {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .warning {
+            animation: warning-pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes warning-pulse {
+            0% { transform: translateX(-50%) scale(1); }
+            100% { transform: translateX(-50%) scale(1.05); }
+        }
     </style>
 </head>
 <body>
@@ -1587,6 +1646,10 @@
                                 <span class="ability-icon">👋</span>
                                 استبعاد لاعب
                             </button>
+                            <button class="ability-btn electrocute-ready" id="team1-electrocute" onclick="useAbility(0, 'electrocute')">
+                                <span class="ability-icon">⚡</span>
+                                صدمة كهربائية
+                            </button>
                         </div>
                     </div>
                     
@@ -1677,6 +1740,10 @@
                                 <span class="ability-icon">👋</span>
                                 استبعاد لاعب
                             </button>
+                            <button class="ability-btn electrocute-ready" id="team2-electrocute" onclick="useAbility(1, 'electrocute')">
+                                <span class="ability-icon">⚡</span>
+                                صدمة كهربائية
+                            </button>
                         </div>
                     </div>
                     
@@ -1698,26 +1765,19 @@
     </div>
     
     <script>
-        // Game state
-        let gameState = JSON.parse(localStorage.getItem('gameState')) || {
+        // Global game state – always reinitialized when starting a new game.
+        var gameState = {
             teams: [
-                { name: 'الفريق ١', players: [], score: 0, avatar: '😎', 
-                  abilities: { chatgpt: false, double: false, google: false, dismiss: false } },
-                { name: 'الفريق ٢', players: [], score: 0, avatar: '🤖', 
-                  abilities: { chatgpt: false, double: false, google: false, dismiss: false } }
+                { name: 'فريق 1', score: 0, abilities: { electrocute: false } },
+                { name: 'فريق 2', score: 0, abilities: { electrocute: false } }
             ],
-            selectedCategories: [],
-            currentTeam: 0,
-            answeredQuestions: 0,
-            answeredCards: [],
-            usedQuestions: {},
             currentQuestion: null,
-            gameActive: false
+            questionHistory: []
         };
 
         // Questions database
          //will add later
-             const questions = {
+         const questions = {
   "التاريخ العالمي": [
     { value: 100, question: "ما اسم المعاهدة التي أنهت حرب المائة عام بين إنجلترا وفرنسا؟", answer: "معاهدة أراس" },
     { value: 100, question: "أي إمبراطور روماني بنى الجدار الشهير في بريطانيا؟", answer: "هادريان" },
@@ -1824,7 +1884,7 @@
     { value: 500, question: "ما هو العنصر الكيميائي الذي يرمز له بالرمز Rn؟", answer: "الرادون" }
   ],
 
-  "الثقافة الشعبية (قطر)": [
+  "قطر": [
     { value: 100, question: "ما اسم العملة الذهبية التي سُكت في عهد الشيخ جاسم بن محمد آل ثاني؟", answer: "المحبوب الذهبي" },
     { value: 100, question: "في أي عام تم اكتشاف حقل الشمال للغاز الطبيعي؟", answer: "1971" },
     { value: 100, question: "ما اسم القارب التقليدي المستخدم في الغوص على اللؤلؤ في قطر؟", answer: "البتيل" },
@@ -2074,11 +2134,6 @@
       "value": 100,
       "question": "أي بطل لديه سلبية تؤدي إلى نزيف الأعداء مع مرور الوقت وتزيد الضرر مع كل تكدس؟",
       "answer": "Darius"
-    },
-    {
-      "value": 100,
-      "question": "أي بطل يمتلك قدرة نهائية تتيح له استحواذ أبطال الأعداء؟",
-      "answer": "Viego"
     },
     {
       "value": 100,
@@ -2868,11 +2923,6 @@
     },
     {
       "value": 500,
-      "question": "في أنمي 'ناروتو', ما السر الكامن وراء استخدام تقنيات استحضار مخلوقات نادرة في معارك النينجا؟",
-      "answer": "اتصال روحاني مع عوالم موازية غير معروفة"
-    },
-    {
-      "value": 500,
       "question": "في أنمي 'بليتش', ما التفسير الفلسفي وراء التوازن بين عالم الأرواح والعالم المادي في معارك الروح؟",
       "answer": "تحقيق التكامل بين الوجود المادي والروحاني في قتال الأعداء"
     },
@@ -2964,21 +3014,11 @@
             
             gameState = {
                 teams: [
-                    { name: 'الفريق ١', players: [], score: 0, avatar: '😎',
-                      abilities: { chatgpt: false, double: false, google: false, dismiss: false },
-                      doublePointsActive: false },
-                    { name: 'الفريق ٢', players: [], score: 0, avatar: '🤖',
-                      abilities: { chatgpt: false, double: false, google: false, dismiss: false },
-                      doublePointsActive: false }
+                    { name: 'فريق 1', score: 0, abilities: { electrocute: false } },
+                    { name: 'فريق 2', score: 0, abilities: { electrocute: false } }
                 ],
-                selectedCategories: [],
-                currentTeam: 0,
-                answeredQuestions: 0,
-                totalQuestions: 0,
-                answeredCards: [],
-                usedQuestions: {},
                 currentQuestion: null,
-                gameActive: false
+                questionHistory: []
             };
             
             // Hide the exit game button in setup screen
@@ -3024,14 +3064,86 @@
 
         // Start the game
         function startGame() {
+            // COMPLETELY RESET GAME STATE - create a brand new object
+            gameState = {
+                teams: [
+                    { 
+                        name: document.getElementById('team1-name').value.trim() || 'الفريق ١',
+                        score: 0,
+                        avatar: document.getElementById('team1-avatar').textContent || '😎',
+                        players: Array.from(document.querySelectorAll('#team1-players .player-input'))
+                            .map(input => input.value.trim())
+                            .filter(name => name !== '')
+                    },
+                    { 
+                        name: document.getElementById('team2-name').value.trim() || 'الفريق ٢',
+                        score: 0,
+                        avatar: document.getElementById('team2-avatar').textContent || '🤖',
+                        players: Array.from(document.querySelectorAll('#team2-players .player-input'))
+                            .map(input => input.value.trim())
+                            .filter(name => name !== '')
+                    }
+                ],
+                selectedCategories: Array.from(document.querySelectorAll('.category-item.selected'))
+                    .map(cat => cat.dataset.category),
+                currentQuestion: null,
+                questionHistory: [],
+                answeredQuestions: 0,
+                answeredCards: [],
+                gameActive: true
+            };
+            
+            console.log("FRESH GAME STATE CREATED:", gameState);
+            
+            // Initialize electrocute ability cooldown
+            initializeElectrocuteAbility();
+            
+            updateScores(); // Update the UI scores, etc.
+            
+            // Initialize each team's electrocute ability cooldown.
+            for (let i = 0; i < 2; i++) {
+                const button = document.getElementById(`team${i+1}-electrocute`);
+                if (button) {
+                    button.disabled = true;
+                    button.classList.remove('ability-ready');
+
+                    // Remove any previous cooldown timer if present.
+                    const existingTimer = button.querySelector('.cooldown-timer');
+                    if (existingTimer) {
+                        existingTimer.remove();
+                    }
+                    
+                    // Set up a 10-second cooldown with a visible countdown overlay.
+                    let cooldownTime = 1200;
+                    const timer = document.createElement('span');
+                    timer.className = 'cooldown-timer';
+                    timer.textContent = cooldownTime;
+                    button.appendChild(timer);
+                    
+                    const interval = setInterval(() => {
+                        cooldownTime--;
+                        timer.textContent = cooldownTime;
+                        if (cooldownTime <= 0) {
+                            clearInterval(interval);
+                            button.disabled = false;
+                            button.classList.add('ability-ready');
+                            timer.remove();
+                            
+                            // Announce dramatically that the ability is ready.
+                            showElectrocuteActivationAnnouncement();
+                        }
+                    }, 1000);
+                }
+            }
+            
             const selectedCategories = document.querySelectorAll('.category-item.selected');
             if (selectedCategories.length < 3 || selectedCategories.length > 6) {
                 alert('الرجاء اختيار ٣-٦ فئات');
                 return;
             }
             
-            const team1Name = document.getElementById('team1-name').value.trim() || 'الفريق ١';
-            const team2Name = document.getElementById('team2-name').value.trim() || 'الفريق ٢';
+            const team1Name = document.getElementById('team1-name').value.trim();
+            const team2Name = document.getElementById('team2-name').value.trim();
             
             gameState.teams[0].name = team1Name;
             gameState.teams[1].name = team2Name;
@@ -3074,7 +3186,401 @@
             
             // Play game start sound
             playSound('sound-gamestart');
+            
+            // Save initial state to local storage
+            saveGameState();
+            
+            console.log('Game started with state:', gameState);
         }
+
+        // Completely separate function to handle electrocute ability initialization
+        function initializeElectrocuteAbility() {
+            // Disable both buttons
+            const team1Button = document.getElementById('team1-electrocute');
+            const team2Button = document.getElementById('team2-electrocute');
+            
+            if (!team1Button || !team2Button) return;
+            
+            // Clear any existing classes and timers
+            team1Button.className = 'ability-btn';
+            team2Button.className = 'ability-btn';
+            team1Button.disabled = true;
+            team2Button.disabled = true;
+            
+            // Remove any existing timers
+            const existingTimers = document.querySelectorAll('.cooldown-timer');
+            existingTimers.forEach(timer => timer.remove());
+            
+            // Create new cooldown timers
+            const timer1 = document.createElement('div');
+            const timer2 = document.createElement('div');
+            timer1.className = 'cooldown-timer';
+            timer2.className = 'cooldown-timer';
+            team1Button.appendChild(timer1);
+            team2Button.appendChild(timer2);
+            
+            // Set initial cooldown time
+            let cooldownTime = 10;
+            timer1.textContent = cooldownTime;
+            timer2.textContent = cooldownTime;
+            
+            // Start the countdown
+            const interval = setInterval(() => {
+                cooldownTime--;
+                timer1.textContent = cooldownTime;
+                timer2.textContent = cooldownTime;
+                
+                if (cooldownTime <= 0) {
+                    clearInterval(interval);
+                    team1Button.disabled = false;
+                    team2Button.disabled = false;
+                    team1Button.className = 'ability-btn electrocute-ready';
+                    team2Button.className = 'ability-btn electrocute-ready';
+                    showElectrocuteActivationAnnouncement();
+                }
+            }, 1000);
+        }
+
+        // Dramatic announcement for electrocute ability activation
+        function showElectrocuteActivationAnnouncement() {
+            // Create overlay to dim the background
+            const overlay = document.createElement('div');
+            overlay.className = 'dramatic-overlay';
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            overlay.style.zIndex = '9998';
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.5s';
+            
+            // Create announcement container
+            const announcement = document.createElement('div');
+            announcement.className = 'dramatic-announcement';
+            announcement.style.position = 'fixed';
+            announcement.style.top = '50%';
+            announcement.style.left = '50%';
+            announcement.style.transform = 'translate(-50%, -50%) scale(0.5)';
+            announcement.style.backgroundColor = '#000';
+            announcement.style.border = '3px solid #ffff00';
+            announcement.style.borderRadius = '15px';
+            announcement.style.padding = '30px 50px';
+            announcement.style.color = '#ffff00';
+            announcement.style.fontWeight = 'bold';
+            announcement.style.fontSize = '32px';
+            announcement.style.textAlign = 'center';
+            announcement.style.zIndex = '9999';
+            announcement.style.boxShadow = '0 0 30px rgba(255, 255, 0, 0.8)';
+            announcement.style.opacity = '0';
+            announcement.style.transition = 'transform 0.5s, opacity 0.5s';
+            
+            // Add lightning bolts to the announcement
+            const message = `
+                <div style="position: relative; padding: 20px;">
+                    <div class="lightning-decoration left"></div>
+                    <div class="lightning-decoration right"></div>
+                    ⚡⚡⚡ قدرة الصدمة الكهربائية جاهزة للفريقين! ⚡⚡⚡
+                </div>
+            `;
+            
+            announcement.innerHTML = message;
+            
+            // Add to document
+            document.body.appendChild(overlay);
+            document.body.appendChild(announcement);
+            
+            // Play thunder sound
+            const thunderSound = new Audio("https://www.fesliyanstudios.com/play-mp3/2654");
+            thunderSound.volume = 0.5;
+            thunderSound.play();
+            
+            // Animate in
+            setTimeout(() => {
+                overlay.style.opacity = '1';
+                announcement.style.opacity = '1';
+                announcement.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 100);
+            
+            // Animate out after delay
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                announcement.style.opacity = '0';
+                announcement.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                    document.body.removeChild(announcement);
+                }, 500);
+            }, 4000);
+        }
+
+        // Function to use abilities
+        function useAbility(teamIndex, abilityType) {
+            console.log(`Team ${teamIndex + 1} attempting to use ${abilityType} ability`); // Debug log
+            console.log(`Team ${teamIndex+1} attempting to use ${abilityType} ability`);
+            
+            if (abilityType === 'electrocute') {
+                const button = document.getElementById(`team${teamIndex+1}-electrocute`);
+                
+                if (button.disabled) {
+                    showWarningMessage('لقد استخدمت هذه القدرة بالفعل');
+                    return;
+                }
+                
+                button.disabled = true;
+                button.classList.remove('electrocute-ready');
+                
+                const targetTeamIndex = teamIndex === 0 ? 1 : 0;
+                const pointsToDeduct = Math.floor(Math.random() * 401) + 100; // Random points between 100 and 500
+                
+                executeElectrocuteEffect(teamIndex, targetTeamIndex, pointsToDeduct);
+                startElectrocuteCooldown(teamIndex);
+            }
+            
+            // ... other abilities ...
+        }
+
+        // Add this new function to handle electrocute cooldown
+        function startElectrocuteCooldown(teamIndex) {
+            const button = document.getElementById(`team${teamIndex+1}-electrocute`);
+            if (!button) return;
+
+            const existingTimer = button.querySelector('.cooldown-timer');
+            if (existingTimer) {
+                existingTimer.remove();
+            }
+            
+            const timerDisplay = document.createElement('span');
+            timerDisplay.className = 'cooldown-timer';
+            button.appendChild(timerDisplay);
+            
+            let cooldownTime = 1200; // 30 seconds cooldown
+            timerDisplay.textContent = cooldownTime;
+
+            const interval = setInterval(() => {
+                cooldownTime--;
+                if (timerDisplay.parentNode) {
+                    timerDisplay.textContent = cooldownTime;
+                }
+
+                if (cooldownTime <= 0) {
+                    clearInterval(interval);
+                    if (timerDisplay.parentNode) {
+                        timerDisplay.remove();
+                    }
+                    button.disabled = false;
+                    button.classList.add('electrocute-ready');
+                }
+            }, 1000);
+        }
+
+        // Function to show warning messages
+        function showWarningMessage(message) {
+            const warning = document.createElement('div');
+            warning.className = 'warning-message';
+            warning.textContent = message;
+            warning.style.position = 'fixed';
+            warning.style.top = '20%';
+            warning.style.left = '50%';
+            warning.style.transform = 'translateX(-50%)';
+            warning.style.backgroundColor = '#ff9800';
+            warning.style.color = 'white';
+            warning.style.padding = '15px 30px';
+            warning.style.borderRadius = '10px';
+            warning.style.fontWeight = 'bold';
+            warning.style.fontSize = '20px';
+            warning.style.textAlign = 'center';
+            warning.style.zIndex = '9999';
+            warning.style.boxShadow = '0 0 20px rgba(255, 152, 0, 0.5)';
+            
+            document.body.appendChild(warning);
+            
+            // Remove after delay
+            setTimeout(() => {
+                warning.style.opacity = '0';
+                warning.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                    document.body.removeChild(warning);
+                }, 500);
+            }, 3000);
+        }
+
+        // Execute the electrocute effect
+        function executeElectrocuteEffect(sourceTeamIndex, targetTeamIndex, pointsToDeduct) {
+            // Get elements
+            const sourceElement = document.getElementById(`team${sourceTeamIndex+1}-avatar`);
+            const targetScoreElement = document.getElementById(`team${targetTeamIndex+1}-score`);
+            
+            if (!sourceElement || !targetScoreElement) {
+                console.error('Source or target element not found for electrocute effect');
+                return;
+            }
+            
+            // Create lightning element
+            const lightning = document.createElement('div');
+            lightning.className = 'lightning-effect';
+            lightning.style.position = 'fixed';
+            lightning.style.top = '0';
+            lightning.style.left = '0';
+            lightning.style.width = '100%';
+            lightning.style.height = '100%';
+            lightning.style.pointerEvents = 'none';
+            lightning.style.zIndex = '9998';
+            
+            // Create the actual lightning bolt image
+            const bolt = document.createElement('div');
+            bolt.className = 'lightning-bolt';
+            
+            // Set up animation path
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const targetRect = targetScoreElement.getBoundingClientRect();
+            
+            // Create lightning line
+            const startX = sourceRect.left + sourceRect.width / 2;
+            const startY = sourceRect.top + sourceRect.height / 2;
+            const endX = targetRect.left + targetRect.width / 2;
+            const endY = targetRect.top + targetRect.height / 2;
+            
+            // Calculate angle and distance
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+            const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            
+            // Create a series of zigzag segments for the lightning
+            for (let i = 0; i < 5; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'lightning-segment';
+                segment.style.position = 'absolute';
+                segment.style.top = `${startY + (endY - startY) * (i / 5)}px`;
+                segment.style.left = `${startX + (endX - startX) * (i / 5)}px`;
+                segment.style.width = `${distance / 5}px`;
+                segment.style.height = '4px';
+                segment.style.backgroundColor = '#ffff00';
+                segment.style.boxShadow = '0 0 10px #ffff00, 0 0 20px #ffff00';
+                
+                // Add random zigzag effect
+                const zigzagAngle = angle + (Math.random() * 30 - 15);
+                segment.style.transform = `rotate(${zigzagAngle}deg)`;
+                segment.style.transformOrigin = 'left center';
+                
+                lightning.appendChild(segment);
+            }
+            
+            document.body.appendChild(lightning);
+            
+            // Play shock sound
+            const shockSound = new Audio();
+            shockSound.src = "https://www.fesliyanstudios.com/play-mp3/2654";
+            shockSound.volume = 0.5;
+            shockSound.play();
+            
+            // Add shock effect to the target score
+            targetScoreElement.classList.add('shocked');
+            
+            // Show dramatic electric effect
+            showMessage(`⚡⚡⚡ ${gameState.teams[targetTeamIndex].name} يتعرض للصعق! ⚡⚡⚡`, 'announcement');
+            
+            // Remove lightning and update score after animation
+            setTimeout(() => {
+                document.body.removeChild(lightning);
+                targetScoreElement.classList.remove('shocked');
+                
+                // Deduct points from target team
+                adjustScore(targetTeamIndex, -pointsToDeduct);
+                
+                // Show points deduction message
+                showMessage(`⚡ تم خصم ${pointsToDeduct} نقطة من ${gameState.teams[targetTeamIndex].name}! ⚡`, 'announcement');
+            }, 2000);
+        }
+
+        // Add CSS styles for the electrocute effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .ability-btn.electrocute-ready {
+                    background: linear-gradient(45deg, #ffeb3b, #ff9800);
+                    color: #000;
+                    animation: electro-pulse 1.5s infinite alternate;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .ability-btn.electrocute-ready:before {
+                    content: '';
+                    position: absolute;
+                    top: -50%;
+                    left: -50%;
+                    width: 200%;
+                    height: 200%;
+                    background: rgba(255, 255, 255, 0.2);
+                    transform: rotate(45deg);
+                    animation: electro-shine 3s linear infinite;
+                }
+                
+                @keyframes electro-pulse {
+                    0% { box-shadow: 0 0 5px #ffeb3b, 0 0 10px #ffeb3b; }
+                    100% { box-shadow: 0 0 15px #ffeb3b, 0 0 30px #ffeb3b; }
+                }
+                
+                @keyframes electro-shine {
+                    0% { transform: translateX(-100%) rotate(45deg); }
+                    100% { transform: translateX(100%) rotate(45deg); }
+                }
+                
+                .cooldown-timer {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: white;
+                    z-index: 2;
+                }
+                
+                .shocked {
+                    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                    transform: translate3d(0, 0, 0);
+                    color: red !important;
+                    text-shadow: 0 0 10px red;
+                }
+                
+                @keyframes shake {
+                    10%, 90% { transform: translate3d(-1px, 0, 0); }
+                    20%, 80% { transform: translate3d(2px, 0, 0); }
+                    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+                    40%, 60% { transform: translate3d(4px, 0, 0); }
+                }
+                
+                .lightning-decoration {
+                    position: absolute;
+                    width: 40px;
+                    height: 100px;
+                    background-color: #ffff00;
+                    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+                    animation: lightning-flicker 0.5s infinite alternate;
+                }
+                
+                .lightning-decoration.left {
+                    left: -20px;
+                    top: 50%;
+                    transform: translateY(-50%) rotate(-30deg);
+                }
+                
+                .lightning-decoration.right {
+                    right: -20px;
+                    top: 50%;
+                    transform: translateY(-50%) rotate(30deg);
+                }
+                
+                @keyframes lightning-flicker {
+                    0% { opacity: 1; }
+                    100% { opacity: 0.7; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
 
         // Build the game board
         function buildGameBoard() {
@@ -3559,8 +4065,8 @@
                                 }, 2000);
                             }
                         }
-                    }
-                }, 1000);
+                }
+            }, 1000);
             }
         }
 
@@ -3590,9 +4096,9 @@
                 // Limit to maximum 8 players per team
                 if (playerInputs.length >= 8) {
                     alert(`الحد الأقصى لعدد اللاعبين في الفريق هو 8`);
-                    return;
-                }
-                
+                return;
+            }
+            
                 const newInput = document.createElement('input');
                 newInput.type = 'text';
                 newInput.className = 'player-input';
@@ -3604,72 +4110,111 @@
 
         // Completely rewrite the ability functionality to fix double points
         function useAbility(teamIndex, abilityType) {
-            // Check if ability is already used
-            if (gameState.teams[teamIndex].abilities[abilityType]) {
-                alert('لقد استخدمت هذه القدرة بالفعل');
+            console.log(`Team ${teamIndex+1} attempting to use ${abilityType} ability`);
+            
+            if (abilityType === 'electrocute') {
+                const button = document.getElementById(`team${teamIndex+1}-electrocute`);
+                
+                if (button.disabled) {
+                    showWarningMessage('لقد استخدمت هذه القدرة بالفعل');
+                    return;
+                }
+                
+                button.disabled = true;
+                button.classList.remove('electrocute-ready');
+                
+                const targetTeamIndex = teamIndex === 0 ? 1 : 0;
+                const pointsToDeduct = Math.floor(Math.random() * 401) + 100; // Random points between 100 and 500
+                
+                executeElectrocuteEffect(teamIndex, targetTeamIndex, pointsToDeduct);
+                startElectrocuteCooldown(teamIndex);
+            }
+        }
+
+        function executeElectrocuteEffect(sourceTeamIndex, targetTeamIndex, pointsToDeduct) {
+            // Get elements
+            const sourceElement = document.getElementById(`team${sourceTeamIndex+1}-avatar`);
+            const targetScoreElement = document.getElementById(`team${targetTeamIndex+1}-score`);
+            
+            if (!sourceElement || !targetScoreElement) {
+                console.error('Source or target element not found for electrocute effect');
                 return;
             }
             
-            // Mark ability as used
-            gameState.teams[teamIndex].abilities[abilityType] = true;
+            // Create lightning element
+            const lightning = document.createElement('div');
+            lightning.className = 'lightning-effect';
+            lightning.style.position = 'fixed';
+            lightning.style.top = '0';
+            lightning.style.left = '0';
+            lightning.style.width = '100%';
+            lightning.style.height = '100%';
+            lightning.style.pointerEvents = 'none';
+            lightning.style.zIndex = '9998';
             
-            // Disable the button
-            const abilityButton = document.getElementById(`team${teamIndex+1}-${abilityType}`);
-            if (abilityButton) {
-                abilityButton.disabled = true;
+            // Create the actual lightning bolt image
+            const bolt = document.createElement('div');
+            bolt.className = 'lightning-bolt';
+            
+            // Set up animation path
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const targetRect = targetScoreElement.getBoundingClientRect();
+            
+            // Create lightning line
+            const startX = sourceRect.left + sourceRect.width / 2;
+            const startY = sourceRect.top + sourceRect.height / 2;
+            const endX = targetRect.left + targetRect.width / 2;
+            const endY = targetRect.top + targetRect.height / 2;
+            
+            // Calculate angle and distance
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+            const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            
+            // Create a series of zigzag segments for the lightning
+            for (let i = 0; i < 5; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'lightning-segment';
+                segment.style.position = 'absolute';
+                segment.style.top = `${startY + (endY - startY) * (i / 5)}px`;
+                segment.style.left = `${startX + (endX - startX) * (i / 5)}px`;
+                segment.style.width = `${distance / 5}px`;
+                segment.style.height = '4px';
+                segment.style.backgroundColor = '#ffff00';
+                segment.style.boxShadow = '0 0 10px #ffff00, 0 0 20px #ffff00';
+                
+                // Add random zigzag effect
+                const zigzagAngle = angle + (Math.random() * 30 - 15);
+                segment.style.transform = `rotate(${zigzagAngle}deg)`;
+                segment.style.transformOrigin = 'left center';
+                
+                lightning.appendChild(segment);
             }
             
-            let message = '';
+            document.body.appendChild(lightning);
             
-            switch (abilityType) {
-                case 'chatgpt':
-                    message = `${gameState.teams[teamIndex].name} يستخدم مساعدة ChatGPT!`;
-                    break;
-                case 'double':
-                    message = `${gameState.teams[teamIndex].name} سيحصل على نقاط مضاعفة للسؤال التالي!`;
-                    // Explicitly set double points flag
-                    gameState.teams[teamIndex].doublePointsActive = true;
-                    
-                    // Show additional confirmation for debugging
-                    console.log(`Double points activated for team ${teamIndex+1}`);
-                    break;
-                case 'google':
-                    message = `${gameState.teams[teamIndex].name} يستخدم بحث جوجل!`;
-                    break;
-                case 'dismiss':
-                    message = `${gameState.teams[teamIndex].name} يستبعد لاعبًا من الفريق الآخر!`;
-                    break;
-            }
+            // Play shock sound
+            const shockSound = new Audio();
+            shockSound.src = "https://www.fesliyanstudios.com/play-mp3/2654";
+            shockSound.volume = 0.5;
+            shockSound.play();
             
-            // Play sound for special ability
-            playSound('sound-correct');
+            // Add shock effect to the target score
+            targetScoreElement.classList.add('shocked');
             
-            // Show feedback
-            showAbilityFeedback(message);
+            // Show dramatic electric effect
+            showMessage(`⚡⚡⚡ ${gameState.teams[targetTeamIndex].name} يتعرض للصعق! ⚡⚡⚡`, 'announcement');
             
-            // Save game state to persist the change
-            localStorage.setItem('gameState', JSON.stringify(gameState));
-        }
-
-        // Add or enhance the showAbilityFeedback function
-        function showAbilityFeedback(message) {
-            const feedback = document.createElement('div');
-            feedback.className = 'feedback ability-feedback';
-            feedback.style.backgroundColor = '#9c27b0'; // Purple color for ability feedback
-            feedback.style.color = 'white';
-            feedback.style.fontWeight = 'bold';
-            feedback.style.padding = '15px';
-            feedback.style.borderRadius = '10px';
-            feedback.textContent = message;
-            
-            document.body.appendChild(feedback);
-            
+            // Remove lightning and update score after animation
             setTimeout(() => {
-                feedback.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(feedback);
-                }, 300);
-            }, 2500);
+                document.body.removeChild(lightning);
+                targetScoreElement.classList.remove('shocked');
+                
+                // Deduct points from target team
+                adjustScore(targetTeamIndex, -pointsToDeduct);
+                
+                // Show points deduction message
+                showMessage(`⚡ تم خصم ${pointsToDeduct} نقطة من ${gameState.teams[targetTeamIndex].name}! ⚡`, 'announcement');
+            }, 2000);
         }
 
         // Add function to update ability buttons state
@@ -3862,7 +4407,7 @@
             document.getElementById('award-buttons').style.display = 'none';
             
             // Automatically return to the game board after 3 seconds
-            setTimeout(() => {
+                setTimeout(() => {
                 returnToTiles();
             }, 3000);
         }
@@ -3963,8 +4508,8 @@
             const cardKey = `${currentQuestion.category}_${currentQuestion.value}`;
             gameState.answeredCards.push(cardKey);
             gameState.answeredQuestions++;
-            
-            // Save game state
+                    
+                    // Save game state
             saveGameState();
             
             // Check if all questions have been answered
@@ -4168,7 +4713,7 @@
                 
                 .team-score {
                     font-size: 2rem;
-          font-weight: bold;
+                    font-weight: bold;
                     color: #ffcc00;
                 }
                 
@@ -4337,7 +4882,7 @@
             
             // Create two timers:
             // 1. A 20-second timer
-            setTimeout(() => {
+                setTimeout(() => {
                 showRandomFunnyImage();
             }, 10000);
             
@@ -4871,6 +5416,169 @@
         // Expose functions to global scope for use in other parts of the game
         window.changeTurn = changeTurn;
         window.handleRevealAnswer = handleRevealAnswer;
+
+        // Simplified function to show messages
+        function showMessage(message, type = 'normal') {
+            const messageElement = document.createElement('div');
+            messageElement.className = `game-message ${type}`;
+            messageElement.textContent = message;
+            messageElement.style.position = 'fixed';
+            messageElement.style.top = type === 'announcement' ? '30%' : '20%';
+            messageElement.style.left = '50%';
+            messageElement.style.transform = 'translateX(-50%)';
+            
+            // Set colors based on message type
+            if (type === 'announcement') {
+                messageElement.style.backgroundColor = '#ff5722';
+            } else if (type === 'warning') {
+                messageElement.style.backgroundColor = '#ff9800';
+            } else {
+                messageElement.style.backgroundColor = '#9c27b0';
+            }
+            
+            messageElement.style.color = 'white';
+            messageElement.style.padding = '15px 30px';
+            messageElement.style.borderRadius = '10px';
+            messageElement.style.fontWeight = 'bold';
+            messageElement.style.fontSize = type === 'announcement' ? '24px' : '18px';
+            messageElement.style.textAlign = 'center';
+            messageElement.style.zIndex = '9999';
+            messageElement.style.boxShadow = '0 0 20px rgba(0,0,0,0.5)';
+            
+            document.body.appendChild(messageElement);
+            
+            // Play appropriate sound based on message type
+            if (type === 'warning') {
+                const warningSound = new Audio();
+                warningSound.src = "https://www.fesliyanstudios.com/play-mp3/6752";
+                warningSound.volume = 0.4;
+                warningSound.play();
+            }
+            
+            // Remove message after a delay
+            setTimeout(() => {
+                messageElement.style.opacity = '0';
+                messageElement.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                    document.body.removeChild(messageElement);
+                }, 500);
+            }, 3000);
+        }
+
+        // Simplified electrocute animation
+        function electrocuteTeam(sourceTeamIndex, targetTeamIndex, pointsToDeduct) {
+            // Get elements
+            const sourceElement = document.getElementById(`team${sourceTeamIndex+1}-avatar`);
+            const targetScoreElement = document.getElementById(`team${targetTeamIndex+1}-score`);
+            
+            if (!sourceElement || !targetScoreElement) return;
+            
+            // Create lightning element
+            const lightning = document.createElement('div');
+            lightning.className = 'lightning-effect';
+            lightning.style.position = 'fixed';
+            lightning.style.top = '0';
+            lightning.style.left = '0';
+            lightning.style.width = '100%';
+            lightning.style.height = '100%';
+            lightning.style.pointerEvents = 'none';
+            lightning.style.zIndex = '9998';
+            
+            // Create the actual lightning bolt image
+            const bolt = document.createElement('div');
+            bolt.className = 'lightning-bolt';
+            
+            // Set up animation path
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const targetRect = targetScoreElement.getBoundingClientRect();
+            
+            // Create lightning line
+            const startX = sourceRect.left + sourceRect.width / 2;
+            const startY = sourceRect.top + sourceRect.height / 2;
+            const endX = targetRect.left + targetRect.width / 2;
+            const endY = targetRect.top + targetRect.height / 2;
+            
+            // Calculate angle and distance
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+            const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            
+            // Create a series of zigzag segments for the lightning
+            for (let i = 0; i < 5; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'lightning-segment';
+                segment.style.position = 'absolute';
+                segment.style.top = `${startY + (endY - startY) * (i / 5)}px`;
+                segment.style.left = `${startX + (endX - startX) * (i / 5)}px`;
+                segment.style.width = `${distance / 5}px`;
+                segment.style.height = '4px';
+                segment.style.backgroundColor = '#ffff00';
+                segment.style.boxShadow = '0 0 10px #ffff00, 0 0 20px #ffff00';
+                
+                // Add random zigzag effect
+                const zigzagAngle = angle + (Math.random() * 30 - 15);
+                segment.style.transform = `rotate(${zigzagAngle}deg)`;
+                segment.style.transformOrigin = 'left center';
+                
+                lightning.appendChild(segment);
+            }
+            
+            document.body.appendChild(lightning);
+            
+            // Play shock sound
+            const shockSound = new Audio();
+            shockSound.src = "https://www.fesliyanstudios.com/play-mp3/2654";
+            shockSound.volume = 0.5;
+            shockSound.play();
+            
+            // Add shock effect to the target score
+            targetScoreElement.classList.add('shocked');
+            
+            // Show dramatic electric effect
+            showMessage(`⚡⚡⚡ ${gameState.teams[targetTeamIndex].name} يتعرض للصعق! ⚡⚡⚡`, 'announcement');
+            
+            // Remove lightning and update score after animation
+            setTimeout(() => {
+                document.body.removeChild(lightning);
+                targetScoreElement.classList.remove('shocked');
+                
+                // Deduct points from target team
+                adjustScore(targetTeamIndex, -pointsToDeduct);
+                
+                // Show points deduction message
+                showMessage(`⚡ تم خصم ${pointsToDeduct} نقطة من ${gameState.teams[targetTeamIndex].name}! ⚡`, 'announcement');
+            }, 2000);
+        }
+
+        // Save game state function
+        function saveGameState() {
+            try {
+                localStorage.setItem('gameState', JSON.stringify(gameState));
+                console.log('Game state saved:', gameState);
+            } catch (e) {
+                console.error('Error saving game state:', e);
+            }
+        }
+
+        // When loading game state, ensure abilities are properly initialized
+        function loadGameState() {
+            try {
+                const savedState = localStorage.getItem('gameState');
+                if (savedState) {
+                    gameState = JSON.parse(savedState);
+                    
+                    // Ensure abilities are properly initialized
+                    for (let i = 0; i < 2; i++) {
+                        if (!gameState.teams[i].abilities) {
+                            gameState.teams[i].abilities = {};
+                        }
+                    }
+                    
+                    console.log('Game state loaded:', gameState);
+                }
+            } catch (e) {
+                console.error('Error loading game state:', e);
+            }
+        }
     </script>
 </body>
 </html>
