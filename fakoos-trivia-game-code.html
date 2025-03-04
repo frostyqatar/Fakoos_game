@@ -1519,6 +1519,87 @@
             0% { transform: translateX(-50%) scale(1); }
             100% { transform: translateX(-50%) scale(1.05); }
         }
+
+        .tile {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        
+        .tile.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .tile-front, .tile-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tile-back {
+            transform: rotateY(180deg);
+            background-color: #2a3f5e;
+        }
+
+        .timer-circle-container {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+        
+        .timer-circle {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .timer-background {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 7;
+        }
+        
+        .timer-progress {
+            fill: none;
+            stroke: #4CAF50;
+            stroke-width: 7;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.1s linear, stroke 0.5s;
+        }
+        
+        .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .team-sidebar {
+            transition: all 0.5s ease;
+        }
+        
+        .active-team {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+        }
+        
+        .team-leaving {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+        
+        .team-entering {
+            transform: scale(1.05);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -3177,7 +3258,7 @@
                     showWarningMessage('لقد استخدمت هذه القدرة بالفعل');
                     return;
                 }
-                
+                //this is the button that will be disabled when the ability is used
                 button.disabled = true;
                 button.classList.remove('electrocute-ready');
                 
@@ -3549,8 +3630,8 @@
                         // Save the updated game state to persist the cooldown status
                         saveGameState();
                     } else {
-                        // Cooldown still active, restart the timer with remaining time
-                        button.disabled = true;
+                        // Cooldown still active, restart the timer with remaining time. Use this to enable electrocute button for testing.
+                        button.disabled = false;
                         button.classList.remove('electrocute-ready');
                         
                         // Remove any existing timers
@@ -3715,56 +3796,226 @@
                 return;
             }
             
-            // Create lightning element
-            const lightning = document.createElement('div');
-            lightning.className = 'lightning-effect';
-            lightning.style.position = 'fixed';
-            lightning.style.top = '0';
-            lightning.style.left = '0';
-            lightning.style.width = '100%';
-            lightning.style.height = '100%';
-            lightning.style.pointerEvents = 'none';
-            lightning.style.zIndex = '9998';
+            // Create canvas for lightning effect
+            const canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '9998';
+            document.body.appendChild(canvas);
             
-            // Create the actual lightning bolt image
-            const bolt = document.createElement('div');
-            bolt.className = 'lightning-bolt';
+            const ctx = canvas.getContext('2d');
             
-            // Set up animation path
+            // Vector class for lightning effect
+            function Vector(x, y) {
+                this.x = x || 0;
+                this.y = y || 0;
+            }
+            
+            Vector.add = function(a, b) {
+                return new Vector(a.x + b.x, a.y + b.y);
+            };
+            
+            Vector.sub = function(a, b) {
+                return new Vector(a.x - b.x, a.y - b.y);
+            };
+            
+            Vector.prototype = {
+                set: function(x, y) {
+                    if (typeof x === 'object') {
+                        y = x.y;
+                        x = x.x;
+                    }
+                    this.x = x || 0;
+                    this.y = y || 0;
+                    return this;
+                },
+                
+                add: function(v) {
+                    this.x += v.x;
+                    this.y += v.y;
+                    return this;
+                },
+                
+                sub: function(v) {
+                    this.x -= v.x;
+                    this.y -= v.y;
+                    return this;
+                },
+                
+                scale: function(s) {
+                    this.x *= s;
+                    this.y *= s;
+                    return this;
+                },
+                
+                length: function() {
+                    return Math.sqrt(this.x * this.x + this.y * this.y);
+                },
+                
+                normalize: function() {
+                    var len = Math.sqrt(this.x * this.x + this.y * this.y);
+                    if (len) {
+                        this.x /= len;
+                        this.y /= len;
+                    }
+                    return this;
+                },
+                
+                angle: function() {
+                    return Math.atan2(this.y, this.x);
+                },
+                
+                distanceTo: function(v) {
+                    var dx = v.x - this.x,
+                        dy = v.y - this.y;
+                    return Math.sqrt(dx * dx + dy * dy);
+                }
+            };
+            
+            // Lightning class
+            function Lightning(startPoint, endPoint, step) {
+                this.startPoint = startPoint || new Vector();
+                this.endPoint = endPoint || new Vector();
+                this.step = step || 45;
+                this.points = [];
+                this.children = [];
+                this.color = 'rgba(255, 255, 0, 0.8)';
+                this.lineWidth = 5;
+                this.blur = 30;
+                this.blurColor = 'rgba(255, 255, 0, 0.4)';
+                this.speed = 0.025;
+                this.amplitude = 1;
+                this.off = 0;
+            }
+            
+            Lightning.prototype = {
+                update: function() {
+                    const startPoint = this.startPoint;
+                    const endPoint = this.endPoint;
+                    const length = startPoint.distanceTo(endPoint);
+                    const normal = Vector.sub(endPoint, startPoint).normalize().scale(length / this.step);
+                    const radian = normal.angle();
+                    const sinv = Math.sin(radian);
+                    const cosv = Math.cos(radian);
+                    
+                    this.points = [];
+                    this.off += Math.random() * this.speed;
+                    const waveWidth = length * this.amplitude;
+                    
+                    for (let i = 0; i <= this.step; i++) {
+                        const n = i / 60;
+                        const av = waveWidth * (Math.sin(n * 10 - this.off * 5) * 0.5 + 0.5) * 0.5;
+                        const ax = sinv * av;
+                        const ay = cosv * av;
+                        
+                        const bv = waveWidth * (Math.sin(n * 7 + this.off * 3) * 0.5 + 0.5) * 0.5;
+                        const bx = sinv * bv;
+                        const by = cosv * bv;
+                        
+                        const m = Math.sin((Math.PI * (i / this.step)));
+                        
+                        const x = startPoint.x + normal.x * i + (ax - bx) * m;
+                        const y = startPoint.y + normal.y * i - (ay - by) * m;
+                        
+                        this.points.push(new Vector(x, y));
+                    }
+                    
+                    // Update children
+                    for (let i = 0; i < this.children.length; i++) {
+                        const child = this.children[i];
+                        child.update();
+                    }
+                },
+                
+                draw: function(ctx) {
+                    const points = this.points;
+                    
+                    // Draw blur effect
+                    if (this.blur) {
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'lighter';
+                        ctx.shadowBlur = this.blur;
+                        ctx.shadowColor = this.blurColor;
+                        ctx.beginPath();
+                        for (let i = 0; i < points.length; i++) {
+                            const p = points[i];
+                            ctx[i === 0 ? 'moveTo' : 'lineTo'](p.x, p.y);
+                        }
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    
+                    // Draw main line
+                    ctx.save();
+                    ctx.lineWidth = this.lineWidth * (0.5 + Math.random() * 0.5);
+                    ctx.strokeStyle = this.color;
+                    ctx.beginPath();
+                    for (let i = 0; i < points.length; i++) {
+                        const p = points[i];
+                        ctx[i === 0 ? 'moveTo' : 'lineTo'](p.x, p.y);
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Draw children
+                    for (let i = 0; i < this.children.length; i++) {
+                        this.children[i].draw(ctx);
+                    }
+                },
+                
+                setChildNum: function(num) {
+                    const children = this.children;
+                    
+                    // Remove extra children
+                    if (children.length > num) {
+                        children.splice(num, children.length - num);
+                    } 
+                    // Add new children
+                    else {
+                        for (let i = children.length; i < num; i++) {
+                            const child = new Lightning();
+                            const startStep = Math.floor(Math.random() * (this.step - 4));
+                            const endStep = startStep + Math.floor(Math.random() * (this.step - startStep - 2)) + 2;
+                            
+                            child.startPoint = this.points[startStep] || this.startPoint;
+                            child.endPoint = this.points[endStep] || this.endPoint;
+                            child.step = endStep - startStep;
+                            child.color = this.color;
+                            child.lineWidth = this.lineWidth * 0.6;
+                            child.blur = this.blur * 0.8;
+                            child.blurColor = this.blurColor;
+                            child.speed = this.speed * 1.5;
+                            child.amplitude = this.amplitude * 1.2;
+                            
+                            children.push(child);
+                        }
+                    }
+                }
+            };
+            
+            // Get positions
             const sourceRect = sourceElement.getBoundingClientRect();
             const targetRect = targetScoreElement.getBoundingClientRect();
             
-            // Create lightning line
-            const startX = sourceRect.left + sourceRect.width / 2;
-            const startY = sourceRect.top + sourceRect.height / 2;
-            const endX = targetRect.left + targetRect.width / 2;
-            const endY = targetRect.top + targetRect.height / 2;
+            const startPoint = new Vector(
+                sourceRect.left + sourceRect.width / 2,
+                sourceRect.top + sourceRect.height / 2
+            );
             
-            // Calculate angle and distance
-            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-            const distance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            const endPoint = new Vector(
+                targetRect.left + targetRect.width / 2,
+                targetRect.top + targetRect.height / 2
+            );
             
-            // Create a series of zigzag segments for the lightning
-            for (let i = 0; i < 5; i++) {
-                const segment = document.createElement('div');
-                segment.className = 'lightning-segment';
-                segment.style.position = 'absolute';
-                segment.style.top = `${startY + (endY - startY) * (i / 5)}px`;
-                segment.style.left = `${startX + (endX - startX) * (i / 5)}px`;
-                segment.style.width = `${distance / 5}px`;
-                segment.style.height = '4px';
-                segment.style.backgroundColor = '#ffff00';
-                segment.style.boxShadow = '0 0 10px #ffff00, 0 0 20px #ffff00';
-                
-                // Add random zigzag effect
-                const zigzagAngle = angle + (Math.random() * 30 - 15);
-                segment.style.transform = `rotate(${zigzagAngle}deg)`;
-                segment.style.transformOrigin = 'left center';
-                
-                lightning.appendChild(segment);
-            }
-            
-            document.body.appendChild(lightning);
+            // Create lightning
+            const lightning = new Lightning(startPoint, endPoint);
+            lightning.step = Math.ceil(startPoint.distanceTo(endPoint) / 10);
+            if (lightning.step < 10) lightning.step = 10;
+            lightning.setChildNum(3);
             
             // Play shock sound
             const shockSound = new Audio();
@@ -3778,17 +4029,41 @@
             // Show dramatic electric effect
             showMessage(`⚡⚡⚡ ${gameState.teams[targetTeamIndex].name} يتعرض للصعق! ⚡⚡⚡`, 'announcement');
             
-            // Remove lightning and update score after animation
-            setTimeout(() => {
-                document.body.removeChild(lightning);
-                targetScoreElement.classList.remove('shocked');
+            // Animation loop
+            let animationFrameId;
+            let startTime = Date.now();
+            const duration = 5000; // 5 seconds
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
                 
-                // Deduct points from target team
-                adjustScore(targetTeamIndex, -pointsToDeduct);
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Show points deduction message
-                showMessage(`⚡ تم خصم ${pointsToDeduct} نقطة من ${gameState.teams[targetTeamIndex].name}! ⚡`, 'announcement');
-            }, 10000);
+                // Update and draw lightning
+                lightning.update();
+                lightning.draw(ctx);
+                
+                // Continue animation if not finished
+                if (progress < 1) {
+                    animationFrameId = requestAnimationFrame(animate);
+                } else {
+                    // Clean up
+                    cancelAnimationFrame(animationFrameId);
+                    document.body.removeChild(canvas);
+                    targetScoreElement.classList.remove('shocked');
+                    
+                    // Deduct points from target team
+                    adjustScore(targetTeamIndex, -pointsToDeduct);
+                    
+                    // Show points deduction message
+                    showMessage(`⚡ تم خصم ${pointsToDeduct} نقطة من ${gameState.teams[targetTeamIndex].name}! ⚡`, 'announcement');
+                }
+            }
+            
+            // Start animation
+            animate();
         }
 
         // Add CSS styles for the electrocute effects
@@ -6067,6 +6342,901 @@
     // Initialize turn on page load if game is already active
     if (gameState.gameActive) {
         initializeTeamTurn();
+    }
+
+    // Add this at the top of your script or before executeElectrocuteEffect
+    /**
+     * SimplexNoise - for better lightning effect
+     */
+    class SimplexNoise {
+        constructor() {
+            this.grad3 = [
+                [1,1,0], [-1,1,0], [1,-1,0], [-1,-1,0],
+                [1,0,1], [-1,0,1], [1,0,-1], [-1,0,-1],
+                [0,1,1], [0,-1,1], [0,1,-1], [0,-1,-1]
+            ];
+            this.p = [];
+            for (let i = 0; i < 256; i++) {
+                this.p[i] = Math.floor(Math.random() * 256);
+            }
+            
+            // To remove the need for index wrapping, double the permutation table length
+            this.perm = new Array(512);
+            this.gradP = new Array(512);
+            
+            // Skew constants for 2D
+            this.F2 = 0.5 * (Math.sqrt(3) - 1);
+            this.G2 = (3 - Math.sqrt(3)) / 6;
+            
+            this.seed(0);
+        }
+        
+        seed(seed) {
+            if (seed > 0 && seed < 1) {
+                // Scale the seed out
+                seed *= 65536;
+            }
+            
+            seed = Math.floor(seed);
+            if (seed < 256) {
+                seed |= seed << 8;
+            }
+            
+            for (let i = 0; i < 256; i++) {
+                let v;
+                if (i & 1) {
+                    v = this.p[i] ^ (seed & 255);
+                } else {
+                    v = this.p[i] ^ ((seed >> 8) & 255);
+                }
+                
+                this.perm[i] = this.perm[i + 256] = v;
+                this.gradP[i] = this.gradP[i + 256] = this.grad3[v % 12];
+            }
+        }
+        
+        // 2D simplex noise
+        noise2D(xin, yin) {
+            let n0, n1, n2; // Noise contributions from the three corners
+            
+            // Skew the input space to determine which simplex cell we're in
+            const s = (xin + yin) * this.F2; // Hairy factor for 2D
+            const i = Math.floor(xin + s);
+            const j = Math.floor(yin + s);
+            
+            const t = (i + j) * this.G2;
+            const X0 = i - t; // Unskew the cell origin back to (x,y) space
+            const Y0 = j - t;
+            const x0 = xin - X0; // The x,y distances from the cell origin
+            const y0 = yin - Y0;
+            
+            // For the 2D case, the simplex shape is an equilateral triangle.
+            // Determine which simplex we are in.
+            let i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
+            if (x0 > y0) { // lower triangle, XY order: (0,0)->(1,0)->(1,1)
+                i1 = 1; j1 = 0;
+            } else { // upper triangle, YX order: (0,0)->(0,1)->(1,1)
+                i1 = 0; j1 = 1;
+            }
+            
+            // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
+            // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
+            // c = (3-sqrt(3))/6
+            
+            const x1 = x0 - i1 + this.G2; // Offsets for middle corner in (x,y) unskewed coords
+            const y1 = y0 - j1 + this.G2;
+            const x2 = x0 - 1.0 + 2.0 * this.G2; // Offsets for last corner in (x,y) unskewed coords
+            const y2 = y0 - 1.0 + 2.0 * this.G2;
+            
+            // Work out the hashed gradient indices of the three simplex corners
+            const ii = i & 255;
+            const jj = j & 255;
+            
+            // Calculate the contribution from the three corners
+            let t0 = 0.5 - x0*x0-y0*y0;
+            if (t0 < 0) {
+                n0 = 0;
+            } else {
+                t0 *= t0;
+                n0 = t0 * t0 * this.dot(this.gradP[ii+this.perm[jj]], x0, y0);
+            }
+            
+            let t1 = 0.5 - x1*x1-y1*y1;
+            if (t1 < 0) {
+                n1 = 0;
+            } else {
+                t1 *= t1;
+                n1 = t1 * t1 * this.dot(this.gradP[ii+i1+this.perm[jj+j1]], x1, y1);
+            }
+            
+            let t2 = 0.5 - x2*x2-y2*y2;
+            if (t2 < 0) {
+                n2 = 0;
+            } else {
+                t2 *= t2;
+                n2 = t2 * t2 * this.dot(this.gradP[ii+1+this.perm[jj+1]], x2, y2);
+            }
+            
+            // Add contributions from each corner to get the final noise value.
+            // The result is scaled to return values in the interval [-1,1].
+            return 70.0 * (n0 + n1 + n2);
+        }
+        
+        // Helper
+        dot(g, x, y) {
+            return g[0]*x + g[1]*y;
+        }
+    }
+
+    // Vector with enhanced capabilities
+    function Vector(x, y) {
+        this.x = x || 0;
+        this.y = y || 0;
+    }
+
+    Vector.add = function(a, b) {
+        return new Vector(a.x + b.x, a.y + b.y);
+    };
+
+    Vector.sub = function(a, b) {
+        return new Vector(a.x - b.x, a.y - b.y);
+    };
+
+    Vector.prototype = {
+        set: function(x, y) {
+            if (typeof x === 'object') {
+                y = x.y;
+                x = x.x;
+            }
+            this.x = x || 0;
+            this.y = y || 0;
+            return this;
+        },
+
+        add: function(v) {
+            this.x += v.x;
+            this.y += v.y;
+            return this;
+        },
+
+        sub: function(v) {
+            this.x -= v.x;
+            this.y -= v.y;
+            return this;
+        },
+
+        scale: function(s) {
+            this.x *= s;
+            this.y *= s;
+            return this;
+        },
+
+        length: function() {
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+        },
+
+        normalize: function() {
+            var len = Math.sqrt(this.x * this.x + this.y * this.y);
+            if (len) {
+                this.x /= len;
+                this.y /= len;
+            }
+            return this;
+        },
+
+        angle: function() {
+            return Math.atan2(this.y, this.x);
+        },
+
+        distanceTo: function(v) {
+            var dx = v.x - this.x,
+                dy = v.y - this.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        },
+
+        distanceToSq: function(v) {
+            var dx = v.x - this.x,
+                dy = v.y - this.y;
+            return dx * dx + dy * dy;
+        },
+
+        clone: function() {
+            return new Vector(this.x, this.y);
+        }
+    };
+
+    // Enhanced Lightning for a more realistic effect
+    function Lightning(startPoint, endPoint, step) {
+        this.startPoint = startPoint || new Vector();
+        this.endPoint = endPoint || new Vector();
+        this.step = step || 45;
+        this.points = [];
+        this.children = [];
+        this.color = 'rgba(255, 255, 0, 0.8)';
+        this.lineWidth = 5;
+        this.blur = 30;
+        this.blurColor = 'rgba(255, 255, 0, 0.4)';
+        this.speed = 0.025;
+        this.amplitude = 1;
+        this.off = 0;
+        this._simplexNoise = new SimplexNoise();
+    }
+
+    Lightning.prototype = {
+        update: function() {
+            const startPoint = this.startPoint;
+            const endPoint = this.endPoint;
+            const length = startPoint.distanceTo(endPoint);
+            const normal = Vector.sub(endPoint, startPoint).normalize().scale(length / this.step);
+            const radian = normal.angle();
+            const sinv = Math.sin(radian);
+            const cosv = Math.cos(radian);
+            
+            this.points = [];
+            this.off += Math.random() * this.speed;
+            const waveWidth = length * this.amplitude;
+            
+            for (let i = 0; i <= this.step; i++) {
+                const n = i / 60;
+                // Use noise for more realistic lightning paths
+                const av = waveWidth * (this._noise(n - this.off, 0)) * 0.5;
+                const ax = sinv * av;
+                const ay = cosv * av;
+                
+                const bv = waveWidth * (this._noise(n + this.off, 0)) * 0.5;
+                const bx = sinv * bv;
+                const by = cosv * bv;
+                
+                const m = Math.sin((Math.PI * (i / this.step)));
+                
+                const x = startPoint.x + normal.x * i + (ax - bx) * m;
+                const y = startPoint.y + normal.y * i - (ay - by) * m;
+                
+                this.points.push(new Vector(x, y));
+            }
+            
+            // Update children
+            for (let i = 0; i < this.children.length; i++) {
+                const child = this.children[i];
+                child.update();
+            }
+        },
+        
+        draw: function(ctx) {
+            const points = this.points;
+            
+            // Draw blur effect
+            if (this.blur) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.shadowBlur = this.blur;
+                ctx.shadowColor = this.blurColor;
+                ctx.beginPath();
+                for (let i = 0; i < points.length; i++) {
+                    const p = points[i];
+                    ctx[i === 0 ? 'moveTo' : 'lineTo'](p.x, p.y);
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            // Draw main line
+            ctx.save();
+            ctx.lineWidth = this.lineWidth * (0.5 + Math.random() * 0.5);
+            ctx.strokeStyle = this.color;
+            ctx.beginPath();
+            for (let i = 0; i < points.length; i++) {
+                const p = points[i];
+                ctx[i === 0 ? 'moveTo' : 'lineTo'](p.x, p.y);
+            }
+            ctx.stroke();
+            ctx.restore();
+            
+            // Draw children
+            for (let i = 0; i < this.children.length; i++) {
+                this.children[i].draw(ctx);
+            }
+        },
+        
+        setChildNum: function(num) {
+            const children = this.children;
+            
+            // Remove extra children
+            if (children.length > num) {
+                children.splice(num, children.length - num);
+            } 
+            // Add new children
+            else {
+                for (let i = children.length; i < num; i++) {
+                    const child = new Lightning();
+                    const startStep = Math.floor(Math.random() * (this.step - 4));
+                    const endStep = startStep + Math.floor(Math.random() * (this.step - startStep - 2)) + 2;
+                    
+                    child.startPoint = this.points[startStep] || this.startPoint;
+                    child.endPoint = this.points[endStep] || this.endPoint;
+                    child.step = endStep - startStep;
+                    child.color = this.color;
+                    child.lineWidth = this.lineWidth * 0.6;
+                    child.blur = this.blur * 0.8;
+                    child.blurColor = this.blurColor;
+                    child.speed = this.speed * 1.5;
+                    child.amplitude = this.amplitude * 1.2;
+                    child._simplexNoise = this._simplexNoise;
+                    
+                    children.push(child);
+                }
+            }
+        },
+        
+        _noise: function(v) {
+            var octaves = 6,
+                fallout = 0.5,
+                amp = 1, f = 1, sum = 0,
+                i;
+
+            for (i = 0; i < octaves; ++i) {
+                amp *= fallout;
+                sum += amp * (this._simplexNoise.noise2D(v * f, 0) + 1) * 0.5;
+                f *= 2;
+            }
+
+            return sum;
+        }
+    };
+
+    // Helper function for random numbers
+    function random(max, min) {
+        if (typeof max !== 'number') {
+            return Math.random();
+        } else if (typeof min !== 'number') {
+            min = 0;
+        }
+        return Math.random() * (max - min) + min;
+    }
+
+    // Execute the improved electrocute effect
+    function executeElectrocuteEffect(sourceTeamIndex, targetTeamIndex, pointsToDeduct) {
+        // Get elements
+        const sourceElement = document.getElementById(`team${sourceTeamIndex+1}-avatar`);
+        const targetScoreElement = document.getElementById(`team${targetTeamIndex+1}-score`);
+        
+        if (!sourceElement || !targetScoreElement) {
+            console.error('Source or target element not found for electrocute effect');
+            return;
+        }
+        
+        // Create canvas for lightning effect
+        const canvas = document.createElement('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '9998';
+        document.body.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Get positions
+        const sourceRect = sourceElement.getBoundingClientRect();
+        const targetRect = targetScoreElement.getBoundingClientRect();
+        
+        const startPoint = new Vector(
+            sourceRect.left + sourceRect.width / 2,
+            sourceRect.top + sourceRect.height / 2
+        );
+        
+        const endPoint = new Vector(
+            targetRect.left + targetRect.width / 2,
+            targetRect.top + targetRect.height / 2
+        );
+        
+        // Create lightning with improved effect
+        const lightning = new Lightning(startPoint, endPoint);
+        lightning.step = Math.ceil(startPoint.distanceTo(endPoint) / 10);
+        if (lightning.step < 10) lightning.step = 10;
+        
+        // Set visual properties
+        lightning.color = 'rgba(255, 255, 0, 0.8)';
+        lightning.blurColor = 'rgba(255, 255, 0, 0.4)';
+        lightning.lineWidth = 5;
+        lightning.blur = 30;
+        lightning.speed = 0.025;
+        lightning.amplitude = 1;
+        
+        // Add branches (children)
+        lightning.setChildNum(3);
+        
+        // Play shock sound
+        const shockSound = new Audio();
+        shockSound.src = "https://cdn.pixabay.com/download/audio/2024/07/30/audio_cf17467766.mp3?filename=ui-abstract-electricity-glitch-228341.mp3";
+        shockSound.volume = 0.5;
+        shockSound.play();
+        
+        // Add shock effect to the target score
+        targetScoreElement.classList.add('shocked');
+        
+        // Show dramatic electric effect
+        showMessage(`⚡⚡⚡ ${gameState.teams[targetTeamIndex].name} يتعرض للصعق! ⚡⚡⚡`, 'announcement');
+        
+        // Define polyfill for requestAnimationFrame
+        window.requestAnimationFrame = window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            };
+        
+        // Animation loop
+        let animationFrameId;
+        let startTime = Date.now();
+        const duration = 5000; // 5 seconds
+        
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update lightning positions with noise
+            lightning.update();
+            lightning.draw(ctx);
+            
+            // Continue animation if not finished
+            if (progress < 1) {
+                animationFrameId = requestAnimationFrame(animate);
+            } else {
+                // Clean up
+                cancelAnimationFrame(animationFrameId);
+                document.body.removeChild(canvas);
+                targetScoreElement.classList.remove('shocked');
+                
+                // Deduct points from target team
+                adjustScore(targetTeamIndex, -pointsToDeduct);
+                
+                // Show points deduction message
+                showMessage(`⚡ تم خصم ${pointsToDeduct} نقطة من ${gameState.teams[targetTeamIndex].name}! ⚡`, 'announcement');
+            }
+        }
+        
+        // Start animation
+        animate();
+    }
+    // ... existing code ...
+
+    function animateScoreChange(teamIndex, newScore) {
+        const scoreElement = document.getElementById(`team${teamIndex+1}-score`);
+        const currentScore = parseInt(scoreElement.textContent);
+        const difference = newScore - currentScore;
+        const duration = 1000; // 1 second animation
+        const frameDuration = 1000/60; // 60fps
+        const totalFrames = duration / frameDuration;
+        const scoreIncrement = difference / totalFrames;
+        
+        let frame = 0;
+        let displayValue = currentScore;
+        
+        function updateCounter() {
+            frame++;
+            displayValue += scoreIncrement;
+            
+            // Round for display, but keep the actual value precise
+            scoreElement.textContent = Math.round(displayValue);
+            
+            if (frame < totalFrames) {
+                requestAnimationFrame(updateCounter);
+            } else {
+                // Ensure final value is exactly correct
+                scoreElement.textContent = newScore;
+            }
+        }
+        
+        requestAnimationFrame(updateCounter);
+    }
+
+    function addCardFlipEffects() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .tile {
+                transition: transform 0.6s;
+                transform-style: preserve-3d;
+                position: relative;
+            }
+            
+            .tile.flipped {
+                transform: rotateY(180deg);
+            }
+            
+            .tile-front, .tile-back {
+                backface-visibility: hidden;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .tile-back {
+                transform: rotateY(180deg);
+                background-color: #2a3f5e;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // When creating tiles, structure them with front/back faces
+        document.querySelectorAll('.tile').forEach(tile => {
+            const value = tile.textContent;
+            const front = document.createElement('div');
+            front.className = 'tile-front';
+            front.textContent = value;
+            
+            const back = document.createElement('div');
+            back.className = 'tile-back';
+            back.innerHTML = '<span>?</span>';
+            
+            // Clear and add new content
+            tile.textContent = '';
+            tile.appendChild(front);
+            tile.appendChild(back);
+            
+            tile.addEventListener('click', function() {
+                this.classList.add('flipped');
+                // Continue with question display after animation
+                setTimeout(() => {
+                    showQuestion(/* your params here */);
+                }, 600);
+            });
+        });
+    }
+
+    function typeWriterEffect(element, text, speed = 50) {
+        let i = 0;
+        element.textContent = '';
+        
+        function type() {
+            if (i < text.length) {
+                element.textContent += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            }
+        }
+        
+        type();
+    }
+
+    // Usage when showing a question
+    function showQuestion(questionData) {
+        const questionElement = document.getElementById('question-text');
+        typeWriterEffect(questionElement, questionData.question);
+        
+        // Reveal answer button after question finishes typing
+        setTimeout(() => {
+            document.querySelector('.question-actions').style.opacity = '1';
+        }, questionData.question.length * 50 + 500);
+    }
+
+    function createCircularTimer(duration) {
+        const timerContainer = document.getElementById('question-timer');
+        timerContainer.innerHTML = `
+            <div class="timer-circle-container">
+                <svg class="timer-circle" viewBox="0 0 100 100">
+                    <circle class="timer-background" cx="50" cy="50" r="45" />
+                    <circle class="timer-progress" cx="50" cy="50" r="45" />
+                </svg>
+                <div class="timer-text">30</div>
+            </div>
+        `;
+        
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .timer-circle-container {
+                position: relative;
+                width: 60px;
+                height: 60px;
+            }
+            
+            .timer-circle {
+                transform: rotate(-90deg);
+                width: 100%;
+                height: 100%;
+            }
+            
+            .timer-background {
+                fill: none;
+                stroke: rgba(255, 255, 255, 0.2);
+                stroke-width: 7;
+            }
+            
+            .timer-progress {
+                fill: none;
+                stroke: #4CAF50;
+                stroke-width: 7;
+                stroke-dasharray: 283;
+                stroke-dashoffset: 0;
+                transition: stroke-dashoffset 0.1s linear, stroke 0.5s;
+            }
+            
+            .timer-text {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 20px;
+                font-weight: bold;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Animation
+        const progress = timerContainer.querySelector('.timer-progress');
+        const text = timerContainer.querySelector('.timer-text');
+        const circumference = 2 * Math.PI * 45;
+        progress.style.strokeDasharray = circumference;
+        
+        let timeLeft = duration;
+        const timerInterval = setInterval(() => {
+            timeLeft--;
+            
+            // Update text
+            text.textContent = timeLeft;
+            
+            // Update circle
+            const offset = circumference * (1 - timeLeft / duration);
+            progress.style.strokeDashoffset = offset;
+            
+            // Change color as time runs low
+            if (timeLeft <= 10) {
+                progress.style.stroke = '#FFC107'; // Yellow
+            }
+            
+            if (timeLeft <= 5) {
+                progress.style.stroke = '#F44336'; // Red
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                // Handle timer end
+            }
+        }, 1000);
+        
+        return {
+            clear: () => clearInterval(timerInterval)
+        };
+    }
+
+    function confettiCelebration() {
+        const canvas = document.createElement('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '9999';
+        document.body.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Create confetti particles
+        const particles = [];
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', 
+                        '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', 
+                        '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
+        
+        for (let i = 0; i < 200; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                size: Math.random() * 8 + 3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speed: Math.random() * 2 + 1,
+                angle: Math.random() * Math.PI * 2,
+                rotation: Math.random() * 0.2 - 0.1,
+                rotationSpeed: Math.random() * 0.01
+            });
+        }
+        
+        let animationFrameId;
+        const startTime = Date.now();
+        const duration = 3000; // 3 seconds
+        
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            particles.forEach(p => {
+                p.y += p.speed;
+                p.x += Math.sin(p.angle) * 0.5;
+                p.rotation += p.rotationSpeed;
+                
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.fillStyle = p.color;
+                
+                // Draw a rectangle for confetti piece
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size/2);
+                
+                ctx.restore();
+            });
+            
+            if (progress < 1) {
+                animationFrameId = requestAnimationFrame(animate);
+            } else {
+                cancelAnimationFrame(animationFrameId);
+                document.body.removeChild(canvas);
+            }
+        }
+        
+        animate();
+    }
+
+    function animateTeamSwitch(prevTeamIndex, newTeamIndex) {
+        const prevSidebar = document.querySelector(`.team-sidebar:nth-child(${prevTeamIndex + 1})`);
+        const newSidebar = document.querySelector(`.team-sidebar:nth-child(${newTeamIndex + 1})`);
+        
+        // Add glow/highlight to new active team
+        prevSidebar.classList.remove('active-team');
+        
+        // Add animation classes
+        prevSidebar.classList.add('team-leaving');
+        newSidebar.classList.add('team-entering');
+        
+        // After animation completes
+        setTimeout(() => {
+            newSidebar.classList.add('active-team');
+            prevSidebar.classList.remove('team-leaving');
+            newSidebar.classList.remove('team-entering');
+        }, 500);
+    }
+
+    // Add these styles
+    const teamSwitchStyles = `
+        .team-sidebar {
+            transition: all 0.5s ease;
+        }
+        
+        .active-team {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+        }
+        
+        .team-leaving {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+        
+        .team-entering {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+    `;
+
+    function abilityActivationEffect(abilityType, teamIndex) {
+        const abilityButton = document.getElementById(`team${teamIndex+1}-${abilityType}`);
+        
+        // Create particle system around the button
+        const particles = [];
+        const colors = {
+            'chatgpt': ['#74aa9c', '#9cdbc2'],
+            'double': ['#ffeb3b', '#ffc107'],
+            'google': ['#4285f4', '#34a853', '#fbbc05', '#ea4335'],
+            'dismiss': ['#ff5722', '#ff9800'],
+            'electrocute': ['#ffeb3b', '#ff5722', '#f5f5f5']
+        };
+        
+        const buttonRect = abilityButton.getBoundingClientRect();
+        
+        // Create particles around the button
+        const canvas = document.createElement('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '100';
+        document.body.appendChild(canvas);
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Create particles
+        const buttonColors = colors[abilityType] || ['#ffffff', '#cccccc'];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: buttonRect.left + buttonRect.width / 2,
+                y: buttonRect.top + buttonRect.height / 2,
+                size: Math.random() * 8 + 2,
+                color: buttonColors[Math.floor(Math.random() * buttonColors.length)],
+                velocity: {
+                    x: (Math.random() - 0.5) * 8,
+                    y: (Math.random() - 0.5) * 8
+                },
+                alpha: 1,
+                rotation: Math.random() * Math.PI * 2
+            });
+        }
+        
+        let animationFrameId;
+        const startTime = Date.now();
+        const duration = 1000; // 1 second
+        
+        function animate() {
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            particles.forEach(p => {
+                p.x += p.velocity.x;
+                p.y += p.velocity.y;
+                p.alpha = 1 - progress;
+                p.rotation += 0.05;
+                
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                
+                // Draw a star for ability activation
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    ctx.lineTo(
+                        Math.cos((i * 2 * Math.PI / 5) - Math.PI/2) * p.size,
+                        Math.sin((i * 2 * Math.PI / 5) - Math.PI/2) * p.size
+                    );
+                    ctx.lineTo(
+                        Math.cos(((i + 0.5) * 2 * Math.PI / 5) - Math.PI/2) * (p.size/2),
+                        Math.sin(((i + 0.5) * 2 * Math.PI / 5) - Math.PI/2) * (p.size/2)
+                    );
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
+            
+            if (progress < 1) {
+                animationFrameId = requestAnimationFrame(animate);
+            } else {
+                cancelAnimationFrame(animationFrameId);
+                document.body.removeChild(canvas);
+            }
+        }
+        
+        // Add button animation
+        abilityButton.classList.add('ability-activate');
+        setTimeout(() => {
+            abilityButton.classList.remove('ability-activate');
+        }, 1000);
+        
+        // Add style
+        const style = document.createElement('style');
+        style.textContent = `
+            .ability-activate {
+                animation: abilityPulse 1s ease;
+            }
+            
+            @keyframes abilityPulse {
+                0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+                50% { transform: scale(1.2); box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+                100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        animate();
     }
 
     </script>
