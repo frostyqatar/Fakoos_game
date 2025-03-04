@@ -1640,7 +1640,7 @@
     
     <header>
         <div class="logo-container">
-            <img src="https://iili.io/32LgoGa.webp" alt="Frosty Trivia Logo" id="game-logo">
+            <img src="https://i.postimg.cc/rFmbqXGz/DALL-E-2025-03-03-16-17-51-A-funny-2-D-cartoon-logo-featuring-a-mischievous-cartoon-style-fox-with.webp" alt="Frosty Trivia Logo" id="game-logo">
             <h1>Frosty Trivia</h1>
         </div>
     </header>
@@ -3631,7 +3631,7 @@
                         saveGameState();
                     } else {
                         // Cooldown still active, restart the timer with remaining time. Use this to enable electrocute button for testing.
-                        button.disabled = false;
+                        button.disabled = true;
                         button.classList.remove('electrocute-ready');
                         
                         // Remove any existing timers
@@ -3693,67 +3693,148 @@
         }
 
         // Update the startElectrocuteCooldown function to use the stored cooldown info
-        function startElectrocuteCooldown(teamIndex) {
-            const button = document.getElementById(`team${teamIndex+1}-electrocute`);
-            if (!button) return;
-
-            const existingTimer = button.querySelector('.cooldown-timer');
-            if (existingTimer) {
-                existingTimer.remove();
+/**
+ * Starts or restores an electrocute cooldown timer for a specific team
+ * @param {number} teamIndex - The index of the team (0 or 1)
+ */
+ function startElectrocuteCooldown(teamIndex) {
+    // Get the specific team's electrocute button
+    const button = document.getElementById(`team${teamIndex+1}-electrocute`);
+    
+    if (!button) {
+        console.error(`Button team${teamIndex+1}-electrocute not found`);
+        return;
+    }
+    
+    // Clear any existing timer
+    const existingTimer = button.querySelector('.cooldown-timer');
+    if (existingTimer) {
+        existingTimer.remove();
+    }
+    
+    // Clear any existing interval for this team
+    if (gameState.cooldownIntervals && gameState.cooldownIntervals[`team${teamIndex}`]) {
+        clearInterval(gameState.cooldownIntervals[`team${teamIndex}`]);
+    }
+    
+    // Create timer element
+    const timerElement = document.createElement('div');
+    timerElement.className = 'cooldown-timer';
+    timerElement.setAttribute('data-team', teamIndex);
+    timerElement.style.position = 'absolute';
+    timerElement.style.top = '40px';
+    timerElement.style.left = '40px';
+    timerElement.style.width = '100%';
+    timerElement.style.height = '100%';
+    timerElement.style.display = 'flex';
+    timerElement.style.alignItems = 'center';
+    timerElement.style.justifyContent = 'center';
+    timerElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    timerElement.style.color = '#ff9800';
+    timerElement.style.borderRadius = 'inherit';
+    timerElement.style.fontSize = '14px';
+    timerElement.style.fontWeight = 'bold';
+    timerElement.style.pointerEvents = 'none';
+    timerElement.style.zIndex = '2';
+    
+    // Make sure button has relative positioning
+    button.style.position = 'relative';
+    button.appendChild(timerElement);
+    
+    // Initialize or update the cooldown in gameState
+    if (!gameState.teams[teamIndex].electrocuteCooldown) {
+        gameState.teams[teamIndex].electrocuteCooldown = {};
+    }
+    
+    // If starting a new cooldown (not just restoring an existing one)
+    if (!gameState.teams[teamIndex].electrocuteCooldown.active) {
+        gameState.teams[teamIndex].electrocuteCooldown = {
+            active: true,
+            startTime: Date.now(),
+            duration: 1200000 // 20 minutes in milliseconds
+        };
+    }
+    
+    // Disable the button
+    button.disabled = true;
+    button.classList.remove('electrocute-ready');
+    
+    // Set up the interval to update the timer
+    const interval = setInterval(() => {
+        // Calculate remaining time
+        const elapsed = (Date.now() - gameState.teams[teamIndex].electrocuteCooldown.startTime) / 1000;
+        const cooldownDuration = gameState.teams[teamIndex].electrocuteCooldown.duration / 1000;
+        const timeRemaining = Math.max(0, Math.ceil(cooldownDuration - elapsed));
+        
+        // Format the time as mm:ss
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        // Check if cooldown is complete
+        if (timeRemaining <= 0) {
+            clearInterval(interval);
+            
+            if (timerElement.parentNode) {
+                timerElement.remove();
             }
             
-            const timerDisplay = document.createElement('span');
-            timerDisplay.className = 'cooldown-timer';
-            button.appendChild(timerDisplay);
+            // Update gameState
+            gameState.teams[teamIndex].electrocuteCooldown.active = false;
+            delete gameState.cooldownIntervals[`team${teamIndex}`];
             
-            // Get the cooldown time from gameState
-            let cooldownTime = gameState.teams[teamIndex].electrocuteCooldown ? 
-                Math.floor(gameState.teams[teamIndex].electrocuteCooldown.duration / 1000) : 1200;
+            // Update button state
+            button.disabled = false;
+            button.classList.add('electrocute-ready');
             
-            timerDisplay.textContent = cooldownTime;
-
-            // Store the interval ID in the gameState so it can be referenced later
-            if (!gameState.cooldownIntervals) {
-                gameState.cooldownIntervals = {};
+            // Show notification that ability is ready again
+            if (typeof showMessage === 'function') {
+                showMessage(`⚡ قدرة الصعق الكهربائي جاهزة مرة أخرى لـ ${gameState.teams[teamIndex].name}! ⚡`, 'announcement');
             }
-            
-            // Clear any existing interval for this team
-            if (gameState.cooldownIntervals[`team${teamIndex}`]) {
-                clearInterval(gameState.cooldownIntervals[`team${teamIndex}`]);
-            }
-
-            const interval = setInterval(() => {
-                cooldownTime--;
-                if (timerDisplay.parentNode) {
-                    timerDisplay.textContent = cooldownTime;
-                }
-
-                // Update the cooldown time in gameState to ensure it persists on refresh
-                gameState.teams[teamIndex].electrocuteCooldown.startTime = Date.now() - ((gameState.teams[teamIndex].electrocuteCooldown.duration / 1000) - cooldownTime) * 1000;
-                saveGameState();
-
-                if (cooldownTime <= 0) {
-                    clearInterval(interval);
-                    delete gameState.cooldownIntervals[`team${teamIndex}`];
-                    
-                    if (timerDisplay.parentNode) {
-                        timerDisplay.remove();
-                    }
-                    if (gameState.teams[teamIndex].electrocuteCooldown) {
-                        gameState.teams[teamIndex].electrocuteCooldown.active = false;
-                    }
-                    button.disabled = false;
-                    button.classList.add('electrocute-ready');
-                    
-                    // Save the updated game state
-                    saveGameState();
-                }
-            }, 1000);
-            
-            // Store the interval ID
-            gameState.cooldownIntervals[`team${teamIndex}`] = interval;
         }
+        
+        // Save game state to persist across refreshes
+        saveGameState();
+    }, 1000);
+    
+    // Store the interval ID for cleanup
+    if (!gameState.cooldownIntervals) {
+        gameState.cooldownIntervals = {};
+    }
+    gameState.cooldownIntervals[`team${teamIndex}`] = interval;
+}
 
+/**
+ * Restores electrocute cooldowns when loading a saved game
+ */
+function restoreElectrocuteCooldowns() {
+    for (let i = 0; i < gameState.teams.length; i++) {
+        if (gameState.teams[i].electrocuteCooldown && gameState.teams[i].electrocuteCooldown.active) {
+            const button = document.getElementById(`team${i+1}-electrocute`);
+            if (!button) continue;
+            
+            // Calculate remaining time
+            const elapsed = (Date.now() - gameState.teams[i].electrocuteCooldown.startTime) / 1000;
+            const remainingTime = Math.max(0, Math.ceil(gameState.teams[i].electrocuteCooldown.duration / 1000 - elapsed));
+            
+            if (remainingTime > 0) {
+                // Disable button
+                button.disabled = true;
+                button.classList.remove('electrocute-ready');
+                
+                // Restart the cooldown timer
+                startElectrocuteCooldown(i);
+            } else {
+                // Cooldown already expired
+                gameState.teams[i].electrocuteCooldown.active = false;
+                
+                // Make sure button is enabled
+                button.disabled = false;
+                button.classList.add('electrocute-ready');
+            }
+        }
+    }
+}
         // Function to show warning messages
         function showWarningMessage(message) {
             const warning = document.createElement('div');
@@ -4102,7 +4183,7 @@
                 
                 .cooldown-timer {
                     position: absolute;
-                    top: 18%;
+                    top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%);
                     font-size: 18px;
@@ -4119,6 +4200,14 @@
                     box-shadow: 0 0 10px #ff6600, inset 0 0 8px #ff3300;
                     text-shadow: 0 0 5px #ff9900;
                     animation: pulse-glow 1.5s infinite alternate;
+                }
+                
+                #team1-electrocute .cooldown-timer,
+                #team2-electrocute .cooldown-timer {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
                 }
                 
                 @keyframes pulse-glow {
@@ -6894,349 +6983,6 @@
                 }, 600);
             });
         });
-    }
-
-    function typeWriterEffect(element, text, speed = 50) {
-        let i = 0;
-        element.textContent = '';
-        
-        function type() {
-            if (i < text.length) {
-                element.textContent += text.charAt(i);
-                i++;
-                setTimeout(type, speed);
-            }
-        }
-        
-        type();
-    }
-
-    // Usage when showing a question
-    function showQuestion(questionData) {
-        const questionElement = document.getElementById('question-text');
-        typeWriterEffect(questionElement, questionData.question);
-        
-        // Reveal answer button after question finishes typing
-        setTimeout(() => {
-            document.querySelector('.question-actions').style.opacity = '1';
-        }, questionData.question.length * 50 + 500);
-    }
-
-    function createCircularTimer(duration) {
-        const timerContainer = document.getElementById('question-timer');
-        timerContainer.innerHTML = `
-            <div class="timer-circle-container">
-                <svg class="timer-circle" viewBox="0 0 100 100">
-                    <circle class="timer-background" cx="50" cy="50" r="45" />
-                    <circle class="timer-progress" cx="50" cy="50" r="45" />
-                </svg>
-                <div class="timer-text">30</div>
-            </div>
-        `;
-        
-        // Add styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .timer-circle-container {
-                position: relative;
-                width: 60px;
-                height: 60px;
-            }
-            
-            .timer-circle {
-                transform: rotate(-90deg);
-                width: 100%;
-                height: 100%;
-            }
-            
-            .timer-background {
-                fill: none;
-                stroke: rgba(255, 255, 255, 0.2);
-                stroke-width: 7;
-            }
-            
-            .timer-progress {
-                fill: none;
-                stroke: #4CAF50;
-                stroke-width: 7;
-                stroke-dasharray: 283;
-                stroke-dashoffset: 0;
-                transition: stroke-dashoffset 0.1s linear, stroke 0.5s;
-            }
-            
-            .timer-text {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                font-size: 20px;
-                font-weight: bold;
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // Animation
-        const progress = timerContainer.querySelector('.timer-progress');
-        const text = timerContainer.querySelector('.timer-text');
-        const circumference = 2 * Math.PI * 45;
-        progress.style.strokeDasharray = circumference;
-        
-        let timeLeft = duration;
-        const timerInterval = setInterval(() => {
-            timeLeft--;
-            
-            // Update text
-            text.textContent = timeLeft;
-            
-            // Update circle
-            const offset = circumference * (1 - timeLeft / duration);
-            progress.style.strokeDashoffset = offset;
-            
-            // Change color as time runs low
-            if (timeLeft <= 10) {
-                progress.style.stroke = '#FFC107'; // Yellow
-            }
-            
-            if (timeLeft <= 5) {
-                progress.style.stroke = '#F44336'; // Red
-            }
-            
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                // Handle timer end
-            }
-        }, 1000);
-        
-        return {
-            clear: () => clearInterval(timerInterval)
-        };
-    }
-
-    function confettiCelebration() {
-        const canvas = document.createElement('canvas');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        canvas.style.position = 'fixed';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.pointerEvents = 'none';
-        canvas.style.zIndex = '9999';
-        document.body.appendChild(canvas);
-        
-        const ctx = canvas.getContext('2d');
-        
-        // Create confetti particles
-        const particles = [];
-        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', 
-                        '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', 
-                        '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
-        
-        for (let i = 0; i < 200; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height - canvas.height,
-                size: Math.random() * 8 + 3,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                speed: Math.random() * 2 + 1,
-                angle: Math.random() * Math.PI * 2,
-                rotation: Math.random() * 0.2 - 0.1,
-                rotationSpeed: Math.random() * 0.01
-            });
-        }
-        
-        let animationFrameId;
-        const startTime = Date.now();
-        const duration = 3000; // 3 seconds
-        
-        function animate() {
-            const elapsed = Date.now() - startTime;
-            const progress = elapsed / duration;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Update and draw particles
-            particles.forEach(p => {
-                p.y += p.speed;
-                p.x += Math.sin(p.angle) * 0.5;
-                p.rotation += p.rotationSpeed;
-                
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rotation);
-                ctx.fillStyle = p.color;
-                
-                // Draw a rectangle for confetti piece
-                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size/2);
-                
-                ctx.restore();
-            });
-            
-            if (progress < 1) {
-                animationFrameId = requestAnimationFrame(animate);
-            } else {
-                cancelAnimationFrame(animationFrameId);
-                document.body.removeChild(canvas);
-            }
-        }
-        
-        animate();
-    }
-
-    function animateTeamSwitch(prevTeamIndex, newTeamIndex) {
-        const prevSidebar = document.querySelector(`.team-sidebar:nth-child(${prevTeamIndex + 1})`);
-        const newSidebar = document.querySelector(`.team-sidebar:nth-child(${newTeamIndex + 1})`);
-        
-        // Add glow/highlight to new active team
-        prevSidebar.classList.remove('active-team');
-        
-        // Add animation classes
-        prevSidebar.classList.add('team-leaving');
-        newSidebar.classList.add('team-entering');
-        
-        // After animation completes
-        setTimeout(() => {
-            newSidebar.classList.add('active-team');
-            prevSidebar.classList.remove('team-leaving');
-            newSidebar.classList.remove('team-entering');
-        }, 500);
-    }
-
-    // Add these styles
-    const teamSwitchStyles = `
-        .team-sidebar {
-            transition: all 0.5s ease;
-        }
-        
-        .active-team {
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
-        }
-        
-        .team-leaving {
-            transform: scale(0.95);
-            opacity: 0.8;
-        }
-        
-        .team-entering {
-            transform: scale(1.05);
-            opacity: 1;
-        }
-    `;
-
-    function abilityActivationEffect(abilityType, teamIndex) {
-        const abilityButton = document.getElementById(`team${teamIndex+1}-${abilityType}`);
-        
-        // Create particle system around the button
-        const particles = [];
-        const colors = {
-            'chatgpt': ['#74aa9c', '#9cdbc2'],
-            'double': ['#ffeb3b', '#ffc107'],
-            'google': ['#4285f4', '#34a853', '#fbbc05', '#ea4335'],
-            'dismiss': ['#ff5722', '#ff9800'],
-            'electrocute': ['#ffeb3b', '#ff5722', '#f5f5f5']
-        };
-        
-        const buttonRect = abilityButton.getBoundingClientRect();
-        
-        // Create particles around the button
-        const canvas = document.createElement('canvas');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        canvas.style.position = 'fixed';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.pointerEvents = 'none';
-        canvas.style.zIndex = '100';
-        document.body.appendChild(canvas);
-        
-        const ctx = canvas.getContext('2d');
-        
-        // Create particles
-        const buttonColors = colors[abilityType] || ['#ffffff', '#cccccc'];
-        for (let i = 0; i < 50; i++) {
-            particles.push({
-                x: buttonRect.left + buttonRect.width / 2,
-                y: buttonRect.top + buttonRect.height / 2,
-                size: Math.random() * 8 + 2,
-                color: buttonColors[Math.floor(Math.random() * buttonColors.length)],
-                velocity: {
-                    x: (Math.random() - 0.5) * 8,
-                    y: (Math.random() - 0.5) * 8
-                },
-                alpha: 1,
-                rotation: Math.random() * Math.PI * 2
-            });
-        }
-        
-        let animationFrameId;
-        const startTime = Date.now();
-        const duration = 1000; // 1 second
-        
-        function animate() {
-            const elapsed = Date.now() - startTime;
-            const progress = elapsed / duration;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Update and draw particles
-            particles.forEach(p => {
-                p.x += p.velocity.x;
-                p.y += p.velocity.y;
-                p.alpha = 1 - progress;
-                p.rotation += 0.05;
-                
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rotation);
-                ctx.globalAlpha = p.alpha;
-                ctx.fillStyle = p.color;
-                
-                // Draw a star for ability activation
-                ctx.beginPath();
-                for (let i = 0; i < 5; i++) {
-                    ctx.lineTo(
-                        Math.cos((i * 2 * Math.PI / 5) - Math.PI/2) * p.size,
-                        Math.sin((i * 2 * Math.PI / 5) - Math.PI/2) * p.size
-                    );
-                    ctx.lineTo(
-                        Math.cos(((i + 0.5) * 2 * Math.PI / 5) - Math.PI/2) * (p.size/2),
-                        Math.sin(((i + 0.5) * 2 * Math.PI / 5) - Math.PI/2) * (p.size/2)
-                    );
-                }
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-            });
-            
-            if (progress < 1) {
-                animationFrameId = requestAnimationFrame(animate);
-            } else {
-                cancelAnimationFrame(animationFrameId);
-                document.body.removeChild(canvas);
-            }
-        }
-        
-        // Add button animation
-        abilityButton.classList.add('ability-activate');
-        setTimeout(() => {
-            abilityButton.classList.remove('ability-activate');
-        }, 1000);
-        
-        // Add style
-        const style = document.createElement('style');
-        style.textContent = `
-            .ability-activate {
-                animation: abilityPulse 1s ease;
-            }
-            
-            @keyframes abilityPulse {
-                0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
-                50% { transform: scale(1.2); box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
-                100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 255, 255, 0); }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        animate();
     }
 
     </script>
