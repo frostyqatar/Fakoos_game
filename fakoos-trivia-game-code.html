@@ -6,7 +6,8 @@
     <title>Frosty Trivia!</title>
     <!-- Add Google Fonts link for the gamey font -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<style>:root {
+<style>
+:root {
     /* Frosty color palette */
     --primary-color: #1e88e5;
     --secondary-color: #0d47a1;
@@ -51,7 +52,70 @@ body::before {
     background-color: rgba(11, 36, 71, 0.85);
     z-index: -1;
 }
+.chatgpt-hint {
+    background: rgba(13, 71, 161, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 1.1rem;
+    text-align: center;
+}
 
+.chatgpt-hint h3 {
+    color: #4fc3f7;
+    margin-bottom: 10px;
+}
+
+.hint-text {
+    font-size: 1.2rem;
+    margin: 15px 0;
+}
+
+.hint-letters {
+    font-weight: bold;
+    color: #4fc3f7;
+    font-size: 1.4rem;
+}
+.chatgpt-options {
+    background: rgba(13, 71, 161, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 1.1rem;
+}
+
+.chatgpt-options h3 {
+    color: #4fc3f7;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.option {
+    margin: 10px 0;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.option:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(3px);
+}
+
+.option-label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.hint-footer {
+    margin-top: 15px;
+    text-align: center;
+    font-style: italic;
+    color: #81d4fa;
+}
 /* Animated snowflakes */
 body::after {
     content: '';
@@ -3528,12 +3592,13 @@ body {
             const categoryEmojis = {
                 "التاريخ العالمي": "🏛️",
                 "العلوم والطبيعة": "🔬",
-                "الثقافة الشعبية (قطر)": "🇶🇦",
+                "قطر": "🇶🇦",
                 "ليج أوف ليجندز": "🎮",
                 "الفنون والأدب": "🎨",
                 "الجغرافيا": "🌍",
                 "الرياضة والألعاب": "⚽",
-                "الأنمي والمانجا": "🎌" // Adding emoji for Anime category
+                "الأنمي والمانجا": "🎌",// Adding emoji for Anime category
+                "التكنولوجيا": "💻",
             };
             
             const categoryContainer = document.getElementById('categories-grid');
@@ -3927,46 +3992,62 @@ body {
                     console.error("saveGameState function not defined");
                 }
             } else if (abilityType === 'chatgpt') {
-                // Implement ChatGPT ability
-                const button = document.getElementById(`team${teamIndex+1}-chatgpt`);
-                
-                if (!button) {
-                    console.error(`Button team${teamIndex+1}-chatgpt not found`);
-                    return;
+    // Implement ChatGPT ability
+    const button = document.getElementById(`team${teamIndex+1}-chatgpt`);
+    
+    if (!button) {
+        console.error(`Button team${teamIndex+1}-chatgpt not found`);
+        return;
+    }
+    
+    if (button.disabled) {
+        showWarningMessage('لقد استخدمت هذه القدرة بالفعل');
+        return;
+    }
+    gameState.teams[teamIndex].abilities[abilityType] = true;
+    // Disable the button to prevent multiple uses
+    button.disabled = true;
+    
+    // Show a message about using ChatGPT ability
+    if (typeof showAbilityFeedback === 'function') {
+        showAbilityFeedback(`${gameState.teams[teamIndex].name} يستخدم مساعدة ChatGPT!`);
+    } else {
+        console.error("showAbilityFeedback function not defined");
+        showWarningMessage(`${gameState.teams[teamIndex].name} يستخدم مساعدة ChatGPT!`);
+    }
+    
+    // If a question is currently displayed, provide a hint
+    if (gameState.currentQuestion) {
+        setTimeout(() => {
+            // Get the first three letters of the answer and add ...
+            const createLetterHint = () => {
+                if (!gameState.currentQuestion || !gameState.currentQuestion.answer) {
+                    return "تلميح غير متوفر";
                 }
                 
-                if (button.disabled) {
-                    showWarningMessage('لقد استخدمت هذه القدرة بالفعل');
-                    return;
-                }
-                gameState.teams[teamIndex].abilities[abilityType] = true;
-                // Disable the button to prevent multiple uses
-                button.disabled = true;
+                const answer = gameState.currentQuestion.answer;
+                // Extract first three letters of the answer
+                const firstThreeLetters = answer.substring(0, 3);
                 
-                // Show a message about using ChatGPT ability
-                if (typeof showAbilityFeedback === 'function') {
-                    showAbilityFeedback(`${gameState.teams[teamIndex].name} يستخدم مساعدة ChatGPT!`);
-                } else {
-                    console.error("showAbilityFeedback function not defined");
-                    showWarningMessage(`${gameState.teams[teamIndex].name} يستخدم مساعدة ChatGPT!`);
-                }
+                // Create formatted hint
+                const hintHTML = firstThreeLetters;
                 
-                // If a question is currently displayed, provide a hint
-                if (gameState.currentQuestion) {
-                    setTimeout(() => {
-                        if (typeof generateChatGPTHint === 'function' && typeof showChatGPTHint === 'function') {
-                            const hint = generateChatGPTHint(gameState.currentQuestion.question);
-                            showChatGPTHint(hint);
-                        } else {
-                            console.error("generateChatGPTHint or showChatGPTHint function not defined");
-                            showWarningMessage("تلميح: فكر في الإجابة المنطقية الأكثر احتمالاً.");
-                        }
-                    }, 1500);
-                } else {
-                    showWarningMessage('لا يوجد سؤال حالي لاستخدام المساعدة');
-                }
-                
-            } else if (abilityType === 'double') {
+                return hintHTML;
+            };
+            
+            const hint = "التلميح هو " + createLetterHint() + "...";
+            
+            if (typeof showChatGPTHint === 'function') {
+                showChatGPTHint(hint);
+            } else {
+                console.error("showChatGPTHint function not defined");
+                showWarningMessage(`تلميح: الإجابة تبدأ بـ ${gameState.currentQuestion.answer.substring(0, 3)}...`);
+            }
+        }, 1500);
+    } else {
+        showWarningMessage('لا يوجد سؤال حالي لاستخدام المساعدة');
+    }
+}else if (abilityType === 'double') {
                 // Implement double points ability
                 const button = document.getElementById(`team${teamIndex+1}-double`);
                 

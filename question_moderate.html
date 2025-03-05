@@ -102,14 +102,17 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.7);
+            overflow: auto; /* Enable scrolling if needed */
         }
         .modal-content {
             background-color: white;
-            margin: 10% auto;
+            margin: 5% auto;
             padding: 20px;
             width: 80%;
             max-width: 800px;
             border-radius: 5px;
+            max-height: 85vh; /* Limit height to 85% of viewport height */
+            overflow-y: auto; /* Enable vertical scrolling */
         }
         .close-btn {
             color: #aaa;
@@ -124,6 +127,54 @@
         .bulk-paste-btn {
             background: #673ab7;
         }
+        .toggle-all-btn {
+            background: #2196F3;
+            margin-right: 10px;
+        }
+        .add-category-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #newCategoryInput {
+            padding: 8px;
+            width: 60%;
+            margin-left: 10px;
+        }
+        .add-category-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .update-embedded-btn {
+            background: #E91E63;
+        }
+        .integration-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 10px 0;
+            direction: ltr;
+            text-align: left;
+        }
+        .integration-options-btn {
+            background: #E91E63;
+        }
     </style>
 </head>
 <body>
@@ -132,13 +183,23 @@
         <h3>تصدير / استيراد</h3>
         <button class="btn export-btn" onclick="exportQuestions('js')">تصدير كملف JS</button>
         <button class="btn export-btn" onclick="exportQuestions('csv')">تصدير كملف CSV</button>
+        <button class="btn integration-options-btn" onclick="showIntegrationOptions()">خيارات التكامل مع التطبيقات</button>
         <button class="btn import-btn" onclick="document.getElementById('file-input').click()">استيراد من CSV</button>
         <input type="file" id="file-input" accept=".csv" onchange="importFromCSV(this.files[0])">
         <button class="btn clear-btn" onclick="clearAllData()">مسح كل البيانات</button>
         <button class="btn duplicate-btn" onclick="removeDuplicates()">إزالة الأسئلة المكررة</button>
         <button class="btn bulk-paste-btn" onclick="openBulkPasteModal()">لصق مجموعة أسئلة</button>
+        <button class="btn toggle-all-btn" onclick="toggleAllCategories(true)">توسيع الكل</button>
+        <button class="btn toggle-all-btn" onclick="toggleAllCategories(false)">طي الكل</button>
     </div>
+    
     <div id="categories"></div>
+    
+    <div class="add-category-container">
+        <h3>إضافة فئة جديدة</h3>
+        <input type="text" id="newCategoryInput" placeholder="اسم الفئة الجديدة">
+        <button class="add-category-btn" onclick="addNewCategory()">إضافة</button>
+    </div>
     
     <!-- Bulk Paste Modal -->
     <div id="bulkPasteModal" class="modal">
@@ -154,18 +215,67 @@
         </div>
     </div>
     
+    <!-- Integration Options Modal -->
+    <div id="integrationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeIntegrationModal()">&times;</span>
+            <h3>خيارات التكامل مع التطبيقات الأخرى</h3>
+            
+            <div class="integration-container">
+                <h4>1. تصدير الى ملف JavaScript منفصل</h4>
+                <p>يمكنك تصدير الأسئلة إلى ملف JS منفصل واستيراده في تطبيقك:</p>
+                <button class="btn export-btn" onclick="exportQuestions('js')">تصدير كملف JS</button>
+                <p>ثم استخدم في تطبيقك:</p>
+                <div class="code-block">&lt;script src="questions.js"&gt;&lt;/script&gt;</div>
+            </div>
+            
+            <div class="integration-container">
+                <h4>2. نسخ الأسئلة كـ JSON</h4>
+                <p>يمكنك نسخ الأسئلة بتنسيق JSON واستخدامها في تطبيقك:</p>
+                <button class="btn export-btn" onclick="copyQuestionsAsJSON()">نسخ كـ JSON</button>
+                <p>ثم استخدم في تطبيقك:</p>
+                <div class="code-block">const questions = JSON.parse(questionsJson);</div>
+            </div>
+            
+            <div class="integration-container">
+                <h4>3. نسخ الأسئلة كـ JavaScript Object</h4>
+                <p>يمكنك نسخ الأسئلة كقيمة JavaScript واستخدامها مباشرة في تطبيقك:</p>
+                <button class="btn export-btn" id="copyJSObjectBtn" onclick="copyQuestionsAsJSObject()">نسخ كـ JS Object</button>
+                <p>ثم الصق مباشرة في ملف JavaScript الخاص بك.</p>
+            </div>
+            
+            <div class="integration-container">
+                <h4>4. استخدام LocalStorage</h4>
+                <p>الأسئلة مخزنة حاليًا في localStorage. يمكنك الوصول إليها من أي صفحة في نفس النطاق باستخدام:</p>
+                <div class="code-block">const questions = JSON.parse(localStorage.getItem('questionData'));</div>
+            </div>
+            
+            <div class="integration-container">
+                <h4>5. تصدير إلى ملف مستقل وتحديث التطبيق</h4>
+                <p>يمكنك تصدير الأسئلة إلى ملف منفصل، وتحديث هذا الملف يدويًا في تطبيقك. هذه هي الطريقة المثالية لدمج الأسئلة في تطبيق أكبر:</p>
+                <button class="btn export-btn" onclick="createModuleFile()">إنشاء ملف كوحدة JS</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
-        const categories = [
-            'التاريخ العالمي',
-            'العلوم والطبيعة',
-            'الجغرافيا',
-            'الرياضة والألعاب',
-            'ليج أوف ليجندز',
-            'الثقافة الشعبية',
-            'الفنون والأدب',
-            'التكنولوجيا',
-            'أنمي'
-        ];
+        // This is the embedded questions object that will be used by the UI
+        const questions = {
+            'التاريخ العالمي': [],
+            'العلوم والطبيعة': [],
+            'الجغرافيا': [],
+            'الرياضة والألعاب': [],
+            'ليج أوف ليجندز': [],
+            'الثقافة الشعبية': [],
+            'الفنون والأدب': [],
+            'التكنولوجيا': [],
+            'أنمي': []
+        };
+
+        // Function to get all categories from the questions object
+        function getCategories() {
+            return Object.keys(questions);
+        }
 
         // Initialize the app
         function init() {
@@ -175,14 +285,15 @@
             // Populate category dropdown for bulk paste
             const categorySelect = document.getElementById("categorySelect");
             categorySelect.innerHTML = '';
-            categories.forEach(category => {
+            
+            getCategories().forEach(category => {
+                // Add to dropdown
                 const option = document.createElement("option");
                 option.value = category;
                 option.textContent = category;
                 categorySelect.appendChild(option);
-            });
-            
-            categories.forEach(category => {
+                
+                // Create category section
                 const section = document.createElement("div");
                 section.className = "category";
                 section.innerHTML = `
@@ -198,7 +309,7 @@
                 container.appendChild(section);
             });
             
-            // Load data from localStorage or initialize with empty fields
+            // Load data from localStorage or use the embedded questions object
             loadFromLocalStorage();
             
             // Add paste event listeners after all inputs are created
@@ -281,23 +392,24 @@
         }
 
         function exportQuestions(format) {
+            // First update the embedded questions object
+            updateQuestionsObject();
+            
             if (format === 'js') {
                 let exportData = "const questions = {\n";
-                categories.forEach(category => {
+                getCategories().forEach(category => {
                     exportData += `  '${category}': [\n`;
-                    const questionList = document.getElementById(`questions-${category}`).children;
-                    for (let q of questionList) {
-                        const inputs = q.querySelectorAll("input");
-                        const questionText = inputs[0].value.trim();
-                        const answerText = inputs[1].value.trim();
-                        const valueText = inputs[2].value.trim();
-                        if (questionText && answerText && valueText) {
+                    
+                    // Use the questions object directly
+                    questions[category].forEach(q => {
+                        if (q.question && q.answer && q.value) {
                             // Properly escape special characters for JavaScript
-                            const escapedQuestion = escapeJS(questionText);
-                            const escapedAnswer = escapeJS(answerText);
-                            exportData += `    { value: ${valueText}, question: "${escapedQuestion}", answer: "${escapedAnswer}" },\n`;
+                            const escapedQuestion = escapeJS(q.question);
+                            const escapedAnswer = escapeJS(q.answer);
+                            exportData += `    { value: ${q.value}, question: "${escapedQuestion}", answer: "${escapedAnswer}" },\n`;
                         }
-                    }
+                    });
+                    
                     exportData += `  ],\n`;
                 });
                 exportData += "};\n";
@@ -310,20 +422,16 @@
             } else if (format === 'csv') {
                 let csvContent = "Category,Question,Answer,Value\n";
                 
-                categories.forEach(category => {
-                    const questionList = document.getElementById(`questions-${category}`).children;
-                    for (let q of questionList) {
-                        const inputs = q.querySelectorAll("input");
-                        const questionText = inputs[0].value.trim();
-                        const answerText = inputs[1].value.trim();
-                        const valueText = inputs[2].value.trim();
-                        if (questionText && answerText && valueText) {
+                getCategories().forEach(category => {
+                    // Use the questions object directly
+                    questions[category].forEach(q => {
+                        if (q.question && q.answer && q.value) {
                             // Escape quotes in CSV (double quotes are escaped by doubling them)
-                            const escapedQuestion = questionText.replace(/"/g, '""');
-                            const escapedAnswer = answerText.replace(/"/g, '""');
-                            csvContent += `"${category}","${escapedQuestion}","${escapedAnswer}",${valueText}\n`;
+                            const escapedQuestion = q.question.replace(/"/g, '""');
+                            const escapedAnswer = q.answer.replace(/"/g, '""');
+                            csvContent += `"${category}","${escapedQuestion}","${escapedAnswer}",${q.value}\n`;
                         }
-                    }
+                    });
                 });
                 
                 const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
@@ -332,6 +440,139 @@
                 a.download = "questions.csv";
                 a.click();
             }
+        }
+
+        // Create a JavaScript module file
+        function createModuleFile() {
+            updateQuestionsObject();
+            
+            // Generate a module file that exports the questions object
+            let moduleContent = "// Questions Database - Generated on " + new Date().toLocaleString() + "\n\n";
+            moduleContent += "export const questions = {\n";
+            
+            getCategories().forEach(category => {
+                moduleContent += `  '${category}': [\n`;
+                
+                // Use the questions object directly
+                questions[category].forEach(q => {
+                    if (q.question && q.answer && q.value) {
+                        // Properly escape special characters for JavaScript
+                        const escapedQuestion = escapeJS(q.question);
+                        const escapedAnswer = escapeJS(q.answer);
+                        moduleContent += `    { value: ${q.value}, question: "${escapedQuestion}", answer: "${escapedAnswer}" },\n`;
+                    }
+                });
+                
+                moduleContent += `  ],\n`;
+            });
+            moduleContent += "};\n\n";
+            
+            // Add a CommonJS export for broader compatibility
+            moduleContent += "// CommonJS compatibility\n";
+            moduleContent += "if (typeof module !== 'undefined' && module.exports) {\n";
+            moduleContent += "  module.exports = { questions };\n";
+            moduleContent += "}\n";
+
+            const blob = new Blob([moduleContent], { type: "text/javascript" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "questions-module.js";
+            a.click();
+            
+            // Show usage instructions
+            setTimeout(() => {
+                alert("تم إنشاء ملف 'questions-module.js' بنجاح!\n\nلاستخدامه في تطبيقك:\n\n- للاستيراد كوحدة ES6: import { questions } from './questions-module.js';\n\n- للاستيراد في Node.js: const { questions } = require('./questions-module.js');");
+            }, 500);
+        }
+
+        // Copy questions as JSON
+        function copyQuestionsAsJSON() {
+            updateQuestionsObject();
+            
+            // Remove empty questions
+            const cleanedQuestions = {};
+            getCategories().forEach(category => {
+                cleanedQuestions[category] = questions[category].filter(
+                    q => q.question && q.answer && q.value
+                );
+            });
+            
+            const json = JSON.stringify(cleanedQuestions, null, 2);
+            copyToClipboard(json);
+            alert("تم نسخ الأسئلة بتنسيق JSON إلى الحافظة!");
+        }
+
+        // Copy questions as JS Object
+        function copyQuestionsAsJSObject() {
+            updateQuestionsObject();
+            
+            let jsObject = "const questions = {\n";
+            getCategories().forEach(category => {
+                jsObject += `  '${category}': [\n`;
+                
+                // Use the questions object directly
+                questions[category].forEach(q => {
+                    if (q.question && q.answer && q.value) {
+                        // Properly escape special characters for JavaScript
+                        const escapedQuestion = escapeJS(q.question);
+                        const escapedAnswer = escapeJS(q.answer);
+                        jsObject += `    { value: ${q.value}, question: "${escapedQuestion}", answer: "${escapedAnswer}" },\n`;
+                    }
+                });
+                
+                jsObject += `  ],\n`;
+            });
+            jsObject += "};";
+            
+            copyToClipboard(jsObject);
+            alert("تم نسخ الأسئلة كقيمة JavaScript إلى الحافظة!");
+        }
+
+        // Helper function to copy text to clipboard
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        // Show integration options modal
+        function showIntegrationOptions() {
+            document.getElementById('integrationModal').style.display = 'block';
+        }
+
+        // Close integration modal
+        function closeIntegrationModal() {
+            document.getElementById('integrationModal').style.display = 'none';
+        }
+
+        // Update the questions object from the UI
+        function updateQuestionsObject() {
+            getCategories().forEach(category => {
+                questions[category] = [];
+                const questionList = document.getElementById(`questions-${category}`);
+                if (questionList) {
+                    const questionElements = questionList.querySelectorAll('.question');
+                    
+                    for (let q of questionElements) {
+                        const inputs = q.querySelectorAll("input");
+                        const questionText = inputs[0]?.value.trim() || '';
+                        const answerText = inputs[1]?.value.trim() || '';
+                        const valueText = inputs[2]?.value.trim() || '';
+                        
+                        // Only save non-empty questions
+                        if (questionText || answerText || valueText) {
+                            questions[category].push({
+                                question: questionText,
+                                answer: answerText,
+                                value: valueText
+                            });
+                        }
+                    }
+                }
+            });
         }
 
         function handlePaste(e) {
@@ -391,29 +632,11 @@
 
         // Save data to localStorage
         function saveToLocalStorage() {
-            const data = {};
+            // First update the questions object
+            updateQuestionsObject();
             
-            categories.forEach(category => {
-                data[category] = [];
-                const questionList = document.getElementById(`questions-${category}`).children;
-                for (let q of questionList) {
-                    const inputs = q.querySelectorAll("input");
-                    const questionText = inputs[0].value.trim();
-                    const answerText = inputs[1].value.trim();
-                    const valueText = inputs[2].value.trim();
-                    
-                    // Only save non-empty questions
-                    if (questionText || answerText || valueText) {
-                        data[category].push({
-                            question: questionText,
-                            answer: answerText,
-                            value: valueText
-                        });
-                    }
-                }
-            });
-            
-            localStorage.setItem('questionData', JSON.stringify(data));
+            // Then save to localStorage
+            localStorage.setItem('questionData', JSON.stringify(questions));
         }
 
         // Load data from localStorage
@@ -421,33 +644,48 @@
             const savedData = localStorage.getItem('questionData');
             
             if (savedData) {
+                // Parse the saved data
                 const data = JSON.parse(savedData);
                 
-                categories.forEach(category => {
-                    const questionList = document.getElementById(`questions-${category}`);
+                // Update the questions object with the saved data
+                // Also add any new categories from the embedded questions object
+                Object.keys(questions).forEach(category => {
+                    if (!data[category]) {
+                        data[category] = [];
+                    }
+                });
+                
+                // Add any new categories from the saved data to the questions object
+                Object.keys(data).forEach(category => {
+                    if (!questions[category]) {
+                        questions[category] = [];
+                    }
+                });
+                
+                // Update the global questions object with the merged data
+                Object.assign(questions, data);
+            }
+            
+            // Now populate the UI
+            getCategories().forEach(category => {
+                const questionList = document.getElementById(`questions-${category}`);
+                if (questionList) {
                     questionList.innerHTML = ''; // Clear existing questions
                     
-                    if (data[category] && data[category].length > 0) {
+                    if (questions[category] && questions[category].length > 0) {
                         // Add saved questions
-                        data[category].forEach(q => {
+                        questions[category].forEach(q => {
                             addQuestion(category, q);
                         });
                     }
                     
                     // Add some empty fields (at least 5)
-                    const emptyFieldsToAdd = Math.max(5, 20 - (data[category]?.length || 0));
+                    const emptyFieldsToAdd = Math.max(5, 20 - (questions[category]?.length || 0));
                     for (let i = 0; i < emptyFieldsToAdd; i++) {
                         addQuestion(category);
                     }
-                });
-            } else {
-                // Initialize with 20 empty fields per category
-                categories.forEach(category => {
-                    for (let i = 0; i < 20; i++) {
-                        addQuestion(category);
-                    }
-                });
-            }
+                }
+            });
         }
 
         // Import from CSV
@@ -464,7 +702,7 @@
                 
                 // Keep track of how many questions were added to each category
                 const questionsAdded = {};
-                categories.forEach(cat => { questionsAdded[cat] = 0; });
+                getCategories().forEach(cat => { questionsAdded[cat] = 0; });
                 
                 // Process each line
                 for (let i = 1; i < lines.length; i++) {
@@ -505,37 +743,41 @@
                         const answer = fields[2].trim().replace(/^"|"$/g, '');
                         const value = fields[3].trim().replace(/^"|"$/g, '');
                         
-                        // Only process if category is valid
-                        if (categories.includes(category)) {
-                            questionsAdded[category]++;
-                            
-                            // Get question container
-                            const questionList = document.getElementById(`questions-${category}`);
-                            const questionElements = questionList.querySelectorAll('.question');
-                            
-                            // Find first empty question field
-                            let emptyFieldFound = false;
-                            
-                            for (let q of questionElements) {
-                                const inputs = q.querySelectorAll("input");
-                                if (!inputs[0].value.trim() && !inputs[1].value.trim() && !inputs[2].value.trim()) {
-                                    // Empty field found, populate it
-                                    inputs[0].value = question;
-                                    inputs[1].value = answer;
-                                    inputs[2].value = value;
-                                    emptyFieldFound = true;
-                                    break;
-                                }
+                        // Create the category if it doesn't exist
+                        if (!questions[category]) {
+                            questions[category] = [];
+                            // Add the category to the UI
+                            addNewCategory(category, false);
+                            questionsAdded[category] = 0;
+                        }
+                        
+                        questionsAdded[category]++;
+                        
+                        // Get question container
+                        const questionList = document.getElementById(`questions-${category}`);
+                        const questionElements = questionList.querySelectorAll('.question');
+                        
+                        // Find first empty question field
+                        let emptyFieldFound = false;
+                        
+                        for (let q of questionElements) {
+                            const inputs = q.querySelectorAll("input");
+                            if (!inputs[0].value.trim() && !inputs[1].value.trim() && !inputs[2].value.trim()) {
+                                // Empty field found, populate it
+                                inputs[0].value = question;
+                                inputs[1].value = answer;
+                                inputs[2].value = value;
+                                emptyFieldFound = true;
+                                break;
                             }
-                            
-                            // If no empty field was found, add a new one
-                            if (!emptyFieldFound) {
-                                const newQuestionDiv = addQuestion(category, {
-                                    question: question,
-                                    answer: answer,
-                                    value: value
-                                });
-                            }
+                        }
+                        
+                        // If no empty field was found, add a new one
+                        if (!emptyFieldFound) {const newQuestionDiv = addQuestion(category, {
+                                question: question,
+                                answer: answer,
+                                value: value
+                            });
                         }
                     }
                 }
@@ -545,7 +787,7 @@
                 
                 // Show import summary
                 let summary = "تم الاستيراد بنجاح:\n";
-                categories.forEach(cat => {
+                Object.keys(questionsAdded).forEach(cat => {
                     if (questionsAdded[cat] > 0) {
                         summary += `- ${cat}: ${questionsAdded[cat]} سؤال\n`;
                     }
@@ -558,6 +800,11 @@
         // Clear all data
         function clearAllData() {
             if (confirm("هل أنت متأكد من رغبتك في مسح جميع البيانات؟")) {
+                // Clear the questions object but keep the categories
+                getCategories().forEach(category => {
+                    questions[category] = [];
+                });
+                
                 localStorage.removeItem('questionData');
                 init(); // Reinitialize the app
             }
@@ -569,27 +816,31 @@
             const allQuestions = {};
             let duplicatesFound = 0;
             
-            // First, scan all categories and identify duplicates
-            categories.forEach(category => {
-                const questionList = document.getElementById(`questions-${category}`).children;
+            // First update the questions object
+            updateQuestionsObject();
+            
+            // Scan all categories and identify duplicates
+            getCategories().forEach(category => {
+                const uniqueQuestions = [];
                 
-                for (let q of questionList) {
-                    const inputs = q.querySelectorAll("input");
-                    const questionText = inputs[0].value.trim();
+                for (const q of questions[category]) {
+                    const questionText = q.question;
                     
                     // Skip empty questions
                     if (!questionText) continue;
                     
-                    // If this question already exists, mark for deletion
+                    // If this question already exists in any category, don't add it
                     if (allQuestions[questionText]) {
-                        // Mark this element for deletion
-                        q.setAttribute('data-duplicate', 'true');
                         duplicatesFound++;
                     } else {
-                        // Add to seen questions
+                        // Add to seen questions and keep it
                         allQuestions[questionText] = true;
+                        uniqueQuestions.push(q);
                     }
                 }
+                
+                // Replace with unique questions
+                questions[category] = uniqueQuestions;
             });
             
             if (duplicatesFound === 0) {
@@ -599,13 +850,11 @@
             
             // Ask for confirmation
             if (confirm(`تم العثور على ${duplicatesFound} سؤال مكرر. هل تريد حذفهم؟`)) {
-                // Remove all duplicates
-                document.querySelectorAll('[data-duplicate="true"]').forEach(element => {
-                    element.remove();
-                });
-                
                 // Save the updated data
                 saveToLocalStorage();
+                
+                // Reinitialize the UI
+                init();
                 
                 alert(`تم حذف ${duplicatesFound} سؤال مكرر بنجاح.`);
             }
@@ -626,9 +875,97 @@
             }
         }
 
+        // Toggle all categories
+        function toggleAllCategories(expand) {
+            const categories = document.querySelectorAll('.category');
+            
+            categories.forEach(category => {
+                const toggleBtn = category.querySelector('.toggle-btn');
+                
+                if (expand && category.classList.contains('collapsed')) {
+                    // Expand
+                    category.classList.remove('collapsed');
+                    toggleBtn.textContent = 'طي';
+                } else if (!expand && !category.classList.contains('collapsed')) {
+                    // Collapse
+                    category.classList.add('collapsed');
+                    toggleBtn.textContent = 'توسيع';
+                }
+            });
+        }
+
+        // Add a new category
+        function addNewCategory(categoryName, shouldPrompt = true) {
+            if (shouldPrompt) {
+                categoryName = document.getElementById('newCategoryInput').value.trim();
+                
+                if (!categoryName) {
+                    alert("الرجاء إدخال اسم للفئة الجديدة.");
+                    return;
+                }
+                
+                if (questions[categoryName]) {
+                    alert("هذه الفئة موجودة بالفعل.");
+                    return;
+                }
+            }
+            
+            // Add to questions object
+            questions[categoryName] = [];
+            
+            // Add to UI
+            const container = document.getElementById("categories");
+            const section = document.createElement("div");
+            section.className = "category";
+            section.innerHTML = `
+                <h2>
+                    ${categoryName}
+                    <button class="toggle-btn" onclick="toggleCategory(this)">طي</button>
+                </h2>
+                <div class="questions-container">
+                    <div id="questions-${categoryName}"></div>
+                    <button onclick="addQuestion('${categoryName}')">إضافة سؤال</button>
+                </div>
+            `;
+            container.appendChild(section);
+            
+            // Add to dropdown
+            const categorySelect = document.getElementById("categorySelect");
+            const option = document.createElement("option");
+            option.value = categoryName;
+            option.textContent = categoryName;
+            categorySelect.appendChild(option);
+            
+            // Add some empty fields
+            for (let i = 0; i < 20; i++) {
+                addQuestion(categoryName);
+            }
+            
+            // Save to localStorage
+            saveToLocalStorage();
+            
+            if (shouldPrompt) {
+                // Clear the input
+                document.getElementById('newCategoryInput').value = '';
+                
+                // Scroll to the new category
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
         // Bulk paste modal functions
         function openBulkPasteModal() {
             document.getElementById('bulkPasteModal').style.display = 'block';
+            
+            // Update the category dropdown in case new categories were added
+            const categorySelect = document.getElementById("categorySelect");
+            categorySelect.innerHTML = '';
+            getCategories().forEach(category => {
+                const option = document.createElement("option");
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
         }
 
         function closeBulkPasteModal() {
@@ -717,9 +1054,11 @@
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('bulkPasteModal');
-            if (event.target === modal) {
+            if (event.target === document.getElementById('bulkPasteModal')) {
                 closeBulkPasteModal();
+            }
+            if (event.target === document.getElementById('integrationModal')) {
+                closeIntegrationModal();
             }
         };
 
