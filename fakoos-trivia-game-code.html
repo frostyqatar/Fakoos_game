@@ -52,6 +52,66 @@ body::before {
     background-color: rgba(11, 36, 71, 0.85);
     z-index: -1;
 }
+.suspense-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: pulse-background 1s infinite alternate;
+}
+
+.suspense-text {
+    font-size: 3rem;
+    color: white;
+    text-shadow: 0 0 10px gold, 0 0 20px gold;
+    animation: bounce-text 0.5s infinite alternate;
+}
+
+.answer-revealed {
+    animation: reveal-glow 1s forwards;
+}
+
+.answer-word {
+    display: inline-block;
+    opacity: 0;
+    animation: word-appear 0.5s forwards;
+    color: gold;
+}
+
+@keyframes pulse-background {
+    0% { background-color: rgba(0,0,0,0.7); }
+    100% { background-color: rgba(75,0,130,0.7); }
+}
+
+@keyframes bounce-text {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+}
+
+@keyframes reveal-glow {
+    0% { box-shadow: 0 0 0 rgba(255,215,0,0); }
+    100% { box-shadow: 0 0 30px rgba(255,215,0,0.7); }
+}
+
+@keyframes word-appear {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fade-in 0.5s forwards;
+}
+
+@keyframes fade-in {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 .chatgpt-hint {
     background: rgba(13, 71, 161, 0.7);
     padding: 15px;
@@ -1969,6 +2029,13 @@ body {
     margin-bottom: 1.5rem;
     color: white;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    animation: text-reveal 1s ease-out;
+    overflow: hidden;
+}
+
+@keyframes text-reveal {
+    0% { max-height: 0; opacity: 0; }
+    100% { max-height: 300px; opacity: 1; }
 }
 
 #answer-display {
@@ -3791,7 +3858,7 @@ body {
     existingTimers.forEach(timer => timer.remove());
     
     // Initial cooldown time in seconds
-    let cooldownTime = 20; // Adjust as needed
+    let cooldownTime = 1200; // Adjust as needed
     
     // Create new cooldown timers
     for (let i = 0; i < 2; i++) {
@@ -5429,17 +5496,53 @@ function restoreElectrocuteCooldowns() {
         function revealAnswer() {
             if (!gameState.currentQuestion) return;
             
-            document.getElementById('answer-display').style.display = 'block';
-            document.getElementById('answer-text').textContent = gameState.currentQuestion.answer;
-            
+            if (!gameState.currentQuestion) return;
+    
+    const answerDisplay = document.getElementById('answer-display');
+    const answerText = document.getElementById('answer-text');
+    
+    // Stage 1: Dramatic pause with pulsing animation
+    document.body.classList.add('reveal-mode');
+    
+    // Play a dramatic sound
+    playSound('sound-correct');
+    
+    // Add suspense effect
+    const suspenseOverlay = document.createElement('div');
+    suspenseOverlay.className = 'suspense-overlay';
+    suspenseOverlay.innerHTML = '<div class="suspense-text">🥁 الإجابة هي... 🥁</div>';
+    document.body.appendChild(suspenseOverlay);
+    
+    // After suspense, reveal the answer
+    setTimeout(() => {
+        // Remove the suspense overlay
+        document.body.removeChild(suspenseOverlay);
+        
+        // Show the answer with animation
+        answerDisplay.style.display = 'block';
+        answerDisplay.classList.add('answer-revealed');
+        
+        // Highlight the answer words one by one for emphasis
+        const words = gameState.currentQuestion.answer.split(' ');
+        answerText.innerHTML = '';
+        
+        words.forEach((word, index) => {
+            const span = document.createElement('span');
+            span.textContent = word + ' ';
+            span.className = 'answer-word';
+            span.style.animationDelay = `${index * 0.2}s`;
+            answerText.appendChild(span);
+        });
+        
+        // Show award buttons after answer reveal
+        setTimeout(() => {
             document.getElementById('award-buttons').style.display = 'block';
-            
-            gameState.currentQuestion.answered = true;
-            
-            // Play bell sound when revealing answer
-            playSound('sound-incorrect');
-            
-            stopTimer();
+            document.getElementById('award-buttons').classList.add('fade-in');
+        }, words.length * 200 + 500);
+        
+        // Mark question as answered
+        gameState.currentQuestion.answered = true;
+    }, 2000); // 2 seconds of suspense
         }
 
         // Timer functionality
@@ -5670,28 +5773,34 @@ function restoreElectrocuteCooldowns() {
             const backgroundMusic = document.getElementById('background-music');
             const allSounds = document.querySelectorAll('audio');
             
-            // Create and add volume slider container
+            // Create and add volume slider container with frosty design
             const volumeSliderContainer = document.createElement('div');
             volumeSliderContainer.className = 'volume-slider-container';
             volumeSliderContainer.innerHTML = `
                 <div class="volume-control">
-                    <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-                    <span class="volume-level">100%</span>
+                    <div class="frost-panel">
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+                        <div class="slider-track"></div>
+                        <div class="slider-progress"></div>
+                        <div class="frost-glow"></div>
+                        <span class="volume-level">100%</span>
+                    </div>
                 </div>
             `;
             
             // Style the volume slider container for hover animation
             volumeSliderContainer.style.position = 'absolute';
-            volumeSliderContainer.style.left = '50%';
+            volumeSliderContainer.style.left = '100%';  // Changed from 50% to 60% to move it to the right
             volumeSliderContainer.style.top = '30px';
             volumeSliderContainer.style.transform = 'translateX(-50%)';
-            volumeSliderContainer.style.width = '120px';
+            volumeSliderContainer.style.width = '150px';
             volumeSliderContainer.style.display = 'flex';
             volumeSliderContainer.style.flexDirection = 'column';
             volumeSliderContainer.style.alignItems = 'center';
             volumeSliderContainer.style.opacity = '0';
-            volumeSliderContainer.style.transition = 'opacity 0.3s';
+            volumeSliderContainer.style.transition = 'opacity 0.3s, transform 0.4s';
             volumeSliderContainer.style.pointerEvents = 'none';
+            volumeSliderContainer.style.zIndex = '1000';
             
             // Append the volume slider container to the music toggle's parent
             musicToggle.parentNode.appendChild(volumeSliderContainer);
@@ -5725,6 +5834,154 @@ function restoreElectrocuteCooldowns() {
             volumeSlider.value = currentVolume;
             document.querySelector('.volume-level').textContent = `${Math.round(currentVolume * 100)}%`;
             
+            // Add custom styles for the frosty slider
+            const style = document.createElement('style');
+            style.textContent = `
+                .frost-panel {
+                    background: rgba(255, 255, 255, 0.1);
+                    backdrop-filter: blur(10px);
+                    border-radius: 15px;
+                    padding: 15px;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 
+                                inset 0 0 5px rgba(255, 255, 255, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    position: relative;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                }
+                
+                .frost-panel:hover {
+                    background: rgba(255, 255, 255, 0.15);
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 
+                                inset 0 0 10px rgba(255, 255, 255, 0.8);
+                }
+                
+                .frost-glow {
+                    position: absolute;
+                    top: -50%;
+                    left: -50%;
+                    width: 200%;
+                    height: 200%;
+                    background: radial-gradient(
+                        circle at center,
+                        rgba(255, 255, 255, 0.8) 0%,
+                        rgba(255, 255, 255, 0) 70%
+                    );
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.5s ease;
+                    mix-blend-mode: overlay;
+                }
+                
+                .frost-panel:hover .frost-glow {
+                    opacity: 0.4;
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0% { opacity: 0.2; }
+                    50% { opacity: 0.5; }
+                    100% { opacity: 0.2; }
+                }
+                
+                .volume-control {
+                    position: relative;
+                    width: 100%;
+                }
+                
+                .volume-level {
+                    display: block;
+                    text-align: center;
+                    color: #e0f7ff;
+                    font-weight: bold;
+                    text-shadow: 0 0 5px rgba(0, 150, 255, 0.5);
+                    margin-top: 5px;
+                    transition: all 0.3s ease;
+                }
+                
+                #volume-slider {
+                    -webkit-appearance: none;
+                    width: 100%;
+                    height: 6px;
+                    background: transparent;
+                    outline: none;
+                    z-index: 10;
+                    position: relative;
+                }
+                
+                .slider-track {
+                    position: absolute;
+                    top: 50%;
+                    left: 0;
+                    width: 100%;
+                    height: 6px;
+                    background: rgba(0, 0, 0, 0.2);
+                    border-radius: 3px;
+                    transform: translateY(-50%);
+                    z-index: 1;
+                }
+                
+                .slider-progress {
+                    position: absolute;
+                    top: 50%;
+                    left: 0;
+                    height: 6px;
+                    background: linear-gradient(90deg, #00c6ff, #0072ff);
+                    border-radius: 3px;
+                    transform: translateY(-50%);
+                    z-index: 2;
+                    width: 100%;
+                    transition: width 0.2s ease;
+                    box-shadow: 0 0 10px rgba(0, 198, 255, 0.5);
+                }
+                
+                #volume-slider::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 50%;
+                    background: #ffffff;
+                    cursor: pointer;
+                    box-shadow: 0 0 10px rgba(0, 150, 255, 0.8);
+                    border: 2px solid #0072ff;
+                    transition: all 0.2s ease;
+                    position: relative;
+                    z-index: 10;
+                }
+                
+                #volume-slider::-moz-range-thumb {
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 50%;
+                    background: #ffffff;
+                    cursor: pointer;
+                    box-shadow: 0 0 10px rgba(0, 150, 255, 0.8);
+                    border: 2px solid #0072ff;
+                    transition: all 0.2s ease;
+                    position: relative;
+                    z-index: 10;
+                }
+                
+                #volume-slider::-webkit-slider-thumb:hover {
+                    transform: scale(1.2);
+                    box-shadow: 0 0 15px rgba(0, 150, 255, 1);
+                }
+                
+                #volume-slider::-moz-range-thumb:hover {
+                    transform: scale(1.2);
+                    box-shadow: 0 0 15px rgba(0, 150, 255, 1);
+                }
+                
+                #volume-slider:active::-webkit-slider-thumb {
+                    transform: scale(1.3);
+                }
+                
+                #volume-slider:active::-moz-range-thumb {
+                    transform: scale(1.3);
+                }
+            `;
+            document.head.appendChild(style);
+            
             // Add volume slider event listener - affects ALL sounds
             volumeSlider.addEventListener('input', function() {
                 const newVolume = parseFloat(this.value);
@@ -5737,9 +5994,15 @@ function restoreElectrocuteCooldowns() {
                 // Update volume percentage display
                 document.querySelector('.volume-level').textContent = `${Math.round(newVolume * 100)}%`;
                 
+                // Update slider progress visual
+                document.querySelector('.slider-progress').style.width = `${newVolume * 100}%`;
+                
                 // Save volume preference
                 localStorage.setItem('soundVolume', newVolume);
             });
+            
+            // Initialize slider progress visual
+            document.querySelector('.slider-progress').style.width = `${currentVolume * 100}%`;
             
             // Set up the mute toggle - affects ALL audio
             musicToggle.addEventListener('click', function() {
@@ -5767,10 +6030,10 @@ function restoreElectrocuteCooldowns() {
                 localStorage.setItem('musicMuted', newMuteState);
             });
             
-            // Show volume slider on hover
+            // Show volume slider on hover with animation
             musicToggle.addEventListener('mouseenter', function() {
                 volumeSliderContainer.style.opacity = '1';
-                volumeSliderContainer.style.right = '-140px';
+                volumeSliderContainer.style.transform = 'translateX(-50%) translateY(5px)';
                 volumeSliderContainer.style.pointerEvents = 'auto';
             });
             
@@ -5788,13 +6051,13 @@ function restoreElectrocuteCooldowns() {
             // Handle hover events on the container
             audioControlContainer.addEventListener('mouseenter', function() {
                 volumeSliderContainer.style.opacity = '1';
-                volumeSliderContainer.style.right = '-140px';
+                volumeSliderContainer.style.transform = 'translateX(-50%) translateY(5px)';
                 volumeSliderContainer.style.pointerEvents = 'auto';
             });
             
             audioControlContainer.addEventListener('mouseleave', function() {
                 volumeSliderContainer.style.opacity = '0';
-                volumeSliderContainer.style.right = '-150px';
+                volumeSliderContainer.style.transform = 'translateX(-50%) translateY(0)';
                 volumeSliderContainer.style.pointerEvents = 'none';
             });
             
