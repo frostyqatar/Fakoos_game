@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأسئلة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            margin: 20px;
+        }
+        h2 {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .question {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .question.highlighted {
+            background-color: #ffffa0;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        input {
+            padding: 5px;
+            width: 30%;
+        }
+        .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+        .btn {
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-left: 10px;
+            color: white;
+            border-radius: 5px;
+        }
+        .export-btn {
+            background: green;
+        }
+        .import-btn {
+            background: #007bff;
+        }
+        .export-options {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #file-input, #js-file-input {
+            display: none;
+        }
+        .clear-btn {
+            background: #ff9800;
+        }
+        .duplicate-btn {
+            background: #9c27b0;
+        }
+        .toggle-btn, .sort-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 10px;
+            text-decoration: underline;
+        }
+        .category-controls {
+            display: flex;
+            align-items: center;
+        }
+        .collapsed .questions-container {
+            display: none;
+        }
+        .bulk-paste-area {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 10px;
+            direction: rtl;
+            text-align: right;
+            padding: 10px;
+            font-family: inherit;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            overflow: auto;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 5px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .close-btn {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: black;
+        }
+        .bulk-paste-btn {
+            background: #673ab7;
+        }
+        .toggle-all-btn {
+            background: #2196F3;
+            margin-right: 10px;
+        }
+        .add-category-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #newCategoryInput {
+            padding: 8px;
+            width: 60%;
+            margin-left: 10px;
+        }
+        .add-category-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .integration-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: 10px 0;
+            direction: ltr;
+            text-align: left;
+        }
+        .integration-options-btn {
+            background: #E91E63;
+        }
+        .sort-btn {
+            position: relative;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .sort-indicator {
+            margin-right: 5px;
+        }
+        .global-sort-btn {
+            background: #3F51B5;
+        }
+        #globalSortContainer {
+            margin-top: 20px;
+            display: none;
+            border: 2px solid #3F51B5;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .global-sort-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #3F51B5;
+            color: white;
+            padding: 10px;
+            border-radius: 5px 5px 0 0;
+            margin: -10px -10px 10px -10px;
+        }
+        .sorting-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .global-question {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .global-question:hover {
+            background-color: #e3f2fd;
+        }
+        .global-question:nth-child(odd) {
+            background-color: #f5f5f5;
+        }
+        .global-question:nth-child(odd):hover {
+            background-color: #e3f2fd;
+        }
+        .global-category {
+            width: 15%;
+            font-weight: bold;
+        }
+        .global-text {
+            width: 35%;
+        }
+        .global-answer {
+            width: 35%;
+        }
+        .global-value {
+            width: 10%;
+            text-align: center;
+            font-weight: bold;
+            color: #3F51B5;
+        }
+        .close-global-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .search-container {
+            margin-bottom: 15px;
+        }
+        #globalSearch, #pageSearchInput {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .global-sort-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-right: 15px;
+            font-size: 14px;
+            text-decoration: underline;
+        }
+        .status-message {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        .error-message {
+            background-color: #f44336;
+            color: white;
+        }
+        .question-count {
+            background-color: #ff9800;
+            color: white;
+            border-radius: 50%;
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .page-search-container {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #3F51B5;
+            border-radius: 5px;
+            background-color: #e8eaf6;
+        }
+        .search-results {
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        .search-result-item {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .search-result-item:hover {
+            background-color: #e3f2fd;
+        }
+        .search-category {
+            font-weight: bold;
+            color: #3F51B5;
+            margin-bottom: 3px;
+        }
+        .search-count {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .sort-all-categories-btn {
+            background: #673ab7;
+        }
+        .anchor-link {
+            position: absolute;
+            top: -70px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <h1>إدارة الأسئلة</h1>
+    
+    <div id="statusMessage" class="status-message"></div>
+    
+    <!-- Page-wide search -->
+    <div class="page-search-container">
+        <h3>بحث في جميع الأسئلة</h3>
+        <input type="text" id="pageSearchInput" placeholder="اكتب كلمة للبحث في جميع الأسئلة..." oninput="searchAllQuestions()">
+        <div id="searchResults" class="search-results"></div>
+    </div>
+    
+    <div class="export-options">
+        <h3>تصدير / استيراد</h3>
+        <button class="btn export-btn" onclick="exportQuestions('js')">تصدير كملف JS</button>
+        <button class="btn export-btn" onclick="exportQuestions('csv')">تصدير كملف CSV</button>
+        <button class="btn integration-options-btn" onclick="showIntegrationOptions()">خيارات التكامل مع التطبيقات</button>
+        <button class="btn import-btn" onclick="document.getElementById('file-input').click()">استيراد من CSV</button>
+        <input type="file" id="file-input" accept=".csv" onchange="importFromCSV(this.files[0])">
+        <button class="btn import-btn" onclick="document.getElementById('js-file-input').click()">استيراد من JS</button>
+        <input type="file" id="js-file-input" accept=".js" onchange="importFromJS(this.files[0])">
+        <button class="btn clear-btn" onclick="clearAllData()">مسح كل البيانات</button>
+        <button class="btn duplicate-btn" onclick="removeDuplicates()">إزالة الأسئلة المكررة</button>
+        <button class="btn bulk-paste-btn" onclick="openBulkPasteModal()">لصق مجموعة أسئلة</button>
+        <button class="btn toggle-all-btn" onclick="toggleAllCategories(true)">توسيع الكل</button>
+        <button class="btn toggle-all-btn" onclick="toggleAllCategories(false)">طي الكل</button>
+        <button class="btn global-sort-btn" onclick="showGlobalSort()">عرض كل الأسئلة مرتبة حسب القيمة</button>
+        <button class="btn sort-all-categories-btn" onclick="toggleSortAllCategories()">ترتيب كل الفئات حسب القيمة</button>
+    </div>
+    
+    <!-- Global Sort Container -->
+    <div id="globalSortContainer">
+        <div class="global-sort-header">
+            <h3>جميع الأسئلة مرتبة حسب القيمة</h3>
+            <div>
+                <button class="global-sort-toggle" onclick="toggleGlobalSort('asc')">تصاعدي ↑</button>
+                <button class="global-sort-toggle" onclick="toggleGlobalSort('desc')">تنازلي ↓</button>
+                <button class="close-global-btn" onclick="closeGlobalSort()">×</button>
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="text" id="globalSearch" placeholder="بحث في الأسئلة..." oninput="filterGlobalQuestions()">
+        </div>
+        <div id="globalQuestionsList">
+            <!-- Global questions will be populated here -->
+        </div>
+    </div>
+    
+    <div id="categories"></div>
+    
+    <div class="add-category-container">
+        <h3>إضافة فئة جديدة</h3>
+        <input type="text" id="newCategoryInput" placeholder="اسم الفئة الجديدة">
+        <button class="add-category-btn" onclick="addNewCategory()">إضافة</button>
+    </div>
+    
+    <!-- Bulk Paste Modal -->
+    <div id="bulkPasteModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeBulkPasteModal()">&times;</span>
+            <h3>لصق مجموعة من الأسئلة</h3>
+            <p>الصق الأسئلة بتنسيق: السؤال؟ الإجابة. القيمة</p>
+            <select id="categorySelect" style="margin-bottom: 10px; padding: 5px;">
+                <!-- Categories will be added here dynamically -->
+            </select>
+            <textarea class="bulk-paste-area" id="bulkPasteArea" placeholder="الصق الأسئلة هنا..."></textarea>
+            <button class="btn import-btn" onclick="processBulkPaste()">إضافة الأسئلة</button>
+        </div>
+    </div>
+    
+    <!-- Integration Options Modal -->
+    <div id="integrationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeIntegrationModal()">&times;</span>
+            <h3>خيارات التكامل مع التطبيقات الأخرى</h3>
+            
+            <div class="integration-container">
+                <h4>1. تصدير الى ملف JavaScript منفصل</h4>
+                <p>يمكنك تصدير الأسئلة إلى ملف JS منفصل واستيراده في تطبيقك:</p>
+                <button class="btn export-btn" onclick="exportQuestions('js')">تصدير كملف JS</button>
+                <p>ثم استخدم في تطبيقك:</p>
+                <div class="code-block">&lt;script src="questions.js"&gt;&lt;/script&gt;</div>
+            </div>
+            
+            <div class="integration-container">
+                <h4>2. نسخ الأسئلة كـ JSON</h4>
+                <p>يمكنك نسخ الأسئلة بتنسيق JSON واستخدامها في تطبيقك:</p>
+                <button class="btn export-btn" onclick="copyQuestionsAsJSON()">نسخ كـ JSON</button>
+                <p>ثم استخدم في تطبيقك:</p>
+                <div class="code-block">const questions = JSON.parse(questionsJson);</div>
+            </div>
+            
+            <div class="integration-container">
+                <h4>3. نسخ الأسئلة كـ JavaScript Object</h4>
+                <p>يمكنك نسخ الأسئلة كقيمة JavaScript واستخدامها مباشرة في تطبيقك:</p>
+                <button class="btn export-btn" id="copyJSObjectBtn" onclick="copyQuestionsAsJSObject()">نسخ كـ JS Object</button>
+                <p>ثم الصق مباشرة في ملف JavaScript الخاص بك.</p>
+            </div>
+            
+            <div class="integration-container">
+                <h4>4. استخدام LocalStorage</h4>
+                <p>الأسئلة مخزنة حاليًا في localStorage. يمكنك الوصول إليها من أي صفحة في نفس النطاق باستخدام:</p>
+                <div class="code-block">const questions = JSON.parse(localStorage.getItem('questionData'));</div>
+            </div>
+            
+            <div class="integration-container">
+                <h4>5. تصدير إلى ملف مستقل وتحديث التطبيق</h4>
+                <p>يمكنك تصدير الأسئلة إلى ملف منفصل، وتحديث هذا الملف يدويًا في تطبيقك. هذه هي الطريقة المثالية لدمج الأسئلة في تطبيق أكبر:</p>
+                <button class="btn export-btn" onclick="createModuleFile()">إنشاء ملف كوحدة JS</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Default questions object with categories
+        const questions = {
+            'التاريخ العالمي': [],
+            'العلوم والطبيعة': [],
+            'الجغرافيا': [],
+            'الرياضة والألعاب': [],
+            'ليج أوف ليجندز': [],
+            'قطر': [],
+            'الفنون والأدب': [],
+            'التكنولوجيا': [],
+            'الأنمي والمانجا': [],
+            'فريندز': [],
+            'مسلسلات': []
+        };
+
+        // Object to store sort orders for each category
+        const sortOrders = {};
+        
+        // Global sort order
+        let globalSortOrder = 'desc'; // Default to descending (highest values first)
+        
+        // Flag to track if all categories are sorted
+        let allCategoriesSorted = 'none'; // 'none', 'asc', 'desc'
+
+        // Generate unique ID for a question
+        function generateQuestionId() {
+            return 'q-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Status message handling
+        function showStatus(message, isError = false) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.classList.toggle('error-message', isError);
+            statusElement.style.display = 'block';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                statusElement.style.display = 'none';
+            }, 3000);
+        }
+
+        // Function to get all categories from the questions object
+        function getCategories() {
+            return Object.keys(questions);
+        }
+        
+        // Count non-empty questions in a category
+        function countQuestionsInCategory(category) {
+            if (!questions[category]) return 0;
+            
+            return questions[category].filter(q => 
+                q.question && q.answer && q.value
+            ).length;
+        }
+
+        // Initialize the app
+        function init() {
+            console.log("Initializing application...");
+            const container = document.getElementById("categories");
+            container.innerHTML = ''; // Clear container before adding categories
+            
+            // Populate category dropdown for bulk paste
+            const categorySelect = document.getElementById("categorySelect");
+            categorySelect.innerHTML = '';
+            
+            getCategories().forEach(category => {
+                // Initialize sort order for this category if not set
+                if (sortOrders[category] === undefined) {
+                    sortOrders[category] = 'none'; // 'none', 'asc', 'desc'
+                }
+                
+                // Add to dropdown
+                const option = document.createElement("option");
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+                
+                // Count questions in this category
+                const questionCount = countQuestionsInCategory(category);
+                
+                // Create category section
+                const section = document.createElement("div");
+                section.className = "category";
+                section.id = `category-${category}`;
+                section.innerHTML = `
+                    <h2>
+                        ${category}
+                        <span class="question-count">${questionCount}</span>
+                        <div class="category-controls">
+                            <button class="sort-btn" onclick="toggleSort('${category}')">
+                                <span class="sort-indicator">${getSortIndicator(sortOrders[category])}</span>ترتيب حسب القيمة
+                            </button>
+                            <button class="toggle-btn" onclick="toggleCategory(this)">طي</button>
+                        </div>
+                    </h2>
+                    <div class="questions-container">
+                        <div id="questions-${category}"></div>
+                        <button onclick="addQuestion('${category}')">إضافة سؤال</button>
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+            
+            // Load data from localStorage or use the embedded questions object
+            loadFromLocalStorage();
+            
+            // Add paste event listeners after all inputs are created
+            addPasteEventListeners();
+            
+            // Check if we arrived via a hash link
+            if (window.location.hash) {
+                setTimeout(() => {
+                    const questionId = window.location.hash.substring(1);
+                    navigateToQuestion(questionId);
+                }, 500);
+            }
+            
+            console.log("Application initialized successfully");
+        }
+
+        // Get sort indicator symbol
+        function getSortIndicator(sortOrder) {
+            switch (sortOrder) {
+                case 'asc': return '↑ ';
+                case 'desc': return '↓ ';
+                default: return '';
+            }
+        }
+
+        // Toggle sort order for a category
+        function toggleSort(category) {
+            // Update sort order: none -> asc -> desc -> none
+            switch (sortOrders[category]) {
+                case 'none':
+                    sortOrders[category] = 'asc';
+                    break;
+                case 'asc':
+                    sortOrders[category] = 'desc';
+                    break;
+                case 'desc':
+                    sortOrders[category] = 'none';
+                    break;
+            }
+            
+            // Update sort button indicator
+            const categoryElement = document.querySelector(`[id="questions-${category}"]`).closest('.category');
+            const sortBtn = categoryElement.querySelector('.sort-btn');
+            const indicator = sortBtn.querySelector('.sort-indicator');
+            indicator.textContent = getSortIndicator(sortOrders[category]);
+            
+            // Sort the questions
+            sortCategoryQuestions(category);
+            
+            // Save the sort preferences to localStorage
+            saveSortOrdersToLocalStorage();
+        }
+        
+        // Sort all categories at once
+        function toggleSortAllCategories() {
+            // Update global sort order: none -> asc -> desc -> none
+            switch (allCategoriesSorted) {
+                case 'none':
+                    allCategoriesSorted = 'asc';
+                    showStatus("تم ترتيب جميع الفئات تصاعدياً حسب القيمة");
+                    break;
+                case 'asc':
+                    allCategoriesSorted = 'desc';
+                    showStatus("تم ترتيب جميع الفئات تنازلياً حسب القيمة");
+                    break;
+                case 'desc':
+                    allCategoriesSorted = 'none';
+                    showStatus("تم إلغاء الترتيب لجميع الفئات");
+                    break;
+            }
+            
+            // Apply the sort order to all categories
+            getCategories().forEach(category => {
+                sortOrders[category] = allCategoriesSorted;
+                
+                // Update sort button indicator
+                const categoryElement = document.querySelector(`[id="questions-${category}"]`).closest('.category');
+                if (categoryElement) {
+                    const sortBtn = categoryElement.querySelector('.sort-btn');
+                    const indicator = sortBtn.querySelector('.sort-indicator');
+                    indicator.textContent = getSortIndicator(allCategoriesSorted);
+                }
+                
+                // Sort the questions in this category
+                sortCategoryQuestions(category);
+            });
+            
+            // Save the sort preferences to localStorage
+            saveSortOrdersToLocalStorage();
+        }
+
+        // Sort questions in a category
+        function sortCategoryQuestions(category) {
+            const sortOrder = sortOrders[category];
+            
+            // If sort order is 'none', reload the category with original order
+            if (sortOrder === 'none') {
+                refreshCategoryDisplay(category);
+                return;
+            }
+            
+            // First update the questions object
+            updateQuestionsObject();
+            
+            // Clone the questions for this category to avoid modifying the original order
+            let sortedQuestions = [...questions[category]];
+            
+            // Sort by value
+            sortedQuestions.sort((a, b) => {
+                // Skip empty questions or those without values
+                if (!a.value || !b.value) return 0;
+                
+                // Convert values to numbers for proper numeric sorting
+                const aValue = parseInt(a.value);
+                const bValue = parseInt(b.value);
+                
+                if (isNaN(aValue) || isNaN(bValue)) return 0;
+                
+                // Sort ascending or descending
+                return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+            });
+            
+            // Display sorted questions
+            const questionList = document.getElementById(`questions-${category}`);
+            questionList.innerHTML = ''; // Clear existing questions
+            
+            // Add sorted questions
+            sortedQuestions.forEach(q => {
+                if (q.question || q.answer || q.value) {
+                    addQuestion(category, q);
+                }
+            });
+            
+            // Add empty fields at the end
+            const emptyFieldsToAdd = Math.max(5, 20 - sortedQuestions.length);
+            for (let i = 0; i < emptyFieldsToAdd; i++) {
+                addQuestion(category);
+            }
+        }
+
+        // Refresh a category's display with questions from the questions object
+        function refreshCategoryDisplay(category) {
+            console.log(`Refreshing display for category: ${category}`);
+            const questionList = document.getElementById(`questions-${category}`);
+            if (!questionList) {
+                console.error(`Question list element not found for category: ${category}`);
+                return;
+            }
+            
+            questionList.innerHTML = ''; // Clear existing questions
+            
+            // Add saved questions
+            if (questions[category] && questions[category].length > 0) {
+                questions[category].forEach(q => {
+                    if (q.question || q.answer || q.value) {
+                        addQuestion(category, q);
+                    }
+                });
+            }
+            
+            // Add some empty fields
+            const emptyFieldsToAdd = Math.max(5, 20 - (questions[category]?.length || 0));
+            for (let i = 0; i < emptyFieldsToAdd; i++) {
+                addQuestion(category);
+            }
+            
+            // Update question count
+            updateQuestionCount(category);
+        }
+        
+        // Update the question count for a category
+        function updateQuestionCount(category) {
+            const count = countQuestionsInCategory(category);
+            const categoryElement = document.getElementById(`category-${category}`);
+            if (categoryElement) {
+                const countElement = categoryElement.querySelector('.question-count');
+                if (countElement) {
+                    countElement.textContent = count;
+                }
+            }
+        }
+        
+        // Update all question counts
+        function updateAllQuestionCounts() {
+            getCategories().forEach(category => {
+                updateQuestionCount(category);
+            });
+        }
+
+        // Save sort orders to localStorage
+        function saveSortOrdersToLocalStorage() {
+            localStorage.setItem('sortOrders', JSON.stringify(sortOrders));
+            localStorage.setItem('allCategoriesSorted', allCategoriesSorted);
+        }
+
+        // Load sort orders from localStorage
+        function loadSortOrdersFromLocalStorage() {
+            const savedSortOrders = localStorage.getItem('sortOrders');
+            if (savedSortOrders) {
+                Object.assign(sortOrders, JSON.parse(savedSortOrders));
+            }
+            
+            const savedAllCategoriesSorted = localStorage.getItem('allCategoriesSorted');
+            if (savedAllCategoriesSorted) {
+                allCategoriesSorted = savedAllCategoriesSorted;
+            }
+        }
+
+        function addQuestion(category, questionData) {
+            const questionList = document.getElementById(`questions-${category}`);
+            if (!questionList) {
+                console.error(`Cannot add question - element not found for category: ${category}`);
+                return null;
+            }
+            
+            // Generate a unique ID for this question
+            const questionId = generateQuestionId();
+            
+            const questionDiv = document.createElement("div");
+            questionDiv.className = "question";
+            questionDiv.id = questionId;
+            questionDiv.innerHTML = `
+                <span class="anchor-link" id="${questionId}-anchor"></span>
+                <input type="text" placeholder="السؤال" oninput="autoMove(event, 'answer'); saveToLocalStorage()">
+                <input type="text" placeholder="الإجابة" oninput="autoMove(event, 'value'); saveToLocalStorage()">
+                <input type="text" placeholder="القيمة (100-500)" maxlength="3" oninput="moveNext(event, this); saveToLocalStorage()">
+                <button class="delete-btn" onclick="deleteQuestion(this)">X</button>
+            `;
+            questionList.appendChild(questionDiv);
+            
+            // Set values if provided
+            if (questionData) {
+                const inputs = questionDiv.querySelectorAll("input");
+                inputs[0].value = questionData.question || '';
+                inputs[1].value = questionData.answer || '';
+                inputs[2].value = questionData.value || '';
+            }
+            
+            // Add paste event listener to the new question input
+            questionDiv.querySelector('input[placeholder="السؤال"]').addEventListener('paste', handlePaste);
+            
+            return questionDiv;
+        }
+
+        function autoMove(event, nextField) {
+            const inputValue = event.target.value;
+            if ((nextField === 'answer' && inputValue.includes('؟')) ||
+                (nextField === 'value' && inputValue.includes('.'))) {
+                const inputs = event.target.parentElement.querySelectorAll("input");
+                if (nextField === 'answer') inputs[1].focus();
+                if (nextField === 'value') inputs[2].focus();
+            }
+        }
+
+        function moveNext(event, input) {
+            if (input.value.length === 3) {
+                const questionElement = input.parentElement;
+                const nextQuestion = questionElement.nextElementSibling;
+                
+                // Check if this is the last question in the category
+                if (!nextQuestion) {
+                    // Get category ID from the parent container
+                    const questionsContainer = questionElement.parentElement;
+                    const categoryId = questionsContainer.id.replace('questions-', '');
+                    
+                    // Add a new question
+                    const newQuestion = addQuestion(categoryId);
+                    
+                    // Focus on the first input of the new question
+                    if (newQuestion) {
+                        newQuestion.querySelector("input").focus();
+                    }
+                } else {
+                    // Focus on the first input of the next question
+                    nextQuestion.querySelector("input").focus();
+                }
+            }
+        }
+
+        function deleteQuestion(button) {
+            button.parentElement.remove();
+            saveToLocalStorage();
+            
+            // Update question counts
+            updateAllQuestionCounts();
+        }
+
+        // Helper function to escape special characters for JavaScript strings
+        function escapeJS(str) {
+            if (!str) return '';
+            return str
+                .replace(/\\/g, '\\\\')  // Escape backslashes
+                .replace(/"/g, '\\"')    // Escape double quotes
+                .replace(/\n/g, '\\n')   // Escape newlines
+                .replace(/\r/g, '\\r')   // Escape carriage returns
+                .replace(/\t/g, '\\t')   // Escape tabs
+                .replace(/\f/g, '\\f');  // Escape form feeds
+        }
+
+        function exportQuestions(format) {
+            console.log(`Exporting questions in ${format} format...`);
+            // First update the embedded questions object
+            updateQuestionsObject();
+            
+            if (format === 'js') {
+                let exportData = "const questions = {\n";
+                getCategories().forEach(category => {
+                    exportData += `  '${category}': [\n`;
+                    
+                    // Use the questions object directly
+                    questions[category].forEach(q => {
+                        if (q.question && q.answer && q.value) {
+                            // Properly escape special characters for JavaScript
+                            const escapedQuestion = escapeJS(q.question);
+                            const escapedAnswer = escapeJS(q.answer);
+                            exportData += `    { value: ${q.value}, question: "${escapedQuestion}", answer: "${escapedAnswer}" },\n`;
+                        }
+                    });
+                    
+                    exportData += `  ],\n`;
+                });
+                exportData += "};\n";
+
+                const blob = new Blob([exportData], { type: "text/javascript" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "questions.js";
+                a.click();
+                showStatus("تم تصدير الأسئلة بنجاح كملف JavaScript");
+            } else if (format === 'csv') {
+                let csvContent = "Category,Question,Answer,Value\n";
+                
+                getCategories().forEach(category => {
+                    // Use the questions object directly
+                    questions[category].forEach(q => {
+                        if (q.question && q.answer && q.value) {
+                            // Escape quotes in CSV (double quotes are escaped by doubling them)
+                            const escapedQuestion = q.question.replace(/"/g, '""');
+                            const escapedAnswer = q.answer.replace(/"/g, '""');
+                            csvContent += `"${category}","${escapedQuestion}","${escapedAnswer}",${q.value}\n`;
+                        }
+                    });
+                });
+                
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "questions.csv";
+                a.click();
+                showStatus("تم تصدير الأسئلة بنجاح كملف CSV");
+            }
+        }
+
+        // Create a JavaScript module file
+        function createModuleFile() {
+            updateQuestionsObject();
+            
+            // Generate a module file that exports the questions object
+            let moduleContent = "// Questions Database - Generated on " + new Date().toLocaleString() + "\n\n";
+            moduleContent += "export const questions = {\n";
+            
+            getCategories().forEach(category => {
+                moduleContent += `  '${category}': [\n`;
+                
+                // Use the questions object directly
+                questions[category].forEach(q => {
+                    if (q.question && q.answer && q.value) {
+                        // Properly escape special characters for JavaScript
+                        const escapedQuestion = escapeJS(q.question);
+                        const escapedAnswer = escapeJS(q.answer);
+                        moduleContent += `    { value: ${q.value}, question: "${escapedQuestion}", answer: "${escapedAnswer}" },\n`;
+                    }
+                });
+                
+                moduleContent += `  ],\n`;
+            });
+            moduleContent += "};\n\n";
+            
+            // Add a CommonJS export for broader compatibility
+            moduleContent += "// CommonJS compatibility\n";
+            moduleContent += "if (typeof module !== 'undefined' && module.exports) {\n";
+            moduleContent += "  module.exports = { questions };\n";
+            moduleContent += "}\n";
+
+            const blob = new Blob([moduleContent], { type: "text/javascript" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "questions-module.js";
+            a.click();
+            
+            // Show usage instructions
+            showStatus("تم إنشاء ملف 'questions-module.js' بنجاح!");
+            setTimeout(() => {
+                alert("تم إنشاء ملف 'questions-module.js' بنجاح!\n\nلاستخدامه في تطبيقك:\n\n- للاستيراد كوحدة ES6: import { questions } from './questions-module.js';\n\n- للاستيراد في Node.js: const { questions } = require('./questions-module.js');");
+            }, 500);
+        }
+
+        // Copy questions as JSON
+        function copyQuestionsAsJSON() {
+            updateQuestionsObject();
+            
+            // Remove empty questions
+            const cleanedQuestions = {};
+            getCategories().forEach(category => {
+                cleanedQuestions[category] = questions[category].filter(
+                    q => q.question && q.answer && q.value
+                );
+            });
+            
+            const json = JSON.stringify(cleanedQuestions, null, 2);
+            copyToClipboard(json);
+            showStatus("تم نسخ الأسئلة بتنسيق JSON إلى الحافظة!");
+        }
+
+        // Copy questions as JS Object
+        function copyQuestionsAsJSObject() {
+            updateQuestionsObject();
+            
+            let jsObject = "const questions = {\n";
+            getCategories().forEach(category => {
+                jsObject += `  '${category}': [\n`;
+                
+                // Use the questions object directly
+                questions[category].forEach(q => {
+                    if (q.question && q.answer && q.value) {
+                        // Properly escape special characters for JavaScript
+                        const escapedQuestion = escapeJS(q.question);
+                        const escapedAnswer = escapeJS(q.answer);
+                        jsObject += `    { value: ${q.value}, question: "${escapedQuestion}", answer: "${escapedAnswer}" },\n`;
+                    }
+                });
+                
+                jsObject += `  ],\n`;
+            });
+            jsObject += "};";
+            
+            copyToClipboard(jsObject);
+            showStatus("تم نسخ الأسئلة كقيمة JavaScript إلى الحافظة!");
+        }
+
+        // Helper function to copy text to clipboard
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+
+        // Show integration options modal
+        function showIntegrationOptions() {
+            document.getElementById('integrationModal').style.display = 'block';
+        }
+
+        // Close integration modal
+        function closeIntegrationModal() {
+            document.getElementById('integrationModal').style.display = 'none';
+        }
+
+        // Update the questions object from the UI
+        function updateQuestionsObject() {
+            getCategories().forEach(category => {
+                questions[category] = [];
+                const questionList = document.getElementById(`questions-${category}`);
+                if (questionList) {
+                    const questionElements = questionList.querySelectorAll('.question');
+                    
+                    for (let q of questionElements) {
+                        const inputs = q.querySelectorAll("input");
+                        const questionText = inputs[0]?.value.trim() || '';
+                        const answerText = inputs[1]?.value.trim() || '';
+                        const valueText = inputs[2]?.value.trim() || '';
+                        
+                        // Only save non-empty questions
+                        if (questionText || answerText || valueText) {
+                            questions[category].push({
+                                question: questionText,
+                                answer: answerText,
+                                value: valueText,
+                                id: q.id // Save the question ID
+                            });
+                        }
+                    }
+                }
+            });
+            
+            // Update all question counts after updating the questions object
+            updateAllQuestionCounts();
+        }
+
+        function handlePaste(e) {
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Check if this is a multi-line paste
+            if (pastedText.includes('\n')) {
+                // This is a multi-line paste, open the bulk paste modal
+                e.preventDefault();
+                openBulkPasteModal();
+                document.getElementById('bulkPasteArea').value = pastedText;
+                return;
+            }
+            
+            // Try to match the pattern "question? answer. value"
+            const regex = /(.*?)[؟?]\s*(.*?)\.\s*(\d+)/;
+            const match = pastedText.match(regex);
+            
+            if (match) {
+                e.preventDefault();
+                const question = match[1] + '؟';
+                const answer = match[2].trim();
+                const value = match[3].trim();
+                
+                const inputs = e.target.parentElement.querySelectorAll("input");
+                inputs[0].value = question;
+                inputs[1].value = answer;
+                inputs[2].value = value;
+                
+                // Save to localStorage
+                saveToLocalStorage();
+                
+                // Update question counts
+                const category = e.target.closest('.questions-container').id.replace('questions-', '');
+                updateQuestionCount(category);
+                
+                // Focus on next question
+                const nextQuestion = e.target.parentElement.nextElementSibling;
+                if (nextQuestion) {
+                    nextQuestion.querySelector("input").focus();
+                } else {
+                    // This is the last question, add a new one
+                    const questionElement = e.target.parentElement;
+                    const questionsContainer = questionElement.parentElement;
+                    const categoryId = questionsContainer.id.replace('questions-', '');
+                    
+                    // Add a new question
+                    const newQuestion = addQuestion(categoryId);
+                    
+                    // Focus on the first input of the new question
+                    if (newQuestion) {
+                        newQuestion.querySelector("input").focus();
+                    }
+                }
+            }
+        }
+
+        function addPasteEventListeners() {
+            document.querySelectorAll('input[placeholder="السؤال"]').forEach(input => {
+                input.addEventListener('paste', handlePaste);
+            });
+        }
+
+        // Save data to localStorage
+        function saveToLocalStorage() {
+            // First update the questions object
+            updateQuestionsObject();
+            
+            // Then save to localStorage
+            localStorage.setItem('questionData', JSON.stringify(questions));
+        }
+
+        // Load data from localStorage
+        function loadFromLocalStorage() {
+            console.log("Loading data from localStorage...");
+            // Load sort orders first
+            loadSortOrdersFromLocalStorage();
+            
+            const savedData = localStorage.getItem('questionData');
+            
+            if (savedData) {
+                try {
+                    // Parse the saved data
+                    const data = JSON.parse(savedData);
+                    
+                    // Update the questions object with the saved data
+                    // Also add any new categories from the embedded questions object
+                    Object.keys(questions).forEach(category => {
+                        if (!data[category]) {
+                            data[category] = [];
+                        }
+                    });
+                    
+                    // Add any new categories from the saved data to the questions object
+                    Object.keys(data).forEach(category => {
+                        if (!questions[category]) {
+                            questions[category] = [];
+                            
+                            // Initialize sort order for new categories
+                            if (sortOrders[category] === undefined) {
+                                sortOrders[category] = 'none';
+                            }
+                        }
+                    });
+                    
+                    // Update the global questions object with the merged data
+                    Object.assign(questions, data);
+                    console.log("Data loaded successfully");
+                } catch (error) {
+                    console.error("Error loading data from localStorage:", error);
+                    showStatus("حدث خطأ أثناء تحميل البيانات من التخزين المحلي", true);
+                }
+            } else {
+                console.log("No saved data found in localStorage");
+            }
+            
+            // Now populate the UI
+            getCategories().forEach(category => {
+                // Check if we need to sort this category
+                if (sortOrders[category] !== 'none') {
+                    sortCategoryQuestions(category);
+                } else {
+                    refreshCategoryDisplay(category);
+                }
+            });
+            
+            // Update all question counts
+            updateAllQuestionCounts();
+        }
+
+        // Import from CSV
+        function importFromCSV(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvData = e.target.result;
+                    const lines = csvData.split('\n');
+                    
+                    // Skip header row
+                    if (lines.length <= 1) {
+                        showStatus("ملف CSV فارغ أو غير صالح", true);
+                        return;
+                    }
+                    
+                    // First, update the current questions object from UI
+                    updateQuestionsObject();
+                    
+                    // Keep track of how many questions were added to each category
+                    const questionsAdded = {};
+                    getCategories().forEach(cat => { questionsAdded[cat] = 0; });
+                    
+                    // Process each line
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i].trim()) continue;
+                        
+                        // Parse CSV line (handling quotes and commas properly)
+                        let fields = [];
+                        let field = '';
+                        let inQuotes = false;
+                        
+                        for (let j = 0; j < lines[i].length; j++) {
+                            const char = lines[i][j];
+                            
+                            if (char === '"') {
+                                if (inQuotes && j+1 < lines[i].length && lines[i][j+1] === '"') {
+                                    // Double quotes inside quotes - add a single quote
+                                    field += '"';
+                                    j++; // Skip next quote
+                                } else {
+                                    // Toggle quote state
+                                    inQuotes = !inQuotes;
+                                }
+                            } else if (char === ',' && !inQuotes) {
+                                // End of field
+                                fields.push(field);
+                                field = '';
+                            } else {
+                                field += char;
+                            }
+                        }
+                        
+                        // Don't forget the last field
+                        fields.push(field);
+                        
+                        if (fields.length >= 4) {
+                            const category = fields[0].trim().replace(/^"|"$/g, '');
+                            const question = fields[1].trim().replace(/^"|"$/g, '');
+                            const answer = fields[2].trim().replace(/^"|"$/g, '');
+                            const value = fields[3].trim().replace(/^"|"$/g, '');
+                            
+                            if (!question || !answer || !value) continue;
+                            
+                            // Create the category if it doesn't exist
+                            if (!questions[category]) {
+                                questions[category] = [];
+                                // Add the category to the UI
+                                addNewCategory(category, false);
+                                
+                                // Initialize sort order for the new category
+                                sortOrders[category] = 'none';
+                                
+                                questionsAdded[category] = 0;
+                            }
+                            
+                            // Add the question to our data model
+                            questions[category].push({
+                                question: question,
+                                answer: answer,
+                                value: value,
+                                id: generateQuestionId() // Generate a new ID for this question
+                            });
+                            
+                            questionsAdded[category]++;
+                        }
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('questionData', JSON.stringify(questions));
+                    
+                    // Update each category's display
+                    getCategories().forEach(category => {
+                        if (questionsAdded[category] > 0) {
+                            // We added questions to this category, refresh its display
+                            refreshCategoryDisplay(category);
+                            
+                            // Make sure the category is expanded
+                            const categoryElement = document.querySelector(`[id="category-${category}"]`);
+                            if (categoryElement && categoryElement.classList.contains('collapsed')) {
+                                const toggleButton = categoryElement.querySelector('.toggle-btn');
+                                toggleCategory(toggleButton);
+                            }
+                        }
+                    });
+                    
+                    // Show import summary
+                    let summary = "تم الاستيراد بنجاح:\n";
+                    let totalAdded = 0;
+                    Object.keys(questionsAdded).forEach(cat => {
+                        if (questionsAdded[cat] > 0) {
+                            summary += `- ${cat}: ${questionsAdded[cat]} سؤال\n`;
+                            totalAdded += questionsAdded[cat];
+                        }
+                    });
+                    
+                    if (totalAdded > 0) {
+                        showStatus(`تم استيراد ${totalAdded} سؤال بنجاح`);
+                        alert(summary);
+                    } else {
+                        showStatus("لم يتم استيراد أي أسئلة من الملف", true);
+                    }
+                    
+                    // Update all question counts
+                    updateAllQuestionCounts();
+                } catch (error) {
+                    console.error("Error importing CSV:", error);
+                    showStatus("حدث خطأ أثناء استيراد ملف CSV", true);
+                }
+            };
+            reader.onerror = function() {
+                showStatus("فشل في قراءة الملف", true);
+            };
+            reader.readAsText(file);
+        }
+        
+        // Import from JavaScript file
+        function importFromJS(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // Get the JS file content
+                    const jsContent = e.target.result;
+                    console.log("Processing JS import...");
+                    
+                    // Create a safe function to evaluate the JavaScript
+                    const importedQuestions = parseSafeJS(jsContent);
+                    
+                    if (!importedQuestions || typeof importedQuestions !== 'object') {
+                        throw new Error("لم يتم العثور على كائن 'questions' في الملف");
+                    }
+                    
+                    // First, update the current questions object from the UI
+                    updateQuestionsObject();
+                    
+                    // Track additions per category
+                    const questionsAdded = {};
+                    
+                    // Process each category in the imported questions
+                    Object.keys(importedQuestions).forEach(category => {
+                        console.log(`Processing category: ${category} with ${importedQuestions[category].length} questions`);
+                        
+                        // Create the category if it doesn't exist
+                        if (!questions[category]) {
+                            questions[category] = [];
+                            // Add the category to the UI
+                            addNewCategory(category, false);
+                            
+                            // Initialize sort order for the new category
+                            sortOrders[category] = 'none';
+                        }
+                        
+                        questionsAdded[category] = 0;
+                        
+                        // Add each question from the imported data
+                        if (Array.isArray(importedQuestions[category])) {
+                            importedQuestions[category].forEach(q => {
+                                if (q.question && q.answer && q.value) {
+                                    // Add to our questions object
+                                    questions[category].push({
+                                        question: q.question,
+                                        answer: q.answer,
+                                        value: q.value.toString(), // Ensure value is a string
+                                        id: q.id || generateQuestionId() // Use existing ID or generate new one
+                                    });
+                                    
+                                    questionsAdded[category]++;
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Save to localStorage
+                    localStorage.setItem('questionData', JSON.stringify(questions));
+                    
+                    // Update each category's display
+                    getCategories().forEach(category => {
+                        if (questionsAdded[category] > 0) {
+                            // We added questions to this category, refresh its display
+                            refreshCategoryDisplay(category);
+                            
+                            // Make sure the category is expanded
+                            const categoryElement = document.querySelector(`[id="category-${category}"]`);
+                            if (categoryElement && categoryElement.classList.contains('collapsed')) {
+                                const toggleButton = categoryElement.querySelector('.toggle-btn');
+                                toggleCategory(toggleButton);
+                            }
+                        }
+                    });
+                    
+                    // Show import summary
+                    let summary = "تم الاستيراد بنجاح:\n";
+                    let totalAdded = 0;
+                    Object.keys(questionsAdded).forEach(cat => {
+                        if (questionsAdded[cat] > 0) {
+                            summary += `- ${cat}: ${questionsAdded[cat]} سؤال\n`;
+                            totalAdded += questionsAdded[cat];
+                        }
+                    });
+                    
+                    if (totalAdded > 0) {
+                        showStatus(`تم استيراد ${totalAdded} سؤال بنجاح من ملف JavaScript`);
+                        alert(summary);
+                    } else {
+                        showStatus("لم يتم العثور على أي أسئلة صالحة في الملف JavaScript", true);
+                    }
+                    
+                    // Update all question counts
+                    updateAllQuestionCounts();
+                    
+                } catch (error) {
+                    console.error("Error importing JS:", error);
+                    showStatus("حدث خطأ أثناء استيراد ملف JavaScript", true);
+                    alert("حدث خطأ أثناء استيراد الملف: " + error.message);
+                }
+            };
+            reader.onerror = function() {
+                showStatus("فشل في قراءة الملف", true);
+            };
+            reader.readAsText(file);
+        }
+        
+        // Safely parse JavaScript questions object
+        function parseSafeJS(jsContent) {
+            console.log("Attempting to parse JS content...");
+            
+            // Try different patterns for finding the questions object
+            
+            // Pattern 1: const questions = {...};
+            let regex = /const\s+questions\s*=\s*({[\s\S]*?});/;
+            let match = jsContent.match(regex);
+            
+            if (!match) {
+                // Pattern 2: var questions = {...};
+                regex = /var\s+questions\s*=\s*({[\s\S]*?});/;
+                match = jsContent.match(regex);
+            }
+            
+            if (!match) {
+                // Pattern 3: let questions = {...};
+                regex = /let\s+questions\s*=\s*({[\s\S]*?});/;
+                match = jsContent.match(regex);
+            }
+            
+            if (!match) {
+                // Pattern 4: module.exports = { questions: {...} };
+                regex = /module\.exports\s*=\s*{\s*questions\s*:\s*({[\s\S]*?})\s*};/;
+                match = jsContent.match(regex);
+            }
+            
+            if (!match) {
+                // Pattern 5: export const questions = {...};
+                regex = /export\s+const\s+questions\s*=\s*({[\s\S]*?});/;
+                match = jsContent.match(regex);
+            }
+            
+            if (match && match[1]) {
+                try {
+                    console.log("Found JS pattern, attempting to evaluate...");
+                    // Use Function constructor to evaluate the code in a safer way
+                    const objConstructor = new Function('return ' + match[1]);
+                    return objConstructor();
+                } catch (e) {
+                    console.error("Error parsing JS content:", e);
+                    throw new Error("خطأ في صياغة ملف JavaScript");
+                }
+            } else {
+                // One last attempt - try to find any object that looks like our format
+                console.log("No standard pattern found, trying last resort pattern...");
+                const fullObjectRegex = /({[\s\S]*'[^']*':\s*\[[\s\S]*?\][\s\S]*?})/;
+                const lastAttempt = jsContent.match(fullObjectRegex);
+                
+                if (lastAttempt && lastAttempt[1]) {
+                    try {
+                        const objConstructor = new Function('return ' + lastAttempt[1]);
+                        const possibleObj = objConstructor();
+                        
+                        // Check if it has the expected structure
+                        for (const key in possibleObj) {
+                            if (Array.isArray(possibleObj[key])) {
+                                // At least one key has an array value, might be our format
+                                return possibleObj;
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error in last parsing attempt:", e);
+                    }
+                }
+                
+                throw new Error("تنسيق ملف JavaScript غير صحيح أو لم يتم العثور على كائن 'questions'");
+            }
+        }
+        
+        // Clear all data
+        function clearAllData() {
+            if (confirm("هل أنت متأكد من رغبتك في مسح جميع البيانات؟")) {
+                // Clear the questions object but keep the categories
+                getCategories().forEach(category => {
+                    questions[category] = [];
+                });
+                
+                localStorage.removeItem('questionData');
+                init(); // Reinitialize the app
+                showStatus("تم مسح جميع البيانات بنجاح");
+            }
+        }
+
+        // Remove duplicate questions
+        function removeDuplicates() {
+            // Track all questions to identify duplicates
+            const allQuestions = {};
+            let duplicatesFound = 0;
+            
+            // First update the questions object
+            updateQuestionsObject();
+            
+            // Scan all categories and identify duplicates
+            getCategories().forEach(category => {
+                const uniqueQuestions = [];
+                
+                for (const q of questions[category]) {
+                    const questionText = q.question;
+                    
+                    // Skip empty questions
+                    if (!questionText) continue;
+                    
+                    // If this question already exists in any category, don't add it
+                    if (allQuestions[questionText]) {
+                        duplicatesFound++;
+                    } else {
+                        // Add to seen questions and keep it
+                        allQuestions[questionText] = true;
+                        uniqueQuestions.push(q);
+                    }
+                }
+                
+                // Replace with unique questions
+                questions[category] = uniqueQuestions;
+            });
+            
+            if (duplicatesFound === 0) {
+                showStatus("لم يتم العثور على أسئلة مكررة");
+                return;
+            }
+            
+            // Ask for confirmation
+            if (confirm(`تم العثور على ${duplicatesFound} سؤال مكرر. هل تريد حذفهم؟`)) {
+                // Save the updated data
+                saveToLocalStorage();
+                
+                // Reinitialize the UI
+                init();
+                
+                showStatus(`تم حذف ${duplicatesFound} سؤال مكرر بنجاح`);
+            }
+        }
+
+        // Toggle category expand/collapse
+        function toggleCategory(button) {
+            const category = button.closest('.category');
+            
+            if (category.classList.contains('collapsed')) {
+                // Expand
+                category.classList.remove('collapsed');
+                button.textContent = 'طي'; // "Collapse" in Arabic
+            } else {
+                // Collapse
+                category.classList.add('collapsed');
+                button.textContent = 'توسيع'; // "Expand" in Arabic
+            }
+        }
+
+        // Toggle all categories
+        function toggleAllCategories(expand) {
+            const categories = document.querySelectorAll('.category');
+            
+            categories.forEach(category => {
+                const toggleBtn = category.querySelector('.toggle-btn');
+                
+                if (expand && category.classList.contains('collapsed')) {
+                    // Expand
+                    category.classList.remove('collapsed');
+                    toggleBtn.textContent = 'طي';
+                } else if (!expand && !category.classList.contains('collapsed')) {
+                    // Collapse
+                    category.classList.add('collapsed');
+                    toggleBtn.textContent = 'توسيع';
+                }
+            });
+        }
+
+        // Add a new category
+        function addNewCategory(categoryName, shouldPrompt = true) {
+            if (shouldPrompt) {
+                categoryName = document.getElementById('newCategoryInput').value.trim();
+                
+                if (!categoryName) {
+                    showStatus("الرجاء إدخال اسم للفئة الجديدة", true);
+                    return;
+                }
+                
+                if (questions[categoryName]) {
+                    showStatus("هذه الفئة موجودة بالفعل", true);
+                    return;
+                }
+            }
+            
+            // Add to questions object
+            questions[categoryName] = [];
+            
+            // Initialize sort order for this category
+            sortOrders[categoryName] = 'none';
+            
+            // Add to UI
+            const container = document.getElementById("categories");
+            const section = document.createElement("div");
+            section.className = "category";
+            section.id = `category-${categoryName}`;
+            section.innerHTML = `
+                <h2>
+                    ${categoryName}
+                    <span class="question-count">0</span>
+                    <div class="category-controls">
+                        <button class="sort-btn" onclick="toggleSort('${categoryName}')">
+                            <span class="sort-indicator">${getSortIndicator(sortOrders[categoryName])}</span>ترتيب حسب القيمة
+                        </button>
+                        <button class="toggle-btn" onclick="toggleCategory(this)">طي</button>
+                    </div>
+                </h2>
+                <div class="questions-container">
+                    <div id="questions-${categoryName}"></div>
+                    <button onclick="addQuestion('${categoryName}')">إضافة سؤال</button>
+                </div>
+            `;
+            container.appendChild(section);
+            
+            // Add to dropdown
+            const categorySelect = document.getElementById("categorySelect");
+            const option = document.createElement("option");
+            option.value = categoryName;
+            option.textContent = categoryName;
+            categorySelect.appendChild(option);
+            
+            // Add some empty fields
+            for (let i = 0; i < 20; i++) {
+                addQuestion(categoryName);
+            }
+            
+            // Save to localStorage
+            saveToLocalStorage();
+            saveSortOrdersToLocalStorage();
+            
+            if (shouldPrompt) {
+                // Clear the input
+                document.getElementById('newCategoryInput').value = '';
+                
+                // Scroll to the new category
+                section.scrollIntoView({ behavior: 'smooth' });
+                showStatus(`تمت إضافة فئة "${categoryName}" بنجاح`);
+            }
+        }
+
+        // Bulk paste modal functions
+        function openBulkPasteModal() {
+            document.getElementById('bulkPasteModal').style.display = 'block';
+            
+            // Update the category dropdown in case new categories were added
+            const categorySelect = document.getElementById("categorySelect");
+            categorySelect.innerHTML = '';
+            getCategories().forEach(category => {
+                const option = document.createElement("option");
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function closeBulkPasteModal() {
+            document.getElementById('bulkPasteModal').style.display = 'none';
+        }
+
+        function processBulkPaste() {
+            const pastedText = document.getElementById('bulkPasteArea').value;
+            const selectedCategory = document.getElementById('categorySelect').value;
+            
+            if (!pastedText.trim()) {
+                showStatus("الرجاء إدخال بعض الأسئلة أولاً", true);
+                return;
+            }
+            
+            // Update questions object first
+            updateQuestionsObject();
+            
+            // Split by new lines
+            const lines = pastedText.split('\n');
+            let questionsAdded = 0;
+            
+            // Process each line
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                
+                // Try to match the pattern "question? answer. value"
+                const regex = /(.*?)[؟?]\s*(.*?)\.\s*(\d+)/;
+                const match = line.match(regex);
+                
+                if (match) {
+                    const question = match[1] + '؟';
+                    const answer = match[2].trim();
+                    const value = match[3].trim();
+                    
+                    // Add directly to our data model
+                    questions[selectedCategory].push({
+                        question: question,
+                        answer: answer,
+                        value: value,
+                        id: generateQuestionId() // Generate a new ID for this question
+                    });
+                    
+                    questionsAdded++;
+                }
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('questionData', JSON.stringify(questions));
+            
+            // Refresh the display for this category
+            refreshCategoryDisplay(selectedCategory);
+            
+            // Close modal and show summary
+            closeBulkPasteModal();
+            
+            if (questionsAdded > 0) {
+                showStatus(`تم إضافة ${questionsAdded} سؤال بنجاح إلى فئة "${selectedCategory}"`);
+                
+                // Scroll to the category
+                const categoryElement = document.querySelector(`[id="category-${selectedCategory}"]`);
+                categoryElement.scrollIntoView({ behavior: 'smooth' });
+                
+                // Make sure the category is expanded
+                if (categoryElement.classList.contains('collapsed')) {
+                    const toggleButton = categoryElement.querySelector('.toggle-btn');
+                    toggleCategory(toggleButton);
+                }
+                
+                // Update the question count for this category
+                updateQuestionCount(selectedCategory);
+            } else {
+                showStatus("لم يتم التعرف على أي أسئلة بالتنسيق المطلوب", true);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target === document.getElementById('bulkPasteModal')) {
+                closeBulkPasteModal();
+            }
+            if (event.target === document.getElementById('integrationModal')) {
+                closeIntegrationModal();
+            }
+        };
+        
+        // Global sorting functions
+        function showGlobalSort() {
+            // Update questions object
+            updateQuestionsObject();
+            
+            // Show global sort container
+            document.getElementById('globalSortContainer').style.display = 'block';
+            
+            // Populate with sorted questions
+            populateGlobalQuestions();
+            
+            // Scroll to the global sort container
+            document.getElementById('globalSortContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function closeGlobalSort() {
+            document.getElementById('globalSortContainer').style.display = 'none';
+        }
+        
+        function toggleGlobalSort(order) {
+            globalSortOrder = order;
+            populateGlobalQuestions();
+        }
+        
+        function populateGlobalQuestions() {
+            const globalList = document.getElementById('globalQuestionsList');
+            globalList.innerHTML = '';
+            
+            // Collect all non-empty questions from all categories
+            const allQuestions = [];
+            
+            getCategories().forEach(category => {
+                questions[category].forEach(q => {
+                    if (q.question && q.answer && q.value) {
+                        allQuestions.push({
+                            category: category,
+                            question: q.question,
+                            answer: q.answer,
+                            value: q.value,
+                            id: q.id || generateQuestionId() // Use existing ID or generate new one
+                        });
+                    }
+                });
+            });
+            
+            // Sort by value
+            allQuestions.sort((a, b) => {
+                const aValue = parseInt(a.value);
+                const bValue = parseInt(b.value);
+                
+                if (isNaN(aValue) || isNaN(bValue)) return 0;
+                
+                return globalSortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+            });
+            
+            // Populate the list
+            allQuestions.forEach(q => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'global-question';
+                questionDiv.dataset.id = q.id;
+                questionDiv.dataset.category = q.category;
+                questionDiv.onclick = function() {
+                    navigateToQuestion(q.id);
+                };
+                
+                questionDiv.innerHTML = `
+                    <div class="global-category">${q.category}</div>
+                    <div class="global-text">${q.question}</div>
+                    <div class="global-answer">${q.answer}</div>
+                    <div class="global-value">${q.value}</div>
+                `;
+                globalList.appendChild(questionDiv);
+            });
+            
+            // If there are no questions
+            if (allQuestions.length === 0) {
+                globalList.innerHTML = '<p>لا توجد أسئلة مضافة حالياً.</p>';
+            }
+            
+            // Re-apply search filter if there's text in the search box
+            const searchText = document.getElementById('globalSearch').value;
+            if (searchText) {
+                filterGlobalQuestions();
+            }
+        }
+        
+        function filterGlobalQuestions() {
+            const searchText = document.getElementById('globalSearch').value.toLowerCase();
+            const questions = document.querySelectorAll('.global-question');
+            let matchCount = 0;
+            
+            questions.forEach(q => {
+                const category = q.querySelector('.global-category').textContent.toLowerCase();
+                const text = q.querySelector('.global-text').textContent.toLowerCase();
+                const answer = q.querySelector('.global-answer').textContent.toLowerCase();
+                
+                // Show the question if any part matches the search
+                if (category.includes(searchText) || text.includes(searchText) || answer.includes(searchText)) {
+                    q.style.display = '';
+                    matchCount++;
+                } else {
+                    q.style.display = 'none';
+                }
+            });
+            
+            // Add a search count at the bottom
+            const globalList = document.getElementById('globalQuestionsList');
+            
+            // Remove any existing search count
+            const existingCount = globalList.querySelector('.search-count');
+            if (existingCount) {
+                existingCount.remove();
+            }
+            
+            if (searchText) {
+                const countElement = document.createElement('div');
+                countElement.className = 'search-count';
+                countElement.textContent = `تم العثور على ${matchCount} نتيجة.`;
+                globalList.appendChild(countElement);
+            }
+        }
+        
+        // Search all questions function
+        function searchAllQuestions() {
+            const searchText = document.getElementById('pageSearchInput').value.toLowerCase();
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (!searchText.trim()) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            resultsContainer.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            
+            // First update the questions object to ensure we have the latest data
+            updateQuestionsObject();
+            
+            let totalResults = 0;
+            
+            getCategories().forEach(category => {
+                let categoryResults = [];
+                
+                questions[category].forEach(q => {
+                    if (!q.question && !q.answer && !q.value) return;
+                    
+                    const questionLC = (q.question || '').toLowerCase();
+                    const answerLC = (q.answer || '').toLowerCase();
+                    const valueLC = (q.value || '').toLowerCase();
+                    
+                    if (questionLC.includes(searchText) || 
+                        answerLC.includes(searchText) || 
+                        valueLC.includes(searchText)) {
+                        
+                        categoryResults.push({
+                            question: q.question || '',
+                            answer: q.answer || '',
+                            value: q.value || '',
+                            id: q.id || generateQuestionId()
+                        });
+                    }
+                });
+                
+                // If we found results in this category, add them to the results container
+                if (categoryResults.length > 0) {
+                    const categoryHeader = document.createElement('div');
+                    categoryHeader.className = 'search-category';
+                    categoryHeader.textContent = `${category} (${categoryResults.length})`;
+                    resultsContainer.appendChild(categoryHeader);
+                    
+                    categoryResults.forEach(result => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        resultItem.innerHTML = `
+                            <div><strong>السؤال:</strong> ${highlightText(result.question, searchText)}</div>
+                            <div><strong>الإجابة:</strong> ${highlightText(result.answer, searchText)}</div>
+                            ${result.value ? `<div><strong>القيمة:</strong> ${highlightText(result.value, searchText)}</div>` : ''}
+                        `;
+                        resultItem.dataset.id = result.id;
+                        resultItem.dataset.category = category;
+                        resultItem.onclick = function() {
+                            navigateToQuestion(result.id);
+                        };
+                        resultsContainer.appendChild(resultItem);
+                    });
+                    
+                    totalResults += categoryResults.length;
+                }
+            });
+            
+            // If no results were found
+            if (totalResults === 0) {
+                resultsContainer.innerHTML = '<div class="search-count">لم يتم العثور على نتائج.</div>';
+            } else {
+                // Add a total count at the bottom
+                const countElement = document.createElement('div');
+                countElement.className = 'search-count';
+                countElement.textContent = `إجمالي النتائج: ${totalResults}`;
+                resultsContainer.appendChild(countElement);
+            }
+        }
+        
+        // Helper function to highlight search text
+        function highlightText(text, search) {
+            if (!text) return '';
+            
+            // Escape special characters for regex
+            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedSearch})`, 'gi');
+            
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+        
+        // Navigate to a question
+        function navigateToQuestion(questionId) {
+            // First update the URL with the hash
+            window.location.hash = questionId;
+            
+            // Find the question element
+            const questionElement = document.getElementById(questionId);
+            if (!questionElement) {
+                console.error(`Question with ID ${questionId} not found`);
+                return;
+            }
+            
+            // Find the category
+            const categoryContainer = questionElement.closest('.category');
+            if (!categoryContainer) {
+                console.error('Could not find category container');
+                return;
+            }
+            
+            // Make sure the category is expanded
+            if (categoryContainer.classList.contains('collapsed')) {
+                const toggleButton = categoryContainer.querySelector('.toggle-btn');
+                toggleCategory(toggleButton);
+            }
+            
+            // Scroll to the question
+            questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Highlight the question
+            questionElement.classList.add('highlighted');
+            
+            // Close the global sort container if it's open
+            document.getElementById('globalSortContainer').style.display = 'none';
+            
+            // Clear the highlighting after a few seconds
+            setTimeout(() => {
+                questionElement.classList.remove('highlighted');
+            }, 5000);
+        }
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
